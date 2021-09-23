@@ -1,0 +1,26 @@
+{
+  "name": "Engine",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start:dev": "nodemon src/index.ts",
+    "build": "rimraf ./build && tsc",
+    "start": "yarn run build && node build/index.js",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@types/node": "^16.9.6",
+    "cheerio": "^1.0.0-rc.10",
+    "nodemon": "^2.0.12",
+    "totalist": "^2.0.0",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
+    "eslint": "^7.32.0",
+    "rimraf": "^3.0.2"
+  }
+}
