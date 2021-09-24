@@ -52,8 +52,8 @@ export const rules = [
       result: {
         title: [
           {
-            innerText: 'Nick Reese - Actionable Business Advice for Entrepreneurs',
-            innerHTML: 'Nick Reese - Actionable Business Advice for Entrepreneurs',
+            innerText: '',
+            innerHTML: '',
           },
         ],
       },
@@ -79,7 +79,6 @@ export const rules = [
           'The title tag should not wrap other tags. (innerHTML and innerText should match)',
         );
         tester.test(100, assert.notStrictEqual, titles[0].innerText.length, 0, 'Title tags should not be empty');
-
         tester.test(100, assert.ok, !titles[0].innerText.includes('undefined'), `Title tag includes "undefined"`);
         tester.test(100, assert.ok, !titles[0].innerText.includes('null'), `Title tag includes "null"`);
 
@@ -93,15 +92,13 @@ export const rules = [
           titles[0].innerText.length < 70,
           'This title tag is longer than the recommended limit of 70.',
         );
-
         tester.test(
           assert.ok,
           titles[0].innerText.length < 200,
           `Something could be wrong this title tag is over 200 chars. : ${titles[0].innerText}`,
         );
-
+        //TODO localize this part.
         const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
-
         stopWords.forEach((sw) => {
           tester.lint(
             assert.ok,
@@ -401,7 +398,7 @@ export const rules = [
       }
     },
   },
-  {
+  /*{
     name: 'Internal Links are well formed',
     description: 'Checks that all internal links are lowercase and have a trailing slash',
     testData: {
@@ -552,7 +549,7 @@ export const rules = [
 
       tester.lint(assert.ok, external.length < 50, `Heads up, this page has more than 50 outbound links.`);
     },
-  },
+  },*/
   {
     name: 'Images',
     description: 'Checks for alt tags on images.',

@@ -1,6 +1,7 @@
 import { rules } from "./analyser/seo/rules";
-import { seoTester } from "./analyser/seo/tester";
+import { SeoTester } from "./analyser/seo/tester";
 
-const tester = seoTester({rules, siteWide:true});
-const { ...results } = tester.analyse("public");
-console.log("tester", results);
+const tester = new SeoTester(rules, "https://demo-front.kasty.io/fr");
+tester.run("https://demo-front.kasty.io/fr").then(results => {
+    console.log("Analyse result", results);
+})//https://demo-front.kasty.io/fr
