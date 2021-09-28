@@ -1,12 +1,21 @@
 {
-  "name": "Engine",
-  "version": "0.0.1",
-  "main": "index.ts",
+  "name": "exfabrica-cms-engine-analyzer",
+  "version": "0.0.2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "strapi",
+    "cms",
+    "seo",
+    "engine",
+    "analizer"
+  ],
+  "author": "ExFabrica.io (https://exfabrica.io)",
   "license": "MIT",
   "scripts": {
     "start:dev": "nodemon src/index.ts",
-    "build": "rimraf ./build && tsc",
-    "start": "yarn run build && node build/index.js",
+    "build": "rimraf ./dist && tsc",
+    "start": "yarn run dist && node dist/index.js",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
