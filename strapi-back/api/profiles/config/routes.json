@@ -1,0 +1,84 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/profiles",
+      "handler": "profiles.find",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/me",
+      "handler": "profiles.findMe",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/count",
+      "handler": "profiles.count",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/profiles/:id",
+      "handler": "profiles.findOne",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/profiles",
+      "handler": "profiles.create",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/profiles/me",
+      "handler": "profiles.createMe",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/:id",
+      "handler": "profiles.update",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/profiles/me/update",
+      "handler": "profiles.updateMe",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/:id",
+      "handler": "profiles.delete",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/profiles/me/delete",
+      "handler": "profiles.deleteMe",
+      "config": {
+        "policies": ["global::is-authenticated"]
+      }
+    }
+  ]
+}

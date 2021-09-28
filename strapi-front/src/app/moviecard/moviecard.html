@@ -1,0 +1,19 @@
+<div *ngIf="movie" class="movie-card" routerLink="/movie/{{ movie.id }}">
+    <div class="movie-card-img" style="background-image: url('{{ movie.imageUrl }}');"></div>
+    <div class="movie-card-footer">
+        <div class="movie-card-name">
+            <h3>{{ movie.name }}</h3>
+        </div>
+        <div class="movie-card-year">
+            <span>Year</span><span>{{ movie.year }}</span>
+        </div>
+        <div class="movie-card-genre">
+            <span>Genre:</span><span>{{ movie.genre }}</span>
+        </div>
+
+        <span *ngFor="let tag of movie.tags">{{tag.title}}&nbsp;</span>
+
+        <div class="movie-card-genre">
+        </div>
+    </div>
+</div>

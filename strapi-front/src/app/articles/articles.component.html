@@ -1,0 +1,24 @@
+<div class="articlelist-cnt">
+  <div class="articlelist-breadcrumb">
+    <div>
+      <h2>Trending articles</h2>
+    </div>
+    <div>
+      <button class="btn" style="padding-left: 15px;padding-right: 15px;font-weight: 500;">
+        Add article
+      </button>
+    </div>
+  </div>
+  <div class="articlelist">
+    <div *ngFor="let article of articles">
+      <div style="width:300px; height:300px; text-overflow:clip ;
+      overflow: auto;">
+        <h3>{{article.title}}</h3>
+        <p>{{article.content}}</p>
+      </div>
+    </div>
+  </div>
+  <ng-container #vc></ng-container>
+  <ng-template #modal>
+  </ng-template>
+</div>

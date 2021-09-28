@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms-analyzer-results",
+  "info": {
+    "name": "cms-analyzer-results",
+    "description": ""
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": false
+    }
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

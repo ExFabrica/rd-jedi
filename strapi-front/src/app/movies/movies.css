@@ -1,0 +1,20 @@
+.movielist {
+    display: flex;
+    color: grey;
+    padding: 15px;
+    flex-wrap: wrap;
+    padding-top: 0;
+}
+
+.movielist-breadcrumb {
+    font-family: system-ui;
+    display: flex;
+    justify-content: space-between;
+    padding: 32px;
+    padding-bottom: 0;
+    padding-top: 17px;
+}
+
+.movielist-breadcrumb h2 {
+    margin: 0;
+}

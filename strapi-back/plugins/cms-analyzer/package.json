@@ -1,0 +1,35 @@
+{
+  "name": "strapi-plugin-cms-analyzer",
+  "version": "0.0.0",
+  "description": "First Exfabrica Strapi Plugin.",
+  "strapi": {
+    "name": "cms-analyzer",
+    "icon": "plug",
+    "description": "First Exfabrica Strapi Plugin."
+  },
+  "dependencies": {
+    "exfabrica-cms-engine-analyzer": "^0.0.1",
+    "strapi-utils": "3.6.8"
+  },
+  "devDependencies": {
+    "rimraf": "3.0.2",
+    "strapi-helper-plugin": "3.6.8"
+  },
+  "author": {
+    "name": "Exfabrica.io",
+    "email": "gregory.taudin@exfabrica.io",
+    "url": "https://exfabrica.io"
+  },
+  "maintainers": [
+    {
+      "name": "Exfabrica.io",
+      "email": "gregory.taudin@exfabrica.io",
+      "url": "https://exfabrica.io"
+    }
+  ],
+  "engines": {
+    "node": ">=10.16.0 <=14.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}
