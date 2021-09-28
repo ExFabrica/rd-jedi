@@ -1,6 +1,6 @@
 {
   "name": "exfabrica-cms-engine-analyzer",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "keywords": [
@@ -32,5 +32,11 @@
     "@typescript-eslint/parser": "^4.31.2",
     "eslint": "^7.32.0",
     "rimraf": "^3.0.2"
+  },
+  "files": [
+    "dist"
+  ],
+  "browser": {
+    "child_process": false
   }
 }
