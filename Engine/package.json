@@ -35,8 +35,5 @@
   },
   "files": [
     "dist"
-  ],
-  "browser": {
-    "child_process": false
-  }
+  ]
 }

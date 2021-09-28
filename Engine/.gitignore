@@ -1,5 +1,6 @@
 build
 public 
+dist
 # Logs
 logs
 *.log

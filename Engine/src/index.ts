@@ -1,7 +1,8 @@
 import { rules } from "./analyser/seo/rules";
 import { SeoTester } from "./analyser/seo/tester";
 
-const tester = new SeoTester(rules, "https://demo-front.kasty.io/fr");
-tester.run("https://demo-front.kasty.io/fr").then(results => {
-    console.log("Analyse result", results);
-})//https://demo-front.kasty.io/fr
+module.exports = async function analyze(uri: string): Promise<any> {
+    uri = !uri ? "https://demo-front.kasty.io/fr" : uri;
+    const tester = new SeoTester(rules, uri);
+    return await tester.run(uri);
+};

@@ -5,7 +5,7 @@
     "module": "commonjs",
     "lib": ["ES2019"],
     "allowJs": true,
-    "outDir": "build",
+    "outDir": "dist",
     "rootDir": "src",
     "strict": false,
     // "noImplicitAny": true,
