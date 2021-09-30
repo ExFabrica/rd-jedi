@@ -398,7 +398,7 @@ export const rules = [
       }
     },
   },
-  /*{
+  {
     name: 'Internal Links are well formed',
     description: 'Checks that all internal links are lowercase and have a trailing slash',
     testData: {
@@ -429,7 +429,7 @@ export const rules = [
     },
     validator: async (payload, tester) => {
       const internal = payload.result.aTags
-        .filter((l) => (payload.response.host && l.href.includes(payload.response.host)) || !l.href.includes('http'))
+        .filter((l) => (payload.response.host && l.href && l.href.includes(payload.response.host)) || l.href && !l.href.includes('http'))
         .map((l) => {
           if (l.href.includes('#')) {
             l.href = l.href.split('#')[0];
@@ -544,12 +544,12 @@ export const rules = [
     },
     validator: async (payload, tester) => {
       const external = payload.result.aTags.filter(
-        (l) => !l.href.includes(payload.response.host) && l.href.includes('http'),
+        (l) => l.href && !l.href.includes(payload.response.host) && l.href.includes('http'),
       );
 
       tester.lint(assert.ok, external.length < 50, `Heads up, this page has more than 50 outbound links.`);
     },
-  },*/
+  },
   {
     name: 'Images',
     description: 'Checks for alt tags on images.',

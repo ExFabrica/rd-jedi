@@ -13,5 +13,10 @@ export interface IRule {
 };
 
 export interface ISiteResults {
-    [key: string]: any[];
+    url: string;
+    results: IMessage[];
+    duplicateTitles?: any[],
+    duplicateMetaDescriptions?: any[],
+    orphanPages?: any[],
+    brokenInternalLinks?: any[],
 };

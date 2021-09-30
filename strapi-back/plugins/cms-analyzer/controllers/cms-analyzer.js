@@ -27,8 +27,9 @@ module.exports = {
   },
   getAnalyzer: async (ctx) => {
     const query = ctx.query;
-    console.log("query", query);
+    console.log("Before Query");
     const result = await analyzer('https://demo-front.kasty.io/fr');
+    console.log("After Query");
     ctx.send(result);
   },
   getSettings: async (ctx) => {

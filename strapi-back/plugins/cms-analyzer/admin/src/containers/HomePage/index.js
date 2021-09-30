@@ -23,6 +23,8 @@ const HomePage = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [injectModal, setInjectModal] = useState(false);
   const [injectModalParams, setInjectModalParams] = useState("");
+  const [showGrid, setShowGrid] = useState(false);
+  const [results, setResults] = useState();
 
   useEffect(() => {
     settingsMiddleware.get().then(settings => {
@@ -41,14 +43,18 @@ const HomePage = (props) => {
   }
 
   const getAnalyzerDataSource = async () => {
-    const result = await contentAnalizerMiddleware.get();
-    return Promise.resolve(result["https://demo-front.kasty.io/fr"]);
+    const rs = await contentAnalizerMiddleware.get();
+    setResults(rs[0].results);
+    setShowGrid(true);
+    return Promise.resolve(rs);
+  }
+
+  const getMessageDataSource = async () => {
+    return Promise.resolve(results);
   }
 
   const getContentTypesDataSource = async () => {
-    const result = await contentTypesMiddleware.get();
-    console.log("content", result)
-    return Promise.resolve(result);
+    return Promise.resolve(await contentTypesMiddleware.get());
   }
 
   return (
@@ -61,12 +67,20 @@ const HomePage = (props) => {
       <h3 style={{ marginBottom: "20px" }}>ContentTypes available in your current STRAPI application:</h3>
 
       <GenericGrid datasource={getAnalyzerDataSource} headers={[{
-        name: 'Messsage',
-        value: 'message',
+        name: 'Url',
+        value: 'url',
         isSortEnabled: true,
       }]} />
+      <br />
 
-      <br/>
+      {showGrid ?
+        <GenericGrid datasource={getMessageDataSource} headers={[{
+          name: 'Message',
+          value: 'message',
+          isSortEnabled: true,
+        }]} /> : <></>}
+      <br />
+
       <GenericGrid datasource={getContentTypesDataSource} headers={[
         {
           name: 'Id',
