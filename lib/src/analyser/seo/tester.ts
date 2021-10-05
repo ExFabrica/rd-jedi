@@ -1,9 +1,8 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { render } from 'usus';
-import { IMessage, IRule, ISiteResults } from './interface';
+import { IMessage, IRule, IAnalyserResults, ITesterParameters, ITesterParametersBool, IPageResults } from './interface';
 var _ = require('lodash');
-var Crawler = require("simplecrawler");
 
 export const defaultPreferences = {
   internalLinksLowerCase: true,
@@ -13,8 +12,8 @@ export const defaultPreferences = {
 type TPair = [string, string];
 
 export class SeoTester {
-  private currentRule: IRule;
-  private rulesToUse: any;
+  //private currentRule: IRule;
+  private rulesToUse: IRule[];
   private internalLinks: TPair[];
   private pagesSeen: Set<string>;
   private siteWideLinks: Map<any, any>;
@@ -24,7 +23,6 @@ export class SeoTester {
 
   public constructor(private rules: any,
     private host: string) {
-    this.currentRule = this.getEmptyRule();
     this.rulesToUse = this.rules.length > 0 ? this.rules : []
     this.internalLinks = [];
     this.siteWideLinks = new Map();
@@ -33,18 +31,7 @@ export class SeoTester {
     this.pagesSeen = new Set();
   }
 
-  private getEmptyRule(): IRule {
-    return {
-      name: '',
-      description: '',
-      success: false,
-      errors: [],
-      warnings: [],
-      info: []
-    };
-  }
-
-  private logMetaDescription(url: string, meta: string, siteResults: ISiteResults) {
+  private logMetaDescription(url: string, meta: string, siteResults: IAnalyserResults) {
     if (this.metaDescriptions.has(meta)) {
       siteResults.duplicateMetaDescriptions.push([this.metaDescriptions.get(meta), url]);
     } else {
@@ -52,7 +39,7 @@ export class SeoTester {
     }
   }
 
-  private logTitleTag(url: string, title: string, siteResults: ISiteResults) {
+  private logTitleTag(url: string, title: string, siteResults: IAnalyserResults) {
     if (this.titleTags.has(title)) {
       siteResults.duplicateTitles.push([this.titleTags.get(title), url]);
     } else {
@@ -60,34 +47,32 @@ export class SeoTester {
     }
   }
 
-  private noEmptyRule() {
-    if (!this.currentRule.name || this.currentRule.name.length === 0) throw Error('No current test name');
-    if (!this.currentRule.description || this.currentRule.description.length === 0)
+  private noEmptyRule(currentRule: IRule) {
+    if (!currentRule.name || currentRule.name.length === 0) throw Error('No current test name');
+    if (!currentRule.description || currentRule.description.length === 0)
       throw Error('No current test description');
   }
 
-  private runATest(defaultPriority = 50, arrName) {
-    return (t, ...params) => {
-      let test = t;
+  private runATest(currentRule: IRule, defaultPriority = 50, arrName) {
+    /*return (params) => {
       let priority = defaultPriority;
-
       // allows overwriting of priority
-      if (typeof test !== 'function') {
+      if (typeof params.ass !== 'function') {
         priority = t;
         test = params.splice(0, 1)[0];
       }
+      this.noEmptyRule(currentRule);
 
-      this.noEmptyRule();
       try {
         return test(...params);
       } catch (e) {
-        this.currentRule[arrName].push({ message: e.message, priority });
+        currentRule[arrName].push({ message: e.message, priority, content:params[params.length-1]  });
         return e;
       }
-    };
+    };*/
   }
 
-  private startRule({ validator, test, testData, ...payload }) {
+  /*private startRule({ validator, test, testData, ...payload }) {
     if (this.currentRule.errors.length > 0)
       throw Error(
         "Starting a new rule when there are errors that haven't been added to results. Did you run 'finishRule'? ",
@@ -96,13 +81,12 @@ export class SeoTester {
       throw Error(
         "Starting a new rule when there are warnings that haven't been added to results. Did you run 'finishRule'? ",
       );
-    this.currentRule = Object.assign(this.currentRule, payload);
-  }
+    this.currentRule = {...this.currentRule, ...payload};
+  }*/
 
-  private finishRule(): IRule {
-    if (this.currentRule.errors.length === 0 && this.currentRule.warnings.length === 0) this.currentRule.success = true;
-    this.currentRule = this.getEmptyRule();
-    return { ...this.currentRule }
+  private finishRule(currentRule: IRule): void {
+    if (currentRule.errors.length === 0 && currentRule.warnings.length === 0)
+      currentRule.success = true;
   }
 
   private getAttributes($: any, search: string) {
@@ -150,61 +134,74 @@ export class SeoTester {
     return result;
   }
 
-  private async test(html: string, url: string): Promise<ISiteResults> {
+  private async test(html: string, url: string): Promise<IAnalyserResults> {
     try {
       this.pagesSeen.add(url);
       let results: IRule[] = [];
 
-      let siteResults: ISiteResults = {
+      let pageResults: IAnalyserResults = {
         url: url,
         results: [],
         duplicateTitles: [],
         duplicateMetaDescriptions: [],
         orphanPages: [],
         brokenInternalLinks: [],
+        tags: []
       }
 
-      const result = this.getTags(html);
+      const extractedTags = this.getTags(html);
+      pageResults.tags = extractedTags;
       // SPA detection
       // TODO make a better detection
-      if (result.h1s.length === 0 && result.h2s.length === 0 && result.h3s.length === 0 && result.imgs.length === 0)
+      if (extractedTags.h1s.length === 0 && extractedTags.h2s.length === 0 && extractedTags.h3s.length === 0 && extractedTags.imgs.length === 0)
         return null;
 
-      this.siteWideLinks.set(url, result.aTags);
-      if (result.title[0] && result.title[0].innerText) {
-        this.logTitleTag(url, result.title[0].innerText, siteResults);
+      this.siteWideLinks.set(url, extractedTags.aTags);
+      if (extractedTags.title[0] && extractedTags.title[0].innerText) {
+        this.logTitleTag(url, extractedTags.title[0].innerText, pageResults);
       }
 
-      const metaDescription = result.meta.find((m) => m.name && m.name.toLowerCase() === 'description');
+      const metaDescription = extractedTags.meta.find((m) => m.name && m.name.toLowerCase() === 'description');
       if (metaDescription) {
-        this.logMetaDescription(url, metaDescription.content, siteResults);
+        this.logMetaDescription(url, metaDescription.content, pageResults);
       }
 
-      /*result.aTags
-        .filter((a) => !!a.href)
-        .filter((a) => !a.href.includes('http'))
-        .filter((a) => {
-          if (this.currentUrl !== '/') {
-            return !a.href.endsWith(this.currentUrl);
-          }
-          return true;
-        })
-        .filter((a) => a.href !== this.currentUrl)
-        .map((a) => a.href)
-        .forEach((a) => this.internalLinks.push([a, this.currentUrl]));
-        */
-
-      for (let i = 0; i < this.rulesToUse.length; i++) {
-        const rule = this.rulesToUse[i];
-        this.startRule(rule);
-        await rule.validator(
-          { result, response: { url, host: this.host }, preferences: {} },
+      for (let rule of this.rulesToUse) {
+        let currentRule: IRule = Object.assign({}, rule);
+        currentRule.errors = [];
+        currentRule.info = [];
+        currentRule.warnings = [];
+        await currentRule.validator(
+          { result: extractedTags, response: { url, host: this.host }, preferences: {} },
           {
-            test: this.runATest(70, 'errors'),
-            lint: this.runATest(40, 'warnings'),
+            test: (params: ITesterParameters) => {
+              try {
+                params.assert(params.value1, params.value2);
+              }
+              catch (ex) {
+                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content });
+              }
+            },
+            trueOrFalse: (params: ITesterParametersBool) => {
+              try {
+                params.assert(params.value);
+              }
+              catch (ex) {
+                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content });
+              }
+            },
+            lint: (params: ITesterParametersBool) => {
+              try {
+                params.assert(params.value);
+              }
+              catch (ex) {
+                currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content });
+              }
+            }
           },
         );
-        results.push(this.finishRule());
+        this.finishRule(currentRule)
+        results.push(currentRule);
       }
 
       const display = ['warnings', 'errors'];
@@ -225,66 +222,34 @@ export class SeoTester {
           ];
         }, [] as IMessage[]);
 
-      siteResults.results = out;
-      return siteResults;
+      pageResults.results = out;
+      return pageResults;
     } catch (e) {
       console.error(e);
     }
   };
 
-  private renderResult(siteResults: ISiteResults): any {
-    // Format links.
-    const whatLinksWhere: string[] = [];
-    for (const [linker, links] of this.siteWideLinks.entries()) {
-      for (let i = 0; i < links.length; i++) {
-        const link = links[i];
-        // TODO create a list with all specific cases.
-        if (link.href && !link.href.includes("http") && !link.href.includes("#") && link.href !== '/') {
-          if (!whatLinksWhere.includes(link.href))
-            whatLinksWhere.push(link.href);
-        }
-      }
-    }
-    // format rules
-    const outResults = Object.keys(siteResults).reduce(
-      (out, key) => {
-        if (Array.isArray(siteResults[key]) && siteResults[key].length > 0) {
-          out[key] = siteResults[key];
-        }
-        return out;
-      },
-      { url : siteResults.url }
-      //{ links: whatLinksWhere },
-    );
-    return outResults;
-  }
-
-  private async getHtml(url: string): Promise<any> {
-    let result: ISiteResults = {
-      brokenInternalLinks: [],
-      results: [],
-      url: url
-    };
+  private async analyseFromSimpleHTMLCall(url: string): Promise<IAnalyserResults> {
+    let analyserResult: any;
     try {
       const response = await axios({
         method: 'get',
         url: url,
       });
-      result = await this.test(response.data, url);
-      if (!result)
+      analyserResult = await this.test(response.data, url);
+      if (!analyserResult)
         return null;
     } catch (ex) {
-      result.brokenInternalLinks = [url];
+      analyserResult.brokenInternalLinks = [url];
     }
-    return this.renderResult(result);
+    return analyserResult;
   }
 
-  private async getHtmlFromSPA(url: string): Promise<any> {
+  private async getHtmlFromSPA(url: string): Promise<IAnalyserResults> {
     const data = await render(url, {});
     const result = await this.test(data, url);
-    return this.renderResult(result);
+    return result;
   }
-
 
   private getAnchors(html: string): any {
     const $ = cheerio.load(html);
@@ -296,7 +261,7 @@ export class SeoTester {
   private getLinksFromPage(html: string, relativeUrl: string, baseUrl: string) {
     const result = this.getAnchors(html);
     if (result.aTags && result.aTags.length > 0) {
-      const links = _.uniq(result.aTags.filter(link => link.href != null).map(link => link.href));
+      const links = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
       const internalLinks = links.filter(link =>
         !link.includes('#') &&
         !link.includes('http') &&
@@ -306,9 +271,7 @@ export class SeoTester {
         link !== '/').map(item => {
           if (_.startsWith(item, '/'))
             return `${baseUrl}${item}`;
-          else
-            return `${baseUrl}/${item}`
-        });
+        })
       const externalLinks = links.filter(item => item.includes('http'));
       return internalLinks;
     }
@@ -345,54 +308,29 @@ export class SeoTester {
     return html;
   }
 
-  public async run(url: string): Promise<any> {
-    const globalResult = [];
+  public async run(url: string): Promise<IPageResults> {
+    let globalResults: IPageResults = {
+      results: [],
+      sitemap: []
+    };
     // Get Homepage html (only for regular website)
     const html = await this.getHtmlFromUri(url);
-    //Compute Sitemamp
-    const links = await this.getSitemap(html, url);
-    console.log("siteMap", links);
-
-    for (const link of links) {
-      let results = await this.getHtml(link);
-      if(results)
-        globalResult.push(results);
+    //Compute Sitemap
+    globalResults.sitemap = await this.getSitemap(html, url);
+    //Compute Rules
+    for (const link of globalResults.sitemap) {
+      let results = await this.analyseFromSimpleHTMLCall(link);
+      if (results)
+        globalResults.results.push(results);
     }
 
-    return globalResult; 
+    /*for (const result of globalResult.results) {
+      console.log("****************************************************************************");
+      console.log("Seo -> ", result.results);
+      //console.log("Tags -> ", result.tags);
+      console.log("Url -> ", result.url);
+    }*/
 
-    //console.log("globalResult", globalResult);
-
-    /*const mainUrl = url;
-    const mainResults = [];
-    // First test with a simple get
-    let results = await this.getHtml(url);
-    if (!results) {
-      // no result from base analysis -> swithc to SPA analyser
-      results = await this.getHtmlFromSPA(url);
-    }
-
-    mainResults.push({ url: url, analyse: results[url] });
-
-    if (results.links && results.links.length > 0) {
-      for (const link of results.links) {
-        const computedLink = link.indexOf('/') === -1 ? "/" + link : link;
-        const realLink = url + computedLink;
-        console.log("realLink", realLink);
-        let resultsChild = [];
-        try {
-          resultsChild = await this.getHtml(realLink);
-          console.log("resultsChild", resultsChild);
-        }
-        catch (ex) {
-          mainResults.push({ url: realLink, analyse: "error" });
-        }
-        if (!results)
-          mainResults.push({ url: realLink, analyse: "error" });
-        else
-          mainResults.push({ url: realLink, analyse: resultsChild[realLink] });
-      }
-    }
-    return mainResults;*/
+    return globalResults;
   }
 };

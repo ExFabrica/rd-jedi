@@ -4654,10 +4654,10 @@ execa@^1.0.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exfabrica-cms-engine-analyzer@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.1.0.tgz#c1b92a63f9cffc9f1027ad630ec15064e30599cd"
-  integrity sha512-/FQWAy2eUJEbc0Jj4LxANc1PSHN1q2OCFF8SeKt+ZvttEZuI3GDT+EgUmtpxIPoTrAfLb0XVnfWyur1geZzPCQ==
+exfabrica-cms-engine-analyzer@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.1.1.tgz#5f192db8636d9dced7f8a542a11c8f81f3d1e9d0"
+  integrity sha512-rUTuV5zm1l9cR49GdquITqYPmjVHIvF6HYifQbBa0tqYnlEZMP/BXfdUm/dGithloXRmxrZ5tJNa0jY6sBM0kA==
   dependencies:
     "@types/node" "^16.9.6"
     axios "^0.21.4"

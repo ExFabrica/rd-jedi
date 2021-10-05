@@ -1,3 +1,3 @@
 const analyser = require("./index");
 
-analyser("https://demo-front.kasty.io");
+analyser("http://localhost:3000");
