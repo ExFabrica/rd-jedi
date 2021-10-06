@@ -27,6 +27,8 @@ const HomePage = (props) => {
   const [results, setResults] = useState();
 
   useEffect(() => {
+    getAnalyzerDataSource();
+
     settingsMiddleware.get().then(settings => {
       console.log("settings", settings);
       setSettings(settings);
@@ -43,11 +45,9 @@ const HomePage = (props) => {
   }
 
   const getAnalyzerDataSource = async () => {
-    const rs = await contentAnalizerMiddleware.get();
-    console.log("rs", rs);
-    setResults(rs.results[0].results);
-    setShowGrid(true);
-    return Promise.resolve(rs.sitemap.map(item => { return {url: item}}));
+    const rs = await contentAnalizerMiddleware.getConsolidation("http://localhost:3000");
+    console.log("consolidation -> ", rs);
+    return Promise.resolve(rs);
   }
 
   const getMessageDataSource = async () => {
@@ -67,48 +67,6 @@ const HomePage = (props) => {
       <h2 style={{ marginBottom: "20px" }}>{formatMessage({ id: getTrad("plugin.homepage.title") })}</h2>
       <h3 style={{ marginBottom: "20px" }}>ContentTypes available in your current STRAPI application:</h3>
 
-      <GenericGrid datasource={getAnalyzerDataSource} headers={[{
-        name: 'Url',
-        value: 'url',
-        isSortEnabled: true,
-      }]} />
-      <br />
-
-      {showGrid ?
-        <GenericGrid datasource={getMessageDataSource} headers={[{
-          name: 'Message',
-          value: 'message',
-          isSortEnabled: true,
-        }]} /> : <></>}
-      <br />
-
-      <GenericGrid datasource={getContentTypesDataSource} headers={[
-        {
-          name: 'Id',
-          value: 'uid',
-          isSortEnabled: true,
-        },
-        {
-          name: 'Name',
-          value: 'collectionName',
-          isSortEnabled: true,
-        },
-        {
-          name: 'Kind',
-          value: 'kind',
-          isSortEnabled: true,
-        },
-        {
-          name: 'Created By',
-          value: 'createdBy',
-          isSortEnabled: true,
-        },
-        {
-          name: 'ModelName',
-          value: 'modelName',
-          isSortEnabled: true,
-        },
-      ]} />
 
       <BaselineAlignment top size="12px" />
 

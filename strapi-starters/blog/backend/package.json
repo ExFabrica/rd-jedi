@@ -12,7 +12,8 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "exfabrica-cms-engine-analyzer": "^0.1.4",
+    "@types/node": "^16.10.3",
+    "exfabrica-cms-engine-analyzer": "^0.1.6",
     "knex": "0.21.18",
     "mime-types": "^2.1.27",
     "sqlite3": "5.0.0",

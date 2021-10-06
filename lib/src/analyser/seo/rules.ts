@@ -338,7 +338,8 @@ export const rules: IRule[] = [
         90,
         assert.ok,
         h1s.length === 1,
-        `There should be 1 and only 1 H1 tag on the page. Currently: ${h1s.length}`
+        `There should be 1 and only 1 H1 tag on the page. Currently: ${h1s.length}`,
+        h1s[0] ? h1s[0].innerText : ""
       ));
 
       let titleArr;
@@ -397,6 +398,7 @@ export const rules: IRule[] = [
           assert.ok,
           h2s.length === 0,
           `No h1 tag, but h2 tags are defined.`,
+          h2s[0] ? h2s[0].innerText : ""
         ));
 
         tester.trueOrFalse(getTrueOrFalseParameters(
@@ -533,6 +535,7 @@ export const rules: IRule[] = [
         assert.ok,
         !(h2s.length > 0 && h1s.length === 0),
         `There are h2 tags but no h1 tag. Consider If you can move one of your h2s to an h1.`,
+        h2s[0] ? h2s[0].innerText : ""
       ));
 
       tester.lint(getTrueOrFalseParameters(
@@ -540,6 +543,7 @@ export const rules: IRule[] = [
         assert.ok,
         !(h3s.length > 0 && h2s.length === 0),
         `There are h3 tags but no h2 tags. Consider If you can move h3s to h2s.`,
+        h3s[0] ? h3s[0].innerText : ""
       ));
 
       tester.lint(getTrueOrFalseParameters(
@@ -547,6 +551,7 @@ export const rules: IRule[] = [
         assert.ok,
         !(h4s.length > 0 && h3s.length === 0),
         `There are h4 tags but no h3 tags. Consider If you can move h4s to h3s.`,
+        h4s[0] ? h4s[0].innerText : ""
       ));
 
       tester.lint(getTrueOrFalseParameters(
@@ -554,6 +559,7 @@ export const rules: IRule[] = [
         assert.ok,
         !(h5s.length > 0 && h4s.length === 0),
         `There are h5 tags but no h4 tags. Consider If you can move h5s to h4s.`,
+        h5s[0] ? h5s[0].innerText : ""
       ));
 
       tester.lint(getTrueOrFalseParameters(
@@ -561,6 +567,7 @@ export const rules: IRule[] = [
         assert.ok,
         !(h6s.length > 0 && h5s.length === 0),
         `There are h6 tags but no h5 tags. Consider If you can move h6s to h5s.`,
+        h6s[0] ? h6s[0].innerText : ""
       ));
     },
   },

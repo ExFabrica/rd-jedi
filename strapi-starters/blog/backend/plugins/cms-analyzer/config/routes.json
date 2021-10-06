@@ -10,16 +10,24 @@
     },
     {
       "method": "GET",
-      "path": "/api",
-      "handler": "cms-analyzer.getDocumentsFromApi",
+      "path": "/documents",
+      "handler": "cms-analyzer.getDocuments",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/collections",
-      "handler": "cms-analyzer.getCollections",
+      "path": "/contents",
+      "handler": "cms-analyzer.getContents",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/consolidation",
+      "handler": "cms-analyzer.getConsolidation",
       "config": {
         "policies": []
       }

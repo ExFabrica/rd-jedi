@@ -1,6 +1,7 @@
 'use strict';
 const analyzer = require('exfabrica-cms-engine-analyzer');
 const service = require('../services/cms-analyzer');
+const _ = require('lodash');
 
 /**
  * cms-analyzer.js controller
@@ -26,39 +27,87 @@ module.exports = {
     }
     ctx.send(contentTypes);
   },
-  getCollections: async (ctx) => {
-    let contentTypes = {};
+  getContents: async (ctx) => {
+    let contents = {};
     try {
-      contentTypes = await service.getCollections();
+      contents = await service.getContents();
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
-    ctx.send(contentTypes);
+    ctx.send(contents);
   },
-  getDocumentsFromApi: async (ctx) => {
-    const {api} = ctx.query;
+  getDocuments: async (ctx) => {
+    const { api } = ctx.query;
     delete ctx.query['api'];
-    let articles = {};
-    let models = {};
+    let documents = {};
     try {
-      articles = await strapi.controllers[api].find(ctx);
-      models = await strapi.models[api].find();
-
-      //strapi.models["article"].attributes
-
+      documents = await strapi.controllers[api].find(ctx);
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
-    ctx.send(articles);
+    ctx.send(documents);
   },
   getAnalyzer: async (ctx) => {
-    const query = ctx.query;
-    console.log("Before Query");
-    const result = await analyzer('http://localhost:3000');
-    console.log("After Query");
+    const { url } = ctx.query;
+    const result = await analyzer(url);
     ctx.send(result);
+  },
+  getConsolidation: async (ctx) => {
+    const { url } = ctx.query;
+    delete ctx.query['url'];
+    const rs = await analyzer(url);
+
+    const contents = await service.getContents();
+    let documentsByApiName = [];
+
+    for (const content of contents) {
+      const contentDocuments = await strapi.controllers[content.apiName].find(ctx);
+      documentsByApiName = _.concat(documentsByApiName, { apiName: content.apiName, documents: contentDocuments });
+    }
+    documentsByApiName = _.uniqBy(documentsByApiName, "apiName");
+    //console.log("documents", documentsByApiName);
+
+    let results = [];
+    // First Step -> regognize on simple text comparator
+    for (const page of rs.results) {
+      const textContents = _.uniq(page.results.filter(item => item.content && !item.content.includes("http")).map(item => item.content));
+      /*console.log("**************************************************");*/
+      if (textContents && textContents.length > 0) {
+        console.log("textContents", textContents);
+        for (const textContent of textContents) {
+          for (const content of contents) {
+            const filteredByApiName = documentsByApiName.filter(item => item.apiName === content.apiName);
+            if (filteredByApiName && filteredByApiName.length > 0 && filteredByApiName[0] && filteredByApiName[0].documents && filteredByApiName[0].documents.length > 0) {
+              const documents = [...filteredByApiName[0].documents];
+              for (const document of documents) {
+                for (const attribute of content.attributes) {
+                  //console.log('content.attributes', content.attributes, content.apiName);
+                  if (document[attribute.key] && textContent) {
+                    if (document[attribute.key].toLowerCase() === textContent.toLowerCase()) {
+                      //console.log("pushed => ", attribute.key, document[attribute.key], content.apiName)
+                      var item = _.find(results, { url: page.url });
+                      if (!item)
+                        results.push({ url: page.url, document, seo: page.results, key: [attribute.key], value: [document[attribute.key]] });
+                      else {
+                        item.key.push(attribute.key);
+                        item.value.push(document[attribute.key]);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Second step -> consolidate the page.
+    //_.uniqBy(result, 'url');
+
+    return results
   },
   getSettings: async (ctx) => {
     let config = {};

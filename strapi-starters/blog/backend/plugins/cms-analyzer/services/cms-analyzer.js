@@ -1,5 +1,4 @@
 'use strict';
-
 /**
  * cms-analyzer.js service
  *
@@ -60,15 +59,9 @@ module.exports = {
         });
         return contentTypes;
     },
-    getCollections: async () => {
+    getContents: async () => {
         let potentialFields = [];
-        let contentTypes = []
-
-        Object.values(strapi.contentTypes).map(contentType => {
-            if ((contentType.kind === "collectionType" || contentType.kind === "singleType") && !contentType.plugin) {
-                contentTypes.push(contentType);
-            }
-        });
+        let contentTypes = await module.exports.getContentTypes();
 
         for (const contentType of contentTypes) {
             let item = {
@@ -77,16 +70,11 @@ module.exports = {
                 attributes: []
             }
             for (const [key, value] of Object.entries(contentType.attributes)) {
-                if (value.type === "text" || value.type === "string" || value.type === "uid")
+                if (value.type === "text" || value.type === "string")
                     item.attributes.push({ key, value });
             }
             potentialFields.push(item);
-            /*Object.values(collection.attributes).map(att => {
-                if ((att.type === "string" || att.kind === "text")) {
-                    attributes.push(att);
-                }
-            });*/
         }
-        return potentialFields;
-    }
+        return potentialFields.filter(content => content.attributes.length > 0);
+    },
 };
