@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/contenttypes",
+      "handler": "cms-analyzer.getContentTypes",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api",
+      "handler": "cms-analyzer.getDocumentsFromApi",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/collections",
+      "handler": "cms-analyzer.getCollections",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/settings",
+      "handler": "cms-analyzer.getSettings",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/settings",
+      "handler": "cms-analyzer.setSettings",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/analyzer",
+      "handler": "cms-analyzer.getAnalyzer",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

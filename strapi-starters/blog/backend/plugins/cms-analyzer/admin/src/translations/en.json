@@ -1,0 +1,14 @@
+{
+    "plugin.name":"Exfabrica Analyzer",
+    "plugin.homepage.title":"Exfabrica Analyzer - Editor",
+    "plugin.editor.title":"Editor",
+    "plugin.settings.title":"Settings",
+    "plugin.settings.subtitle":"Settings subtitle",
+    "plugin.settings.panel.title":"Panel title",
+    "plugin.settings.panel.setting1.label":"Setting 1",
+    "plugin.settings.panel.setting1.placeholder":"Setting 1 Placeholder",
+    "plugin.settings.panel.setting2.label":"Setting 2",
+    "plugin.settings.panel.setting3.label":"Setting 3",
+    "plugin.settings.button.save.label":"Save settings",
+    "plugin.settings.button.save.message":"Settings are saved."
+}
