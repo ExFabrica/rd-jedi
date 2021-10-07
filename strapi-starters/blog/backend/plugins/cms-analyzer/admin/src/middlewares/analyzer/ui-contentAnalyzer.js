@@ -1,6 +1,6 @@
 import { request } from 'strapi-helper-plugin';
 
-const contentAnalizerMiddleware = {
+const contentAnalyzerMiddleware = {
     get: async (url) => {
         const result = await request(`/cms-analyzer/analyzer?url=${url}`, {
             method: 'GET'
@@ -24,7 +24,13 @@ const contentAnalizerMiddleware = {
             method: 'GET'
         });
         return result;
+    },
+    getAnalyses: async () => {
+        const result = await request(`/cms-analyzer/analyses`, {
+            method: 'GET'
+        });
+        return result;
     }
 }
 
-export default contentAnalizerMiddleware;
+export default contentAnalyzerMiddleware;

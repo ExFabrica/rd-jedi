@@ -9,7 +9,7 @@ import {
 } from 'strapi-helper-plugin';
 import { Table } from '@buffetjs/core';
 import { sortBy as sort } from 'lodash';
-import collectionsMiddleware from '../../../middlewares/collections/ui-contentCollection';
+
 
 const updateRows = (array, shouldSelect) => {
     array.map(row => {
@@ -59,20 +59,6 @@ const ModalAdd = ({ isOpen, onOpened, onClosed, onToggle, params }) => {
 
     useEffect(() => {
         // get contentTypes
-        collectionsMiddleware.find(params.collectionName).then((items) => {
-            if (items && items[0]) {
-                for (const [key, value] of Object.entries(items[0])) {
-                    if (key.indexOf('_') == -1)
-                        state.headers.push({
-                            name: key,
-                            value: key,
-                            isSortEnabled: true,
-                        });
-                }
-            }
-            state.rows = items;
-            setContentData(items);
-        });
     }, []);
 
     const areAllEntriesSelected = state.rows.every(

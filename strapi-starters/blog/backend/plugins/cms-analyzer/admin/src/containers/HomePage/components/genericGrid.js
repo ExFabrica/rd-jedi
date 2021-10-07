@@ -32,7 +32,7 @@ const GenericGrid = ({ headers, datasource, onClick, onSelectRow, onSelectRows }
     };
     const updateRow = (array, selectedRow) => {
         return array.map(row => {
-            if(row.id === selectedRow.id)
+            if (row.id === selectedRow.id)
                 row._isChecked = !row._isChecked;
             return row;
         });
@@ -134,7 +134,7 @@ const GenericGrid = ({ headers, datasource, onClick, onSelectRow, onSelectRows }
                 sortBy={state.sortBy}
                 sortOrder={state.sortOrder}
                 withBulkAction
-                rowLinks={[
+                rowLinks={[]/*[
                     {
                         icon: <FontAwesomeIcon icon={faPencilAlt} />,
                         onClick: data => {
@@ -147,7 +147,7 @@ const GenericGrid = ({ headers, datasource, onClick, onSelectRow, onSelectRows }
                             alert('You want to delete ' + data.id);
                         },
                     },
-                ]}
+                ]*/}
             /> : <></>);
 }
 

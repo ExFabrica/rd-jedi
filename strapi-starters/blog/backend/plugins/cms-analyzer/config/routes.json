@@ -55,6 +55,54 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "GET",
+      "path": "/analyses",
+      "handler": "analyse.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/analyses/:slug",
+      "handler": "analyse.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/analyses",
+      "handler": "analyse.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/analyses/:id",
+      "handler": "analyse.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/analyses/:id",
+      "handler": "analyse.delete",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/analyses",
+      "handler": "analyse.deleteAll",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }

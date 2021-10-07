@@ -11,6 +11,10 @@ export const defaultPreferences = {
 
 type TPair = [string, string];
 
+function uuid() {
+  return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
+}
+
 export class SeoTester {
   //private currentRule: IRule;
   private rulesToUse: IRule[];
@@ -140,6 +144,7 @@ export class SeoTester {
       let results: IRule[] = [];
 
       let pageResults: IAnalyserResults = {
+        uid: uuid(),
         url: url,
         results: [],
         duplicateTitles: [],

@@ -55,6 +55,7 @@ module.exports = {
     ctx.send(result);
   },
   getConsolidation: async (ctx) => {
+    await strapi.plugins["cms-analyzer"].services.analyse.deleteAll();
     const { url } = ctx.query;
     delete ctx.query['url'];
     const rs = await analyzer(url);
@@ -67,15 +68,12 @@ module.exports = {
       documentsByApiName = _.concat(documentsByApiName, { apiName: content.apiName, documents: contentDocuments });
     }
     documentsByApiName = _.uniqBy(documentsByApiName, "apiName");
-    //console.log("documents", documentsByApiName);
 
     let results = [];
     // First Step -> regognize on simple text comparator
     for (const page of rs.results) {
       const textContents = _.uniq(page.results.filter(item => item.content && !item.content.includes("http")).map(item => item.content));
-      /*console.log("**************************************************");*/
       if (textContents && textContents.length > 0) {
-        console.log("textContents", textContents);
         for (const textContent of textContents) {
           for (const content of contents) {
             const filteredByApiName = documentsByApiName.filter(item => item.apiName === content.apiName);
@@ -83,16 +81,21 @@ module.exports = {
               const documents = [...filteredByApiName[0].documents];
               for (const document of documents) {
                 for (const attribute of content.attributes) {
-                  //console.log('content.attributes', content.attributes, content.apiName);
                   if (document[attribute.key] && textContent) {
                     if (document[attribute.key].toLowerCase() === textContent.toLowerCase()) {
-                      //console.log("pushed => ", attribute.key, document[attribute.key], content.apiName)
-                      var item = _.find(results, { url: page.url });
+                      var item = _.find(results, { frontUrl: page.url });
                       if (!item)
-                        results.push({ url: page.url, document, seo: page.results, key: [attribute.key], value: [document[attribute.key]] });
+                        results.push(
+                          { 
+                            uid: `${document.id}-${page.uid}`, 
+                            apiName: content.apiName, 
+                            frontUrl: page.url, 
+                            documentId: document.id, 
+                            documentFields: [{ key: attribute.key, value: document[attribute.key] }],
+                            seoAnalyse: page.results 
+                          });
                       else {
-                        item.key.push(attribute.key);
-                        item.value.push(document[attribute.key]);
+                        item.documentFields.push({ key: attribute.key, value: document[attribute.key] });
                       }
                     }
                   }
@@ -104,10 +107,19 @@ module.exports = {
       }
     }
 
-    // Second step -> consolidate the page.
-    //_.uniqBy(result, 'url');
-
-    return results
+    //strapi.plugins["cms-analyzer"].controllers["cms-analyzer"].put()
+    for(const result of results)
+    {
+      await strapi.plugins["cms-analyzer"].services.analyse.create({
+        uid: result.uid,
+        apiName: result.apiName,
+        frontUrl: result.frontUrl,
+        documentId: result.documentId,
+        seoAnalyse: JSON.stringify(result.seoAnalyse),
+        documentFields: JSON.stringify(result.documentFields)
+      })
+    }
+    return results;
   },
   getSettings: async (ctx) => {
     let config = {};

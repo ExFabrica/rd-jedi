@@ -8,11 +8,13 @@ import React from 'react';
 import { CheckPagePermissions } from 'strapi-helper-plugin';
 import pluginPermissions from './permissions';
 import SettingsPage from './containers/Settings';
+import contentAnalyzerMiddleware from "./middlewares/analyzer/ui-contentAnalyzer";
 
 export default strapi => {
   const pluginDescription = pluginPkg.strapi.description || pluginPkg.description;
   const icon = pluginPkg.strapi.icon;
   const name = pluginPkg.strapi.name;
+  let loaded = false;
 
   const plugin = {
     blockerComponent: null,
@@ -65,7 +67,18 @@ export default strapi => {
         ],
       },
     },
-    boot(app) {},
+    boot(app) {
+      if (!loaded) {
+        console.log("HOOOOO")
+        // fill all data for CMS analyzer.
+        contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
+          if (analyses && analyses.length === 0)
+            contentAnalyzerMiddleware.getConsolidation("http://localhost:3000").then(() => {
+              loaded = true;
+            })
+        })
+      }
+    },
   };
 
   return strapi.registerPlugin(plugin);

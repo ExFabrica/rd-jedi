@@ -16,6 +16,7 @@ export interface IRule {
 };
 
 export interface IAnalyserResults {
+    uid: string,
     url: string;
     results: IMessage[];
     duplicateTitles?: any[],
