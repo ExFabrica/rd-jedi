@@ -242,8 +242,6 @@ export class SeoTester {
         url: url,
       });
       analyserResult = await this.test(response.data, url);
-      if (!analyserResult)
-        return null;
     } catch (ex) {
       analyserResult.brokenInternalLinks = [url];
     }

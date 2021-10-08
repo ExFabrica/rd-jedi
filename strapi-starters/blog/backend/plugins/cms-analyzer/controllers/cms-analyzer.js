@@ -65,38 +65,65 @@ module.exports = {
 
     for (const content of contents) {
       const contentDocuments = await strapi.controllers[content.apiName].find(ctx);
-      documentsByApiName = _.concat(documentsByApiName, { apiName: content.apiName, documents: contentDocuments });
+      if(contentDocuments)
+        documentsByApiName = _.concat(documentsByApiName, { apiName: content.apiName, documents: _.isArray(contentDocuments) ? contentDocuments : [contentDocuments] });
     }
     documentsByApiName = _.uniqBy(documentsByApiName, "apiName");
 
+    let pages = [];
+    for (const url of rs.sitemap) {
+      const foundPages = rs.results.filter(item => item.url === url);
+      if (foundPages && foundPages.length > 0) {
+        let page = { uid: foundPages[0].uid, url: url, tags: [], seoAnalyse: foundPages[0].results };
+        let stringTags = [];
+        const tags = foundPages[0].tags;
+        if (tags) {
+          const description = tags.meta.filter(item => item.name === "description");
+          stringTags = _.concat(stringTags, tags.title);
+          if (description && description.length > 0)
+            stringTags = _.concat(stringTags, description[0]);
+          stringTags = _.concat(stringTags, tags.h1s);
+          stringTags = _.concat(stringTags, tags.h2s);
+          stringTags = _.concat(stringTags, tags.h3s);
+          stringTags = _.concat(stringTags, tags.h4s);
+          stringTags = _.concat(stringTags, tags.h5s);
+          stringTags = _.concat(stringTags, tags.h6s);
+        }
+        page.tags = stringTags;
+        pages.push(page);
+      }
+    }
+
     let results = [];
     // First Step -> regognize on simple text comparator
-    for (const page of rs.results) {
-      const textContents = _.uniq(page.results.filter(item => item.content && !item.content.includes("http")).map(item => item.content));
-      if (textContents && textContents.length > 0) {
-        for (const textContent of textContents) {
-          for (const content of contents) {
-            const filteredByApiName = documentsByApiName.filter(item => item.apiName === content.apiName);
-            if (filteredByApiName && filteredByApiName.length > 0 && filteredByApiName[0] && filteredByApiName[0].documents && filteredByApiName[0].documents.length > 0) {
-              const documents = [...filteredByApiName[0].documents];
-              for (const document of documents) {
-                for (const attribute of content.attributes) {
-                  if (document[attribute.key] && textContent) {
-                    if (document[attribute.key].toLowerCase() === textContent.toLowerCase()) {
-                      var item = _.find(results, { frontUrl: page.url });
-                      if (!item)
-                        results.push(
-                          { 
-                            uid: `${document.id}-${page.uid}`, 
-                            apiName: content.apiName, 
-                            frontUrl: page.url, 
-                            documentId: document.id, 
-                            documentFields: [{ key: attribute.key, value: document[attribute.key] }],
-                            seoAnalyse: page.results 
-                          });
-                      else {
-                        item.documentFields.push({ key: attribute.key, value: document[attribute.key] });
-                      }
+    for (const page of pages) {
+      for (const tag of page.tags) {
+        for (const content of contents) {
+          const filteredByApiName = documentsByApiName.filter(item => item.apiName === content.apiName);
+          if (filteredByApiName && filteredByApiName.length > 0 && filteredByApiName[0] && filteredByApiName[0].documents && filteredByApiName[0].documents.length > 0) {
+            const documents = filteredByApiName[0].documents;
+            for (const document of documents) {
+              for (const attribute of content.attributes) {
+                let attributeValue = document[attribute.key];
+                if (attribute.key.indexOf('.') > -1) {
+                  const splitedKeyName = attribute.key.split('.');
+                  attributeValue = document[splitedKeyName[0]][splitedKeyName[1]];
+                }
+                if (attributeValue && tag.innerText) {
+                  if (attributeValue.toLowerCase() === tag.innerText.toLowerCase()) {
+                    var item = _.find(results, { frontUrl: page.url });
+                    if (!item)
+                      results.push(
+                        {
+                          uid: `${document.id}-${page.uid}`,
+                          apiName: content.apiName,
+                          frontUrl: page.url,
+                          documentId: document.id,
+                          documentFields: [{ key: attribute.key, value: attributeValue }],
+                          seoAnalyse: page.seoAnalyse
+                        });
+                    else {
+                      item.documentFields.push({ key: attribute.key, value: attributeValue });
                     }
                   }
                 }
@@ -108,15 +135,14 @@ module.exports = {
     }
 
     //strapi.plugins["cms-analyzer"].controllers["cms-analyzer"].put()
-    for(const result of results)
-    {
+    for (const result of results) {
       await strapi.plugins["cms-analyzer"].services.analyse.create({
         uid: result.uid,
         apiName: result.apiName,
         frontUrl: result.frontUrl,
         documentId: result.documentId,
-        seoAnalyse: JSON.stringify(result.seoAnalyse),
-        documentFields: JSON.stringify(result.documentFields)
+        seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),
+        documentFields: JSON.stringify(result.documentFields ? result.documentFields : {})
       })
     }
     return results;

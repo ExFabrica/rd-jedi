@@ -72,6 +72,13 @@ module.exports = {
             for (const [key, value] of Object.entries(contentType.attributes)) {
                 if (value.type === "text" || value.type === "string")
                     item.attributes.push({ key, value });
+                if (value.type === "component") {
+                    const component = strapi.components[value.component];
+                    for (const [keyC, valueC] of Object.entries(component.attributes)) {
+                        if (valueC.type === "text" || valueC.type === "string")
+                            item.attributes.push({ key:key+'.'+keyC, value:valueC });
+                    }
+                }
             }
             potentialFields.push(item);
         }
