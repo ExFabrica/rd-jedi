@@ -27,7 +27,7 @@
     {
       "method": "GET",
       "path": "/consolidation",
-      "handler": "cms-analyzer.getConsolidation",
+      "handler": "cms-analyzer.runConsolidation",
       "config": {
         "policies": []
       }
@@ -100,6 +100,54 @@
       "method": "DELETE",
       "path": "/analyses",
       "handler": "analyse.deleteAll",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/matches",
+      "handler": "match.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/matches/:slug",
+      "handler": "match.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/matches",
+      "handler": "match.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/matches/:id",
+      "handler": "match.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/matches/:id",
+      "handler": "match.delete",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/matches",
+      "handler": "match.deleteAll",
       "config": {
         "policies": []
       }

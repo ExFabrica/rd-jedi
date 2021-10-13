@@ -19,7 +19,7 @@ const contentAnalyzerMiddleware = {
         });
         return result;
     },
-    getConsolidation: async (url) => {
+    runConsolidation: async (url) => {
         const result = await request(`/cms-analyzer/consolidation?url=${url}`, {
             method: 'GET'
         });

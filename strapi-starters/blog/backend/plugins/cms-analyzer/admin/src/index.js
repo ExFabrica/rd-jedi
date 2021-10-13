@@ -73,7 +73,7 @@ export default strapi => {
         // fill all data for CMS analyzer.
         //contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
         //  if (analyses && analyses.length === 0)
-            contentAnalyzerMiddleware.getConsolidation("http://localhost:3000").then(() => {
+            contentAnalyzerMiddleware.runConsolidation("http://localhost:3000").then(() => {
               loaded = true;
             });
         //})

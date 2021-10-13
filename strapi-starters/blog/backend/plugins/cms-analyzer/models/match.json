@@ -1,14 +1,13 @@
 {
   "kind": "collectionType",
-  "collectionName": "cms-analyser-links",
+  "collectionName": "cms-analyser-matches",
   "info": {
-    "name": "CmsAnalyzerLinks",
-    "description": ""
+    "name": "CmsAnalyzerMatches"
   },
   "options": {
     "increments": true,
     "timestamps": true,
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {
     "content-manager": {
@@ -27,9 +26,6 @@
     },
     "tag": {
       "type": "string"
-    },
-    "uid": {
-      "type": "uid"
     }
   }
 }
