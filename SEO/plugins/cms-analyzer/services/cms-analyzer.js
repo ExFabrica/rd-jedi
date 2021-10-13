@@ -130,10 +130,10 @@ module.exports = {
     getAnalyzedPages: async (url) => {
         const rs = await analyzer(url);
         let pages = [];
-        for (const url of rs.sitemap) {
-            const foundPages = rs.results.filter(item => item.url === url);
+        for (const fetchedData of rs.sitemap) {
+            const foundPages = rs.results.filter(item => item.url === fetchedData.url);
             if (foundPages && foundPages.length > 0) {
-                let page = { uid: foundPages[0].uid, url: url, tags: [], seoAnalyse: foundPages[0].results };
+                let page = { uid: foundPages[0].uid, url: fetchedData.url, tags: [], seoAnalyse: foundPages[0].results, screenshot: fetchedData.screenshot };
                 let stringTags = [];
                 const tags = foundPages[0].tags;
                 if (tags) {
@@ -181,6 +181,7 @@ module.exports = {
                             documentId: document.id,
                             documentFields: [{ key: attributeKey, value: attributeValue, from: apiName, tag: tag.tag }],
                             seoAnalyse: page.seoAnalyse,
+                            screenshot: page.screenshot
                         });
                 else {
                     let field = _.find(item.documentFields, { key: attributeKey, from: apiName });
@@ -201,7 +202,8 @@ module.exports = {
                 frontUrl: result.frontUrl,
                 documentId: result.documentId,
                 seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),
-                documentFields: JSON.stringify(result.documentFields ? result.documentFields : {})
+                documentFields: JSON.stringify(result.documentFields ? result.documentFields : {}),
+                screenshot: result.screenshot
             });
         }
     },

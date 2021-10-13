@@ -15,7 +15,7 @@ export interface IRule {
     testData?: any
 };
 
-export interface IAnalyserResults {
+export interface IAnalyserPageResults {
     uid: string,
     url: string;
     results: IMessage[];
@@ -26,9 +26,15 @@ export interface IAnalyserResults {
     tags: any[]
 };
 
+export interface IFetchedPageResults {
+    url: string,
+    html: string;
+    screenshot: string;
+};
+
 export interface IPageResults {
-    results: IAnalyserResults[];
-    sitemap: string[];
+    results: IAnalyserPageResults[];
+    sitemap: IFetchedPageResults[];
 };
 
 export interface ITester {

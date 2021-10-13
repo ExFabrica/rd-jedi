@@ -65,10 +65,6 @@ const HomePage = (props) => {
 
   return (
     <div className="container-fluid" style={{ paddingTop: "20px" }}>
-
-
-
-
       <h2 style={{ marginBottom: "20px" }}>{formatMessage({ id: getTrad("plugin.homepage.title") })}</h2>
       {
         results ?
@@ -83,8 +79,8 @@ const HomePage = (props) => {
                   </div>
                 </div>
                 <div style={{ "display": "flex" }}>
-                  <div style={{ "flex": "1" }}>
-                    <iframe frameBorder="0" style={{ "transform": "scale(0.95, 0.95)", "width": "100%", "height": "600px" }} src={item.frontUrl}></iframe>
+                  <div style={{ "flex": "1", "margin":"auto" }}>
+                    <img width="98%" src={item.screenshot} alt={item.url} />
                   </div>
                   <div style={{ "flex": "1", "paddingTop": "30px" }}>
                     <h2>SEO : Analyse de la page</h2>

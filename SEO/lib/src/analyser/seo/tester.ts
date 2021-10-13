@@ -1,8 +1,9 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { render } from 'usus';
-import { IMessage, IRule, IAnalyserResults, ITesterParameters, ITesterParametersBool, IPageResults } from './interface';
+import { IMessage, IRule, IAnalyserPageResults, ITesterParameters, ITesterParametersBool, IPageResults, IFetchedPageResults } from './interface';
 var _ = require('lodash');
+import puppeteer from 'puppeteer'
 
 export const defaultPreferences = {
   internalLinksLowerCase: true,
@@ -35,7 +36,7 @@ export class SeoTester {
     this.pagesSeen = new Set();
   }
 
-  private logMetaDescription(url: string, meta: string, siteResults: IAnalyserResults) {
+  private logMetaDescription(url: string, meta: string, siteResults: IAnalyserPageResults) {
     if (this.metaDescriptions.has(meta)) {
       siteResults.duplicateMetaDescriptions.push([this.metaDescriptions.get(meta), url]);
     } else {
@@ -43,7 +44,7 @@ export class SeoTester {
     }
   }
 
-  private logTitleTag(url: string, title: string, siteResults: IAnalyserResults) {
+  private logTitleTag(url: string, title: string, siteResults: IAnalyserPageResults) {
     if (this.titleTags.has(title)) {
       siteResults.duplicateTitles.push([this.titleTags.get(title), url]);
     } else {
@@ -56,37 +57,6 @@ export class SeoTester {
     if (!currentRule.description || currentRule.description.length === 0)
       throw Error('No current test description');
   }
-
-  private runATest(currentRule: IRule, defaultPriority = 50, arrName) {
-    /*return (params) => {
-      let priority = defaultPriority;
-      // allows overwriting of priority
-      if (typeof params.ass !== 'function') {
-        priority = t;
-        test = params.splice(0, 1)[0];
-      }
-      this.noEmptyRule(currentRule);
-
-      try {
-        return test(...params);
-      } catch (e) {
-        currentRule[arrName].push({ message: e.message, priority, content:params[params.length-1]  });
-        return e;
-      }
-    };*/
-  }
-
-  /*private startRule({ validator, test, testData, ...payload }) {
-    if (this.currentRule.errors.length > 0)
-      throw Error(
-        "Starting a new rule when there are errors that haven't been added to results. Did you run 'finishRule'? ",
-      );
-    if (this.currentRule.warnings.length > 0)
-      throw Error(
-        "Starting a new rule when there are warnings that haven't been added to results. Did you run 'finishRule'? ",
-      );
-    this.currentRule = {...this.currentRule, ...payload};
-  }*/
 
   private finishRule(currentRule: IRule): void {
     if (currentRule.errors.length === 0 && currentRule.warnings.length === 0)
@@ -138,12 +108,12 @@ export class SeoTester {
     return result;
   }
 
-  private async test(html: string, url: string): Promise<IAnalyserResults> {
+  private async test(html: string, url: string): Promise<IAnalyserPageResults> {
     try {
       this.pagesSeen.add(url);
       let results: IRule[] = [];
 
-      let pageResults: IAnalyserResults = {
+      let pageResults: IAnalyserPageResults = {
         uid: uuid(),
         url: url,
         results: [],
@@ -234,7 +204,7 @@ export class SeoTester {
     }
   };
 
-  private async analyseFromSimpleHTMLCall(url: string): Promise<IAnalyserResults> {
+  private async analyseFromSimpleHTMLCall(url: string): Promise<IAnalyserPageResults> {
     let analyserResult: any;
     try {
       const response = await axios({
@@ -248,67 +218,58 @@ export class SeoTester {
     return analyserResult;
   }
 
-  private async getHtmlFromSPA(url: string): Promise<IAnalyserResults> {
+  private async getHtmlFromSPA(url: string): Promise<IAnalyserPageResults> {
     const data = await render(url, {});
     const result = await this.test(data, url);
     return result;
   }
 
-  private getAnchors(html: string): any {
+  private getAnchors(html: string): { aTags: any[] } {
     const $ = cheerio.load(html);
     return {
       aTags: this.getAttributes($, 'a'),
     }
   }
 
-  private getLinksFromPage(html: string, relativeUrl: string, baseUrl: string) {
-    const result = this.getAnchors(html);
+  private getLinksFromPage(fetchedData: IFetchedPageResults): string[] {
+    const result: { aTags: any[] } = this.getAnchors(fetchedData.html);
     if (result.aTags && result.aTags.length > 0) {
-      const links = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
-      const internalLinks = links.filter(link =>
+      const links: string[] = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
+      const internalLinks: string[] = links.filter(link =>
         !link.includes('#') &&
         !link.includes('http') &&
-        !link.includes(baseUrl) &&
+        !link.includes(fetchedData.url) &&
         !link.includes('mailto:') &&
         !link.includes('tel:') &&
         link !== '/').map(item => {
           if (_.startsWith(item, '/'))
-            return `${baseUrl}${item}`;
+            return `${fetchedData.url}${item}`;
         })
-      const externalLinks = links.filter(item => item.includes('http'));
+      //const externalLinks:string[] = links.filter(item => item.includes('http'));
       return internalLinks;
     }
   }
 
-  private async getSitemap(html: string, baseUrl: string): Promise<any[]> {
-    let links: any[] = [baseUrl];
-    const childLinksToCrawl = this.getLinksFromPage(html, "", baseUrl);
-    links = _.concat(links, childLinksToCrawl);
-    // For now just the first childs are crawled
-    // TODO -> Make this in recusive mode and add a parameter to fix the deep od the crawling process.
-    // TODO -> Add some webworkers to run in parallel mode.
+  private async getSitemap(fetchedData: IFetchedPageResults): Promise<any[]> {
+    let links: IFetchedPageResults[] = [fetchedData];
+    const childLinksToCrawl = this.getLinksFromPage(fetchedData);
     for (const link of childLinksToCrawl) {
-      const html = await this.getHtmlFromUri(link);
-      const childLinks = await this.getLinksFromPage(html, link, baseUrl);
-      if (childLinks)
-        links = _.concat(links, childLinks);
+      const childrenFetchedData = await this.getHtmlFromUri(link);
+      links.push(childrenFetchedData);
     }
-    return _.uniq(links);
+    return _.uniqBy(links, "url");
   }
 
-  private async getHtmlFromUri(url: string): Promise<string> {
-    let html: string = "";
-    try {
-      const response = await axios({
-        method: 'get',
-        url: url,
-      });
-      html = response.data;
-    }
-    catch (ex) {
-      html = "error"
-    }
-    return html;
+  private async getHtmlFromUri(url: string): Promise<IFetchedPageResults> {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+    const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
+      let base64Encode = `data:image/png;base64,${data}`;
+      return base64Encode;
+    });
+    const html = await page.evaluate(() => document.documentElement.outerHTML);
+    return { url, html, screenshot }
   }
 
   public async run(url: string): Promise<IPageResults> {
@@ -317,17 +278,23 @@ export class SeoTester {
       sitemap: []
     };
     // Get Homepage html (only for regular website)
-    const html = await this.getHtmlFromUri(url);
+    const fetchedResult = await this.getHtmlFromUri(url);
     //Compute Sitemap
-    globalResults.sitemap = await this.getSitemap(html, url);
+    globalResults.sitemap = await this.getSitemap(fetchedResult);
+
     //Compute Rules
-    for (const link of globalResults.sitemap) {
-      let results = await this.analyseFromSimpleHTMLCall(link);
+    for (const fetchedData of globalResults.sitemap) {
+      let results = await this.analyseFromSimpleHTMLCall(fetchedData.url);
       if (results)
         globalResults.results.push(results);
     }
 
-    /*for (const result of globalResult.results) {
+    // Clear html
+    for (const sitemap of globalResults.sitemap) {
+      sitemap.html = "";
+    }
+
+    /*for (const result of globalResults.results) {
       console.log("****************************************************************************");
       console.log("Seo -> ", result.results);
       //console.log("Tags -> ", result.tags);

@@ -32,6 +32,9 @@
     },
     "seoAnalyse": {
       "type": "json"
+    },
+    "screenshot": {
+      "type": "string"
     }
   }
 }
