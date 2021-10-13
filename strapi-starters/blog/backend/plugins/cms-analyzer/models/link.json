@@ -1,8 +1,8 @@
 {
   "kind": "collectionType",
-  "collectionName": "cms-analyser-results",
+  "collectionName": "cms-analyser-links",
   "info": {
-    "name": "CmsAnalyzerResults"
+    "name": "CmsAnalyzerLinks"
   },
   "options": {
     "increments": true,
@@ -18,20 +18,14 @@
     }
   },
   "attributes": {
-    "apiNames": {
-      "type": "json"
-    },
-    "frontUrl": {
+    "apiName": {
       "type": "string"
     },
-    "documentId": {
-      "type": "integer"
+    "field": {
+      "type": "string"
     },
-    "documentFields": {
-      "type": "json"
-    },
-    "seoAnalyse": {
-      "type": "json"
+    "tag": {
+      "type": "string"
     }
   }
 }
