@@ -18,13 +18,19 @@
     }
   },
   "attributes": {
+    "url": {
+      "type": "string"
+    },
     "apiName": {
       "type": "string"
     },
-    "field": {
+    "fieldName": {
       "type": "string"
     },
-    "tag": {
+    "tagName": {
+      "type": "string"
+    },
+    "componentName": {
       "type": "string"
     }
   }

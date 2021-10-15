@@ -74,14 +74,32 @@ module.exports = {
                 attributes: []
             }
             for (const [key, value] of Object.entries(contentType.attributes)) {
-                if (value.type === "text" || value.type === "string")
-                    item.attributes.push({ key, value });
-                if (value.type === "component") {
-                    const component = strapi.components[value.component];
-                    for (const [keyC, valueC] of Object.entries(component.attributes)) {
-                        if (valueC.type === "text" || valueC.type === "string")
-                            item.attributes.push({ key: key + '.' + keyC, value: valueC });
-                    }
+                switch (value.type) {
+                    case "text":
+                    case "string":
+                        item.attributes.push({ key, value, type: "text" });
+                        break;
+                    case "component":
+                        const component = strapi.components[value.component];
+                        for (const [keyC, valueC] of Object.entries(component.attributes)) {
+                            if (valueC.type === "text" || valueC.type === "string")
+                                item.attributes.push({ key: keyC, value: valueC, type: "component", componentName: key });
+                        }
+                        break;
+                    case "enumeration":
+                        break;
+                    case "dynamiczone":
+                        for (const componentName of value.components) {
+                            const component = strapi.components[componentName];
+                            for (const [keyC, valueC] of Object.entries(component.attributes)) {
+                                if (valueC.type === "text" || valueC.type === "string")
+                                    item.attributes.push({ key: keyC, value: valueC, type: "componentInZone", zone: key, componentName: componentName });
+                            }
+                        }
+                        break;
+                    default:
+                        console.log("unknown", value);
+                        break;
                 }
             }
             potentialFields.push(item);
@@ -101,7 +119,7 @@ module.exports = {
                 for (const documentByApiName of strapiDocumentsByApiName) {
                     for (const document of documentByApiName.documents) {
                         for (const attribute of documentByApiName.attributes) {
-                            results = module.exports.getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute.key, tag);
+                            results = module.exports.getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
                         }
                     }
                 }
@@ -155,22 +173,23 @@ module.exports = {
         }
         return pages;
     },
-    getAttributeComparaison: (results, page, apiName, document, attributeKey, tag) => {
-        let attributeValue = document[attributeKey];
-        if (attributeKey.indexOf('.') > -1) {
-            const splitedKeyName = attributeKey.split('.');
-            attributeValue = document[splitedKeyName[0]][splitedKeyName[1]];
-        }
-        const text = tag.tag === "meta" ? tag.content : tag.innerText;
+    setFields: (page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentName) => {
+        if (docfieldValue && text) {
+            let comparaison = false;
+            /*if (text.length > 20)
+                comparaison = docfieldValue.length > text.length ?
+                    docfieldValue.toLowerCase().includes(text.toLowerCase()) :
+                    text.toLowerCase().includes(docfieldValue.toLowerCase());
+            else*/
+            comparaison = (docfieldValue.toLowerCase() === text.toLowerCase());
 
-        if (attributeValue && text) {
-            let comparaison = attributeValue.length > text.length ?
-                attributeValue.toLowerCase().includes(text.toLowerCase()) :
-                text.toLowerCase().includes(attributeValue.toLowerCase());
+            //_.startsWith(docfieldValue.toLowerCase(), text.toLowerCase())
+            //: _.startsWith(text.toLowerCase(), docfieldValue.toLowerCase());
 
-            //_.startsWith(attributeValue.toLowerCase(), text.toLowerCase())
-            //: _.startsWith(text.toLowerCase(), attributeValue.toLowerCase());
+            //docfieldValue.toLowerCase().includes(text.toLowerCase()) :
+            //text.toLowerCase().includes(docfieldValue.toLowerCase());
 
+            //if (docfieldValue.toLowerCase() === text.toLowerCase()) {
             if (comparaison) {
                 const item = _.find(results, { frontUrl: page.url });
                 if (!item)
@@ -179,19 +198,49 @@ module.exports = {
                             apiNames: [apiName],
                             frontUrl: page.url,
                             documentId: document.id,
-                            documentFields: [{ key: attributeKey, value: attributeValue, from: apiName, tag: tag.tag }],
+                            documentFields: [{ url: page.url, fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName }],
                             seoAnalyse: page.seoAnalyse,
                             screenshot: page.screenshot
                         });
                 else {
-                    let field = _.find(item.documentFields, { key: attributeKey, from: apiName });
+                    let field = componentName ?
+                        _.find(item.documentFields, { url: page.url, fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag, componentName: componentName }) :
+                        _.find(item.documentFields, { url: page.url, fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag });
                     if (!field) {
-                        item.documentFields.push({ key: attributeKey, value: attributeValue, from: apiName, tag: tag.tag });
+                        item.documentFields.push({ url: page.url, fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName });
                         if (!item.apiNames.includes(apiName))
                             item.apiNames.push(apiName);
                     }
                 }
             }
+        }
+    },
+    getAttributeComparaison: (results, page, apiName, document, attribute, tag) => {
+        const attributeKey = attribute.key;
+        let docfieldValue = "";
+        const text = tag.tag === "meta" ? tag.content : tag.innerText;
+        //console.log(`attributeKey -> ${attributeKey} *** DocfieldValue: ${docfieldValue} *** TEXT -> ${text} *** TAG -> ${tag.tag}`);
+        switch (attribute.type) {
+            case "text":
+                docfieldValue = document[attributeKey];
+                if (docfieldValue)
+                    module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
+                break;
+            case "component":
+                docfieldValue = document[attribute.componentName][attributeKey];
+                if (docfieldValue)
+                    module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                break;
+            case "componentInZone":
+                const section = document[attribute.zone];
+                if (_.isArray(section)) {
+                    for (const componentChild of section) {
+                        docfieldValue = componentChild[attributeKey];
+                        if (docfieldValue)
+                            module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                    }
+                }
+                break;
         }
         return results;
     },
@@ -208,28 +257,19 @@ module.exports = {
         }
     },
     pushMatchesInCollection: async (results) => {
-        let fieldResults = {};
         let fields = [];
-        for (const result of results) {
+        for (const result of results)
             fields = _.concat(fields, result.documentFields);
-            fields = _.uniq(fields);
-            fieldResults = fields.reduce((acc, curVal) => {
-                if (!acc.hasOwnProperty(curVal.from))
-                    acc[curVal.from] = {};
-                if (!acc[curVal.from].hasOwnProperty(curVal.key))
-                    acc[curVal.from][curVal.key] = curVal.tag;
-                return acc;
-            }, {});
-        }
+        fields = _.uniqBy(fields, v => [v.url, v.value, v.tagName, v.apiName, v.fieldName].join());
 
-        for (const property in fieldResults) {
-            for (const innerProperty in fieldResults[property]) {
-                await matchesService.create({
-                    apiName: property,
-                    tag: fieldResults[property][innerProperty],
-                    field: innerProperty,
-                });
-            }
+        for (const field of fields) {
+            await matchesService.create({
+                url: field.url,
+                apiName: field.apiName,
+                componentName: field.componentName,
+                tagName: field.tagName,
+                fieldName: field.fieldName,
+            });
         }
     },
     clear: async () => {
