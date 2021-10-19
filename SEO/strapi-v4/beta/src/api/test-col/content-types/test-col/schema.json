@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_cols",
+  "info": {
+    "singularName": "test-col",
+    "pluralName": "test-cols",
+    "displayName": "test-col",
+    "name": "test-col"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}
