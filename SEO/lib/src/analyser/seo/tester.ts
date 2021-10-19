@@ -17,23 +17,17 @@ function uuid() {
 }
 
 export class SeoTester {
-  //private currentRule: IRule;
   private rulesToUse: IRule[];
-  private internalLinks: TPair[];
-  private pagesSeen: Set<string>;
   private siteWideLinks: Map<any, any>;
   private titleTags: Map<any, any>;
   private metaDescriptions: Map<any, any>;
-  private crawledUrls: string[] = [];
 
   public constructor(private rules: any,
     private host: string) {
     this.rulesToUse = this.rules.length > 0 ? this.rules : []
-    this.internalLinks = [];
     this.siteWideLinks = new Map();
     this.titleTags = new Map();
     this.metaDescriptions = new Map();
-    this.pagesSeen = new Set();
   }
 
   private logMetaDescription(url: string, meta: string, siteResults: IAnalyserPageResults) {
@@ -50,12 +44,6 @@ export class SeoTester {
     } else {
       this.titleTags.set(title, url);
     }
-  }
-
-  private noEmptyRule(currentRule: IRule) {
-    if (!currentRule.name || currentRule.name.length === 0) throw Error('No current test name');
-    if (!currentRule.description || currentRule.description.length === 0)
-      throw Error('No current test description');
   }
 
   private finishRule(currentRule: IRule): void {
@@ -104,13 +92,13 @@ export class SeoTester {
       aTags: this.getAttributes($, 'a'),
       linkTags: this.getAttributes($, 'link'),
       ps: this.getAttributes($, 'p'),
+      body: this.getAttributes($, "body")
     };
     return result;
   }
 
-  private async test(html: string, url: string): Promise<IAnalyserPageResults> {
+  private async getSEOAnalyze(html: string, url: string): Promise<IAnalyserPageResults> {
     try {
-      this.pagesSeen.add(url);
       let results: IRule[] = [];
 
       let pageResults: IAnalyserPageResults = {
@@ -126,20 +114,14 @@ export class SeoTester {
 
       const extractedTags = this.getTags(html);
       pageResults.tags = extractedTags;
-      // SPA detection
-      // TODO make a better detection
-      if (extractedTags.h1s.length === 0 && extractedTags.h2s.length === 0 && extractedTags.h3s.length === 0 && extractedTags.imgs.length === 0)
-        return null;
 
       this.siteWideLinks.set(url, extractedTags.aTags);
-      if (extractedTags.title[0] && extractedTags.title[0].innerText) {
+      if (extractedTags.title[0] && extractedTags.title[0].innerText) 
         this.logTitleTag(url, extractedTags.title[0].innerText, pageResults);
-      }
 
       const metaDescription = extractedTags.meta.find((m) => m.name && m.name.toLowerCase() === 'description');
-      if (metaDescription) {
+      if (metaDescription)
         this.logMetaDescription(url, metaDescription.content, pageResults);
-      }
 
       for (let rule of this.rulesToUse) {
         let currentRule: IRule = Object.assign({}, rule);
@@ -204,26 +186,6 @@ export class SeoTester {
     }
   };
 
-  private async analyseFromSimpleHTMLCall(url: string): Promise<IAnalyserPageResults> {
-    let analyserResult: any;
-    try {
-      const response = await axios({
-        method: 'get',
-        url: url,
-      });
-      analyserResult = await this.test(response.data, url);
-    } catch (ex) {
-      analyserResult.brokenInternalLinks = [url];
-    }
-    return analyserResult;
-  }
-
-  private async getHtmlFromSPA(url: string): Promise<IAnalyserPageResults> {
-    const data = await render(url, {});
-    const result = await this.test(data, url);
-    return result;
-  }
-
   private getAnchors(html: string): { aTags: any[] } {
     const $ = cheerio.load(html);
     return {
@@ -245,23 +207,21 @@ export class SeoTester {
           if (_.startsWith(item, '/'))
             return `${fetchedData.url}${item}`;
         })
-      //const externalLinks:string[] = links.filter(item => item.includes('http'));
       return internalLinks;
     }
   }
 
-  private async getSitemap(fetchedData: IFetchedPageResults): Promise<any[]> {
+  private async getSitemap(browser: puppeteer.Browser, fetchedData: IFetchedPageResults): Promise<any[]> {
     let links: IFetchedPageResults[] = [fetchedData];
     const childLinksToCrawl = this.getLinksFromPage(fetchedData);
     for (const link of childLinksToCrawl) {
-      const childrenFetchedData = await this.getHtmlFromUri(link);
+      const childrenFetchedData = await this.getHtmlFromUrl(browser, link);
       links.push(childrenFetchedData);
     }
     return _.uniqBy(links, "url");
   }
 
-  private async getHtmlFromUri(url: string): Promise<IFetchedPageResults> {
-    const browser = await puppeteer.launch();
+  private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<IFetchedPageResults> {
     const page = await browser.newPage();
     await page.goto(url);
     const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
@@ -273,25 +233,22 @@ export class SeoTester {
   }
 
   public async run(url: string): Promise<IPageResults> {
+    const browser = await puppeteer.launch();
     let globalResults: IPageResults = {
       results: [],
       sitemap: []
     };
     // Get Homepage html (only for regular website)
-    const fetchedResult = await this.getHtmlFromUri(url);
+    const fetchedResult = await this.getHtmlFromUrl(browser, url);
     //Compute Sitemap
-    globalResults.sitemap = await this.getSitemap(fetchedResult);
+    globalResults.sitemap = await this.getSitemap(browser, fetchedResult);
 
     //Compute Rules
     for (const fetchedData of globalResults.sitemap) {
-      let results = await this.analyseFromSimpleHTMLCall(fetchedData.url);
-      if (results)
+      let results = await this.getSEOAnalyze(fetchedData.html, fetchedData.url);
+      if (results) 
         globalResults.results.push(results);
-    }
-
-    // Clear html
-    for (const sitemap of globalResults.sitemap) {
-      sitemap.html = "";
+      fetchedData.html = "";
     }
 
     /*for (const result of globalResults.results) {
