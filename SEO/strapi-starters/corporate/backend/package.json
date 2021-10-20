@@ -6,7 +6,7 @@
   "scripts": {
     "develop": "strapi develop",
     "admin": "strapi develop --watch-admin",
-    "start": "strapi start",
+    "start": "yarn strapi start",
     "build": "strapi build",
     "strapi": "strapi"
   },
