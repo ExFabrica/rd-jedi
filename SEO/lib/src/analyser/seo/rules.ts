@@ -639,13 +639,15 @@ export const rules: IRule[] = [
     },
     validator: async (payload, tester) => {
       payload.result.imgs.forEach((i) => {
-        tester.lint(getTrueOrFalseParameters(
-          100,
-          assert.ok,
-          i.alt && i.alt.length > 0,
-          `Images should have alt tags. ${i.src} does not`,
-          i.src
-        ))
+        if (!i.src.includes('data:')) {
+          tester.lint(getTrueOrFalseParameters(
+            100,
+            assert.ok,
+            i.alt && i.alt.length > 0,
+            `Images should have alt tags.`,
+            i.src
+          ));
+        }
       });
     },
   }
