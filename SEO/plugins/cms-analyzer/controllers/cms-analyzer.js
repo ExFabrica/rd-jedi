@@ -50,14 +50,25 @@ module.exports = {
   },
   getAnalyzer: async (ctx) => {
     const { url } = ctx.query;
-    const result = await analyzer(url);
+    let result;
+    try {
+      result = await analyzer(url);
+    }
+    catch (ex) {
+      ctx.send({ "status": 500, message: ex });
+    }
     ctx.send(result);
   },
   runConsolidation: async (ctx) => {
     // remove url property from context
     const { url } = ctx.query;
     delete ctx.query['url'];
-    analyserService.runConsolidationProcess(url);
+    try {
+      analyserService.runConsolidationProcess(url);
+    }
+    catch (ex) {
+      ctx.send({ "status": 500, message: ex });
+    }
   },
   getSettings: async (ctx) => {
     let config = {};

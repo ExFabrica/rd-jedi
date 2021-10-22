@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import {
   FormBloc,
-  BaselineAlignment,
+  BaselineAlignment  
 } from 'strapi-helper-plugin';
 import getTrad from '../../utils/getTrad';
 import SettingsMiddleware from '../../middlewares/settings/ui-settings';
@@ -58,7 +58,7 @@ const SettingsPage = () => {
           isLoading={showLoader}
         >
           <div className="col-12 row">
-            <div className="col-6">
+            <div className="col-12">
               <Label htmlFor="default-string" message={formatMessage({ id: getTrad("plugin.settings.panel.setting1.label") })} />
               <InputText
                 label="Label"
@@ -66,13 +66,13 @@ const SettingsPage = () => {
                 placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
                 onChange={({ target: { value } }) => {
                   setSettings((prevState) => {
-                    return { ...prevState, setting1: value };
+                    return { ...prevState, frontUrl: value };
                   });
                 }}
-                value={settings && settings.setting1 ? settings.setting1 : ""}
+                value={settings && settings.frontUrl ? settings.frontUrl : ""}
               />
             </div>
-            <div className="col-6">
+            {/*<div className="col-6">
               <Label htmlFor="default-number" message={formatMessage({ id: getTrad("plugin.settings.panel.setting3.label") })} />
               <InputNumber
                 label="Label"
@@ -84,7 +84,7 @@ const SettingsPage = () => {
                 }}
                 value={settings && settings.setting3 ? settings.setting3 : 0}
               />
-            </div>
+              </div>*/}
           </div>
           <div className="col-12 row" style={{ marginTop: "20px" }}>
             <div className="col-6">
@@ -93,10 +93,10 @@ const SettingsPage = () => {
                 name="default-toggle"
                 onChange={({ target: { value } }) => {
                   setSettings((prevState) => {
-                    return { ...prevState, setting2: value };
+                    return { ...prevState, enabled: value };
                   });
                 }}
-                value={settings && settings.setting2 ? settings.setting2 : false}
+                value={settings && settings.enabled ? settings.enabled : false}
               />
             </div>
             <div className="col-6">

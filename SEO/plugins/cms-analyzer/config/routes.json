@@ -66,8 +66,16 @@
     },
     {
       "method": "GET",
-      "path": "/analyses/:slug",
+      "path": "/analyses/:id",
       "handler": "analyse.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/analyses/documents/:documentId",
+      "handler": "analyse.findByDocumentId",
       "config": {
         "policies": []
       }

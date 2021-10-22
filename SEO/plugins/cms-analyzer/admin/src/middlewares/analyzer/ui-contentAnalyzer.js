@@ -30,6 +30,12 @@ const contentAnalyzerMiddleware = {
             method: 'GET'
         });
         return result;
+    },
+    getAnalysesByDocumentId: async (documentId) => {
+        const result = await request(`/cms-analyzer/analyses/${documentId}`, {
+            method: 'GET'
+        });
+        return result;
     }
 }
 

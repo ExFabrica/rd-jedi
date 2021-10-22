@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
+
+import { Button } from '@buffetjs';
 import { Header } from '@buffetjs/custom';
-import { Button, Toggle, InputNumber, InputText, Label } from '@buffetjs/core';
+import { Toggle, InputNumber, InputText, Label } from '@buffetjs/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import {

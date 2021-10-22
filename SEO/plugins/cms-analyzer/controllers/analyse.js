@@ -24,6 +24,12 @@ module.exports = {
     const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({ id });
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].models.analyse });
   },
+  async findByDocumentId(ctx) {
+    const { documentId } = ctx.params;
+
+    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({ documentId });
+    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].models.analyse });
+  },
   async count(ctx) {
     if (ctx.query._q) {
       return await strapi.plugins['cms-analyzer'].services.analyse.countSearch(ctx.query);

@@ -5,10 +5,8 @@ import Initializer from './containers/Initializer';
 import lifecycles from './lifecycles';
 import trads from './translations';
 import React from 'react';
-import { CheckPagePermissions } from 'strapi-helper-plugin';
 import pluginPermissions from './permissions';
 import SettingsPage from './containers/Settings';
-import contentAnalyzerMiddleware from "./middlewares/analyzer/ui-contentAnalyzer";
 
 export default strapi => {
   const pluginDescription = pluginPkg.strapi.description || pluginPkg.description;
@@ -58,26 +56,16 @@ export default strapi => {
             },
             name: 'settings',
             to: `${strapi.settingsBaseURL}/${pluginId}`,
-            Component: () =>
-              <CheckPagePermissions permissions={pluginPermissions.settings}>
-                <SettingsPage />
-              </CheckPagePermissions>,
+            Component: () => <SettingsPage />,
+            /*<CheckPagePermissions permissions={pluginPermissions.settings}>
+              <SettingsPage />
+            </CheckPagePermissions>,*/
             permissions: pluginPermissions.settings,
           },
         ],
       },
     },
     boot(app) {
-      if (!loaded) {
-        console.log("HOOOOO")
-        // fill all data for CMS analyzer.
-        contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
-          if (analyses && analyses.length === 0)
-            contentAnalyzerMiddleware.runConsolidation("http://localhost:3000").then(() => {
-              loaded = true;
-            });
-        })
-      }
     },
   };
 

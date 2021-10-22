@@ -18,26 +18,26 @@ const getPluginStore = () => {
 const createDefaultConfig = async () => {
     const pluginStore = getPluginStore();
     const value = {
-        setting1: '',
-        setting2: true,
-        setting3: 0,
-        setting4: { inner1: "" },
+        frontUrl: '',
+        enabled: true,
+        //setting3: 0,
+        //setting4: { inner1: "" },
     }
     await pluginStore.set({ key: 'settings', value });
-    return await pluginStore.get({ key: 'settings' });
+    return pluginStore.get({ key: 'settings' });
 };
 const createConfigFromData = async (data) => {
     //mapping
     const value = {
-        setting1: data.setting1,
-        setting2: data.setting2,
-        setting3: data.setting3,
-        setting4: { inner1: data.setting4.inner1 },
+        frontUrl: data.frontUrl,
+        enabled: data.enabled,
+        /*setting3: data.setting3,
+        setting4: { inner1: data.setting4.inner1 },*/
     }
 
     const pluginStore = getPluginStore();
     await pluginStore.set({ key: 'settings', value });
-    return await pluginStore.get({ key: 'settings' });
+    return pluginStore.get({ key: 'settings' });
 };
 
 module.exports = {
@@ -51,7 +51,7 @@ module.exports = {
         return config;
     },
     setSettings: async (data) => {
-        return await createConfigFromData(data);
+        return createConfigFromData(data);
     },
     //CONTENT-TYPES
     getContentTypes: async () => {
@@ -77,22 +77,26 @@ module.exports = {
                 switch (value.type) {
                     case "text":
                     case "string":
+                    case "richtext":
+                    case "number":
                         item.attributes.push({ key, value, type: "text" });
                         break;
                     case "component":
                         const component = strapi.components[value.component];
                         for (const [keyC, valueC] of Object.entries(component.attributes)) {
-                            if (valueC.type === "text" || valueC.type === "string")
+                            if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
                                 item.attributes.push({ key: keyC, value: valueC, type: "component", componentName: key });
                         }
                         break;
                     case "enumeration":
+                        for (const enu of value.enum)
+                            item.attributes.push({ key: key, value: enu, type: "enumeration" });
                         break;
                     case "dynamiczone":
                         for (const componentName of value.components) {
                             const component = strapi.components[componentName];
                             for (const [keyC, valueC] of Object.entries(component.attributes)) {
-                                if (valueC.type === "text" || valueC.type === "string")
+                                if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
                                     item.attributes.push({ key: keyC, value: valueC, type: "componentInZone", zone: key, componentName: componentName });
                             }
                         }
@@ -155,8 +159,8 @@ module.exports = {
                 let stringTags = [];
                 const tags = foundPages[0].tags;
                 if (tags) {
-                    const description = tags.meta.filter(item => item.name === "description");
                     stringTags = _.concat(stringTags, tags.title);
+                    const description = tags.meta.filter(item => item.name === "description");
                     if (description && description.length > 0)
                         stringTags = _.concat(stringTags, description[0]);
                     stringTags = _.concat(stringTags, tags.h1s);
@@ -165,7 +169,7 @@ module.exports = {
                     stringTags = _.concat(stringTags, tags.h4s);
                     stringTags = _.concat(stringTags, tags.h5s);
                     stringTags = _.concat(stringTags, tags.h6s);
-                    //stringTags = _.concat(stringTags, tags.ps);
+                    stringTags = _.concat(stringTags, tags.ps);
                 }
                 page.tags = stringTags;
                 pages.push(page);
@@ -176,12 +180,12 @@ module.exports = {
     setFields: (page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentName) => {
         if (docfieldValue && text) {
             let comparaison = false;
-            /*if (text.length > 20)
+            if (text.length > 30)
                 comparaison = docfieldValue.length > text.length ?
-                    docfieldValue.toLowerCase().includes(text.toLowerCase()) :
-                    text.toLowerCase().includes(docfieldValue.toLowerCase());
-            else*/
-            comparaison = (docfieldValue.toLowerCase() === text.toLowerCase());
+                    _.startsWith(docfieldValue.toLowerCase(), text.toLowerCase())
+                    : _.startsWith(text.toLowerCase(), docfieldValue.toLowerCase());
+            else
+                comparaison = (docfieldValue.toLowerCase() === text.toLowerCase());
 
             //_.startsWith(docfieldValue.toLowerCase(), text.toLowerCase())
             //: _.startsWith(text.toLowerCase(), docfieldValue.toLowerCase());
@@ -198,16 +202,16 @@ module.exports = {
                             apiNames: [apiName],
                             frontUrl: page.url,
                             documentId: document.id,
-                            documentFields: [{ url: page.url, fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName }],
+                            documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName }],
                             seoAnalyse: page.seoAnalyse,
                             screenshot: page.screenshot
                         });
                 else {
                     let field = componentName ?
-                        _.find(item.documentFields, { url: page.url, fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag, componentName: componentName }) :
-                        _.find(item.documentFields, { url: page.url, fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag });
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag, componentName: componentName }) :
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag });
                     if (!field) {
-                        item.documentFields.push({ url: page.url, fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName });
+                        item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName });
                         if (!item.apiNames.includes(apiName))
                             item.apiNames.push(apiName);
                     }
@@ -221,6 +225,7 @@ module.exports = {
         const text = tag.tag === "meta" ? tag.content : tag.innerText;
         //console.log(`attributeKey -> ${attributeKey} *** DocfieldValue: ${docfieldValue} *** TEXT -> ${text} *** TAG -> ${tag.tag}`);
         switch (attribute.type) {
+            case "enumeration":
             case "text":
                 docfieldValue = document[attributeKey];
                 if (docfieldValue)
@@ -235,9 +240,19 @@ module.exports = {
                 const section = document[attribute.zone];
                 if (_.isArray(section)) {
                     for (const componentChild of section) {
-                        docfieldValue = componentChild[attributeKey];
-                        if (docfieldValue)
-                            module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                        //TODO check that !
+                        if (componentChild.features) {
+                            for (const feature of componentChild.features) {
+                                docfieldValue = feature[attributeKey];
+                                if (docfieldValue)
+                                    module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                            }
+                        }
+                        else {
+                            docfieldValue = componentChild[attributeKey];
+                            if (docfieldValue)
+                                module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                        }
                     }
                 }
                 break;
@@ -260,11 +275,10 @@ module.exports = {
         let fields = [];
         for (const result of results)
             fields = _.concat(fields, result.documentFields);
-        fields = _.uniqBy(fields, v => [v.url, v.value, v.tagName, v.apiName, v.fieldName].join());
+        fields = _.uniqBy(fields, v => [v.componentName, v.tagName, v.apiName, v.fieldName].join());
 
         for (const field of fields) {
             await matchesService.create({
-                url: field.url,
                 apiName: field.apiName,
                 componentName: field.componentName,
                 tagName: field.tagName,

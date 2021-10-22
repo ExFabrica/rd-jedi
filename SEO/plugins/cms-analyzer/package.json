@@ -8,7 +8,7 @@
     "description": "First Exfabrica Strapi Plugin."
   },
   "dependencies": {
-    "exfabrica-cms-engine-analyzer": "^0.1.9",
+    "exfabrica-cms-engine-analyzer": "^0.2.3",
     "strapi-utils": "3.6.8"
   },
   "devDependencies": {
