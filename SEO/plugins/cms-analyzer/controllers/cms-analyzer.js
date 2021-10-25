@@ -63,12 +63,14 @@ module.exports = {
     // remove url property from context
     const { url } = ctx.query;
     delete ctx.query['url'];
+    let result = {};
     try {
-      analyserService.runConsolidationProcess(url);
+      result = await analyserService.runConsolidationProcess(url);
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
+    ctx.send(result);
   },
   getSettings: async (ctx) => {
     let config = {};

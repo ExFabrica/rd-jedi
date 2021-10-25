@@ -2,40 +2,64 @@ import { request } from 'strapi-helper-plugin';
 
 const contentAnalyzerMiddleware = {
     get: async (url) => {
-        const result = await request(`/cms-analyzer/analyzer?url=${url}`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/analyzer?url=${url}`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     },
     getContents: async () => {
-        const result = await request(`/cms-analyzer/contents`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/contents`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     },
     getDocuments: async (query) => {
-        const result = await request(`/cms-analyzer/documents?api=${query}`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/documents?api=${query}`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     },
     runConsolidation: async (url) => {
-        const result = await request(`/cms-analyzer/consolidation?url=${url}`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/consolidation?url=${url}`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     },
     getAnalyses: async () => {
-        const result = await request(`/cms-analyzer/analyses`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/analyses`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     },
     getAnalysesByDocumentId: async (documentId) => {
-        const result = await request(`/cms-analyzer/analyses/${documentId}`, {
-            method: 'GET'
-        });
-        return result;
+        try {
+            return request(`/cms-analyzer/analyses/${documentId}`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     }
 }
 

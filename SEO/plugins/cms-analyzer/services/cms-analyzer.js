@@ -111,28 +111,34 @@ module.exports = {
         return potentialFields.filter(content => content.attributes.length > 0);
     },
     runConsolidationProcess: async (url) => {
-        let results = [];
-        await module.exports.clear();
-        // Get documents and attributes sorted by apiName
-        const strapiDocumentsByApiName = await module.exports.getStrapiDocumentsByApiName();
-        // Get pages from analyzer
-        const pages = await module.exports.getAnalyzedPages(url);
-        // Iterate on pages and documents to match data
-        for (const page of pages) {
-            for (const tag of page.tags) {
-                for (const documentByApiName of strapiDocumentsByApiName) {
-                    for (const document of documentByApiName.documents) {
-                        for (const attribute of documentByApiName.attributes) {
-                            results = module.exports.getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
+        try {
+            let results = [];
+            await module.exports.clear();
+            // Get documents and attributes sorted by apiName
+            const strapiDocumentsByApiName = await module.exports.getStrapiDocumentsByApiName();
+            // Get pages from analyzer
+            const pages = await module.exports.getAnalyzedPages(url);
+            // Iterate on pages and documents to match data
+            for (const page of pages) {
+                for (const tag of page.tags) {
+                    for (const documentByApiName of strapiDocumentsByApiName) {
+                        for (const document of documentByApiName.documents) {
+                            for (const attribute of documentByApiName.attributes) {
+                                results = module.exports.getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
+                            }
                         }
                     }
                 }
             }
+            //Put founded data in plugin collection
+            await module.exports.pushResultsInCollection(results);
+            //Work on result to extract relations ships between front tags and Strapi fields
+            await module.exports.pushMatchesInCollection(results);
         }
-        //Put founded data in plugin collection
-        await module.exports.pushResultsInCollection(results);
-        //Work on result to extract relations ships between front tags and Strapi fields
-        await module.exports.pushMatchesInCollection(results);
+        catch (ex) {
+            return Promise.reject({ success: false, error: ex });
+        }
+        return Promise.resolve({ success: true })
     },
     getStrapiDocumentsByApiName: async () => {
         const contents = await module.exports.getContents();
