@@ -1,7 +1,14 @@
+export enum Itarget {
+    contentManager = 0,
+    developer = 1,
+    both = 2,
+};
+
 export interface IMessage {
     message: string;
     priority: number;
     content: any;
+    target: Itarget;
 };
 
 export interface IRule {
@@ -49,7 +56,8 @@ export interface ITesterParameters {
     value1: any,
     value2: any,
     message: string,
-    content?: string
+    content?: string,
+    target: Itarget
 }
 
 export interface ITesterParametersBool {
@@ -57,5 +65,6 @@ export interface ITesterParametersBool {
     assert: any,
     value: any,
     message: string,
-    content?: string
+    content?: string,
+    target: Itarget
 }

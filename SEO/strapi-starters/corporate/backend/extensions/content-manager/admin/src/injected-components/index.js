@@ -170,8 +170,8 @@ const AnalysePanel = ({ show }) => {
         if (result.seoAnalyse) {
           const seos = JSON.parse(result.seoAnalyse);
           if (seos) {
-            setSeoAnalyzeErrors(seos.filter(item => item.level === "errors"));
-            setSeoAnalyzeWarnings(seos.filter(item => item.level === "warnings"));
+            setSeoAnalyzeErrors(seos.filter(item => item.target === 0 || item.target === 2 && item.level === "errors"));
+            setSeoAnalyzeWarnings(seos.filter(item => item.target === 0 || item.target === 2 && item.level === "warnings"));
           }
         }
       }
@@ -196,16 +196,17 @@ const AnalysePanel = ({ show }) => {
           Seo rules to check
         </Text>
         <br />
-        {seoAnalyseErrors ?
+        {seoAnalyseErrors && seoAnalyseErrors.length > 0 ?
           <>
             <Text>Errors</Text>
             <ol className="errors">
               {seoAnalyseErrors.map(item => <li key={uuidv4()}>{item.message}<br />{item.content}</li>)}
             </ol>
+            <br/>
           </>
           : <></>}
-        <br />
-        {seoAnalyseWarnings ?
+
+        {seoAnalyseWarnings && seoAnalyseWarnings.length > 0 ?
           <>
             <Text>Warnings</Text>
             <ol className="warnings">

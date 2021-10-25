@@ -1,6 +1,4 @@
-import axios from 'axios';
 import cheerio from 'cheerio';
-import { render } from 'usus';
 import { IMessage, IRule, IAnalyserPageResults, ITesterParameters, ITesterParametersBool, IPageResults, IFetchedPageResults } from './interface';
 var _ = require('lodash');
 import puppeteer from 'puppeteer'
@@ -136,7 +134,7 @@ export class SeoTester {
                 params.assert(params.value1, params.value2);
               }
               catch (ex) {
-                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content });
+                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
               }
             },
             trueOrFalse: (params: ITesterParametersBool) => {
@@ -144,7 +142,7 @@ export class SeoTester {
                 params.assert(params.value);
               }
               catch (ex) {
-                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content });
+                currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target  });
               }
             },
             lint: (params: ITesterParametersBool) => {
@@ -152,7 +150,7 @@ export class SeoTester {
                 params.assert(params.value);
               }
               catch (ex) {
-                currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content });
+                currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target  });
               }
             }
           },
