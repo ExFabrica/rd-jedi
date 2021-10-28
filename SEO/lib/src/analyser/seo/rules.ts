@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { IRule, Itarget, ITester, ITesterParameters, ITesterParametersBool } from './interface';
+import { IRule, IPersonTarget, ITester, IRuleParametersComparaisonTest, IRuleParametersForBooleanTest } from './interface';
 import { defaultPreferences } from './tester';
 
 const cleanString = (str) =>
@@ -12,15 +12,15 @@ const cleanString = (str) =>
     .replace('!', '')
     .replace('?', '');
 
-const getTestParameters = (
+const getComparaisonTestParameters = (
   priority: number,
   assert: any,
   value1: any,
   value2: any,
   message: string,
-  target: Itarget,
+  target: IPersonTarget,
   content?: string,
-): ITesterParameters => {
+): IRuleParametersComparaisonTest => {
   return {
     priority: priority,
     assert: assert,
@@ -32,14 +32,14 @@ const getTestParameters = (
   };
 }
 
-const getTrueOrFalseParameters = (
+const getBooleanTestParameters = (
   priority: number,
   assert: any,
   value: any,
   message: string,
-  target: Itarget,
+  target: IPersonTarget,
   content?: string,
-): ITesterParametersBool => {
+): IRuleParametersForBooleanTest => {
   return {
     priority: priority,
     assert: assert,
@@ -69,22 +69,22 @@ export const rules: IRule[] = [
     },
     validator: async (payload, tester) => {
       const canonicals = payload.result.canonical;
-      tester.test(getTestParameters(
+      tester.test(getComparaisonTestParameters(
         100,
         assert.strictEqual,
         canonicals.length,
         1,
         `There should be 1 and only 1 canonical tag, currently there are ${canonicals.length}`,
-        Itarget.developer
+        IPersonTarget.developer
       ));
       if (canonicals[0]) {
         const { url, host } = payload.response;
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           canonicals[0].href.includes('http') && canonicals[0].href.includes(host) && canonicals[0].href.includes(url),
           `Canonical should match absolute url and match the url that was crawled. host:${host} | crawled: ${url} | canonical: ${canonicals[0].href}`,
-          Itarget.developer,
+          IPersonTarget.developer,
           canonicals[0].href,
         ));
       }
@@ -111,94 +111,94 @@ export const rules: IRule[] = [
     validator: async (payload, tester: ITester) => {
       const titles = payload.result.title;
 
-      tester.test(getTestParameters(
+      tester.test(getComparaisonTestParameters(
         100,
         assert.strictEqual,
         titles.length,
         1,
         `There should only one and only 1 title tag, currently there are ${titles.length}`,
-        Itarget.developer,
+        IPersonTarget.developer,
       ));
 
       if (titles.length !== 1) return;
 
       if (titles[0]) {
 
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           90,
           assert.strictEqual,
           titles[0].innerText,
           titles[0].innerHTML,
           'The title tag should not wrap other tags. (innerHTML and innerText should match)',
-          Itarget.developer,
+          IPersonTarget.developer,
           titles[0].innerText
         ));
 
         tester.test(
-          getTestParameters(
+          getComparaisonTestParameters(
             100,
             assert.notStrictEqual,
             titles[0].innerText.length,
             0,
             'Title tags should not be empty',
-            Itarget.both,
+            IPersonTarget.both,
           ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           !titles[0].innerText.includes('undefined'),
           `Title tag includes "undefined"`,
-          Itarget.both,
+          IPersonTarget.both,
           titles[0].innerText,
         ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           !titles[0].innerText.includes('null'),
           `Title tag includes "null"`,
-          Itarget.both,
+          IPersonTarget.both,
           titles[0].innerText
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           30,
           assert.ok,
           titles[0].innerText.length > 10,
           'This title tag is shorter than the recommended minimum limit of 10.',
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           titles[0].innerText
         ));
 
         tester.lint(
-          getTrueOrFalseParameters(
+          getBooleanTestParameters(
             30,
             assert.ok,
             titles[0].innerText.length < 70,
             'This title tag is longer than the recommended limit of 70.',
-            Itarget.contentManager,
+            IPersonTarget.contentManager,
             titles[0].innerText
           ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           60,
           assert.ok,
           titles[0].innerText.length < 200,
           `Something could be wrong this title tag is over 200 chars. : ${titles[0].innerText}`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           titles[0].innerText
         ));
 
         //TODO localize this part.
         const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
         stopWords.forEach((sw) => {
-          tester.lint(getTrueOrFalseParameters(
+          tester.lint(getBooleanTestParameters(
             20,
             assert.ok,
             titles[0].innerText.toLowerCase().indexOf(` ${sw} `),
             `Title tag includes stopword ${sw}`,
-            Itarget.contentManager,
+            IPersonTarget.contentManager,
             titles[0].innerText
           ));
         });
@@ -232,74 +232,74 @@ export const rules: IRule[] = [
     validator: async (payload, tester) => {
       const metas = payload.result.meta.filter((m) => m.name && m.name.toLowerCase() === 'description');
 
-      tester.trueOrFalse(getTrueOrFalseParameters(
+      tester.trueOrFalse(getBooleanTestParameters(
         90,
         assert.ok,
         metas.length === 1,
         `There should be 1 and only 1 meta description. Currently there are ${metas.length}`,
-        Itarget.developer
+        IPersonTarget.developer
       ));
 
       if (metas[0]) {
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           90,
           assert.ok,
           metas[0] && metas[0].content,
           'Meta description content="" should not be missing.',
-          Itarget.developer
+          IPersonTarget.developer
         ));
 
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           90,
           assert.notStrictEqual,
           metas[0].content.length,
           0,
           'Meta description should not be empty',
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
         ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           !metas[0].content.includes('undefined'),
           `Meta description includes "undefined"`,
-          Itarget.both,
+          IPersonTarget.both,
           metas[0].content
         ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           !metas[0].content.includes('null'),
           `Meta description includes "null"`,
-          Itarget.both,
+          IPersonTarget.both,
           metas[0].content
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           20,
           assert.ok,
           metas[0].content.length > 10,
           `This meta description is shorter than the recommended minimum limit of 10. (${metas[0].content})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           metas[0].content
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           30,
           assert.ok,
           metas[0].content.length < 120,
           `This meta description is longer than the recommended limit of 120. ${metas[0].content.length} (${metas[0].content})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           metas[0].content
         ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           40,
           assert.ok,
           metas[0].content.length < 300,
           'Investigate this meta description. Something could be wrong as it is over 300 chars.',
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           metas[0].content
         ));
 
@@ -314,12 +314,12 @@ export const rules: IRule[] = [
 
           const matches = titleArr.filter((t) => compareArr.indexOf(t) !== -1);
 
-          tester.lint(getTrueOrFalseParameters(
+          tester.lint(getBooleanTestParameters(
             70,
             assert.ok,
             matches.length >= 1,
             'Meta description should include at least 1 of the words in the title tag.',
-            Itarget.contentManager,
+            IPersonTarget.contentManager,
             metas[0].content
           ));
         }
@@ -358,12 +358,12 @@ export const rules: IRule[] = [
     validator: async (payload, tester) => {
       const { h1s, h2s, h3s, h4s, h5s, h6s, title, html } = payload.result;
 
-      tester.trueOrFalse(getTrueOrFalseParameters(
+      tester.trueOrFalse(getBooleanTestParameters(
         90,
         assert.ok,
         h1s.length === 1,
         `There should be 1 and only 1 H1 tag on the page. Currently: ${h1s.length}`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h1s[0] ? h1s[0].innerText : ""
       ));
 
@@ -376,30 +376,30 @@ export const rules: IRule[] = [
 
       if (h1s[0]) {
 
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           90,
           assert.notStrictEqual,
           h1s[0].innerText.length,
           0,
           'H1 tags should not be empty',
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           30,
           assert.ok,
           h1s[0].innerText.length < 70,
           `H1 tag is longer than the recommended limit of 70. (${h1s[0].innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h1s[0].innerText
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           30,
           assert.ok,
           h1s[0].innerText.length > 10,
           `H1 tag is shorter than the recommended limit of 10. (${h1s[0].innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h1s[0].innerText
         ));
 
@@ -411,61 +411,61 @@ export const rules: IRule[] = [
           const matches = titleArr.filter((t) => compareArr.indexOf(t) !== -1);
           if (matches.length < 1) console.log(titleArr, compareArr);
 
-          tester.lint(getTrueOrFalseParameters(
+          tester.lint(getBooleanTestParameters(
             70,
             assert.ok,
             matches.length >= 1,
             `H1 tag should have at least 1 word from your title tag.`,
-            Itarget.contentManager,
+            IPersonTarget.contentManager,
             h1s[0].innerText
           ));
         }
       } else {
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           90,
           assert.ok,
           h2s.length === 0,
           `No h1 tag, but h2 tags are defined.`,
-          Itarget.developer,
+          IPersonTarget.developer,
           h2s[0] ? h2s[0].innerText : ""
         ));
 
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           90,
           assert.ok,
           h3s.length === 0,
           `No h1 tag, but h3 tags are defined.`,
-          Itarget.developer,
+          IPersonTarget.developer,
         ));
       }
 
       let usesKeywords = false;
       h2s.forEach((h2) => {
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           80,
           assert.notEqual,
           h2.innerText.length,
           0,
           'H2 tags should not be empty',
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           20,
           assert.ok,
           h2.innerText.length < 100,
           `H2 tag is longer than the recommended limit of 100. (${h2.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h2.innerText
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           30,
           assert.ok,
           h2.innerText.length > 7,
           `H2 tag is shorter than the recommended limit of 7. (${h2.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h2.innerText
         ));
 
@@ -482,42 +482,42 @@ export const rules: IRule[] = [
       });
 
       if (h2s.length > 0 && title[0]) {
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           70,
           assert.ok,
           usesKeywords,
           `None of your h2 tags use a single word from your title tag.`,
-          Itarget.contentManager
+          IPersonTarget.contentManager
         ));
       }
 
       usesKeywords = false;
       h3s.forEach((h3) => {
 
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           70,
           assert.notStrictEqual,
           h3.innerText.length,
           0,
           'h3 tags should not be empty',
-          Itarget.both
+          IPersonTarget.both
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           20,
           assert.ok,
           h3.innerText.length < 100,
           `h3 tag is longer than the recommended limit of 100. (${h3.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h3.innerText
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           20,
           assert.ok,
           h3.innerText.length > 7,
           `h3 tag is shorter than the recommended limit of 7. (${h3.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h3.innerText
         ));
 
@@ -542,77 +542,77 @@ export const rules: IRule[] = [
       // }
 
       h4s.forEach((h4) => {
-        tester.test(getTestParameters(
+        tester.test(getComparaisonTestParameters(
           50,
           assert.notEqual,
           h4.innerText.length,
           0,
           'h4 tags should not be empty',
-          Itarget.both
+          IPersonTarget.both
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           10,
           assert.ok,
           h4.innerText.length < 100,
           `h4 tag is longer than the recommended limit of 100. (${h4.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h4.innerText
         ));
 
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           10,
           assert.ok,
           h4.innerText.length > 7,
           `h4 tag is shorter than the recommended limit of 7. (${h4.innerText})`,
-          Itarget.contentManager,
+          IPersonTarget.contentManager,
           h4.innerText
         ));
       });
 
       // check that we aren't overloading the htags or misusing their priority.
-      tester.lint(getTrueOrFalseParameters(
+      tester.lint(getBooleanTestParameters(
         80,
         assert.ok,
         !(h2s.length > 0 && h1s.length === 0),
         `There are h2 tags but no h1 tag. Consider If you can move one of your h2s to an h1.`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h2s[0] ? h2s[0].innerText : ""
       ));
 
-      tester.lint(getTrueOrFalseParameters(
+      tester.lint(getBooleanTestParameters(
         50,
         assert.ok,
         !(h3s.length > 0 && h2s.length === 0),
         `There are h3 tags but no h2 tags. Consider If you can move h3s to h2s.`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h3s[0] ? h3s[0].innerText : ""
       ));
 
-      tester.lint(getTrueOrFalseParameters(
+      tester.lint(getBooleanTestParameters(
         30,
         assert.ok,
         !(h4s.length > 0 && h3s.length === 0),
         `There are h4 tags but no h3 tags. Consider If you can move h4s to h3s.`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h4s[0] ? h4s[0].innerText : ""
       ));
 
-      tester.lint(getTrueOrFalseParameters(
+      tester.lint(getBooleanTestParameters(
         30,
         assert.ok,
         !(h5s.length > 0 && h4s.length === 0),
         `There are h5 tags but no h4 tags. Consider If you can move h5s to h4s.`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h5s[0] ? h5s[0].innerText : ""
       ));
 
-      tester.lint(getTrueOrFalseParameters(
+      tester.lint(getBooleanTestParameters(
         30,
         assert.ok,
         !(h6s.length > 0 && h5s.length === 0),
         `There are h6 tags but no h5 tags. Consider If you can move h6s to h5s.`,
-        Itarget.developer,
+        IPersonTarget.developer,
         h6s[0] ? h6s[0].innerText : ""
       ));
     },
@@ -630,33 +630,33 @@ export const rules: IRule[] = [
     validator: async (payload, tester) => {
       const viewport = payload.result.meta.find((m) => m.name === 'viewport');
       if (viewport) {
-        tester.trueOrFalse(getTrueOrFalseParameters(
+        tester.trueOrFalse(getBooleanTestParameters(
           100,
           assert.ok,
           !!viewport,
           `Meta viewport should be defined`,
-          Itarget.developer
+          IPersonTarget.developer
         ));
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           90,
           assert.ok,
           !!viewport.content,
           `Meta viewport has a content attribute`,
-          Itarget.developer
+          IPersonTarget.developer
         ));
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           90,
           assert.ok,
           viewport.content.includes('width=device-width'),
           `Meta viewport content includes width=device-width`,
-          Itarget.developer,
+          IPersonTarget.developer,
         ));
-        tester.lint(getTrueOrFalseParameters(
+        tester.lint(getBooleanTestParameters(
           90,
           assert.ok,
           viewport.content.includes('initial-scale=1'),
           `Meta viewport content may want to include initial-scale=1`,
-          Itarget.developer
+          IPersonTarget.developer
         ));
       }
     },
@@ -690,12 +690,12 @@ export const rules: IRule[] = [
     validator: async (payload, tester) => {
       payload.result.imgs.forEach((i) => {
         if (!i.src.includes('data:')) {
-          tester.lint(getTrueOrFalseParameters(
+          tester.lint(getBooleanTestParameters(
             100,
             assert.ok,
             i.alt && i.alt.length > 0,
             `Images should have alt tags.`,
-            Itarget.both,
+            IPersonTarget.both,
             i.src
           ));
         }
