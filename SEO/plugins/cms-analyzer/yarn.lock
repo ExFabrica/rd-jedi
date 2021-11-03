@@ -1231,10 +1231,10 @@ execa@^0.7.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exfabrica-cms-engine-analyzer@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.2.4.tgz#e25f0246ac3e7d103f95601f8ea138a9f2b9be74"
-  integrity sha512-X13LQ+mbh8ANSmg6OpK9plnCLJjBz2rtiZ3ZOjLUShg+iu0h7Qr84KmSjUqC9eGXR86kmQWPaL2ebP7fOJ/NKw==
+exfabrica-cms-engine-analyzer@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.2.5.tgz#ae8280d4b66ee3f7c3e743a1f3e22b0fa74a16e8"
+  integrity sha512-8uKOL2AnNWQlBslaXu1sp3EOpjBVpuYMhQRUYGK3M/GDA3SqwwmBrr/1k9kjrbTBXpSNdSZ3VeHCIBY+aDcj7A==
   dependencies:
     "@types/node" "^16.9.6"
     "@types/puppeteer" "^5.4.4"
