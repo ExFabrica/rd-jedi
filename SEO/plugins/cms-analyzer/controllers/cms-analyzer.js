@@ -51,12 +51,9 @@ module.exports = {
   getAnalyzer: async (ctx) => {
     const { url } = ctx.query;
     let result;
-    try {
-      result = await analyzer(url);
-    }
-    catch (ex) {
-      ctx.send({ "status": 500, message: ex });
-    }
+    result = await analyzer(url).catch(err => {
+      ctx.send({ "status": 500, message: err });
+    });
     ctx.send(result);
   },
   runConsolidation: async (ctx) => {

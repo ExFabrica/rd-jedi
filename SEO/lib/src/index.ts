@@ -5,6 +5,9 @@ import { SeoAnalyzer } from "./analyser/seo/tester";
 module.exports = async function analyze(uri: string): Promise<any> {
     uri = !uri ? "https://demo-front.kasty.io/fr" : uri;
     const tester = new SeoAnalyzer(rules, uri);
-    const globalResults: IPageResults = await tester.run(uri);
+    const globalResults: IPageResults = await tester.run(uri).catch(
+        (err) => {
+            return Promise.reject(err);
+        });
     return globalResults;
 };

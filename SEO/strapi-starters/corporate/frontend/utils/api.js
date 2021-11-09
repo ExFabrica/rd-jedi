@@ -1,7 +1,10 @@
+import getConfig from 'next/config';
+const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+const API_URI = serverRuntimeConfig.URI || publicRuntimeConfig.URI;
+
 export function getStrapiURL(path) {
-  return `${
-    process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
-  }${path}`
+  console.log(`api url: ${API_URI}${path}`)
+  return `${API_URI}${path}`
 }
 
 // Helper to make GET requests to Strapi

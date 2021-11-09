@@ -27,24 +27,42 @@ const HomePage = (props) => {
   const [showLoader, setShowLoader] = useState();
 
   useEffect(() => {
+    console.log("getAnalyses component mount");
+    try {
     contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
+      console.log("getAnalyses analyses ", analyses);
       setResults(analyses);
+    }, (err) => {
+      console.log(err);
     });
     settingsMiddleware.get().then(settings => {
       setSettings(settings);
-    })
+    });
+  }
+  catch(err) {
+    console.log("getAnalyses component mount try catch: ", err);
+  }
   }, []);
 
   const handleSubmit = () => {
+    console.log("handleSubmit Click");
     setShowLoader(true);
-    contentAnalyzerMiddleware.runConsolidation(settings.frontUrl).then((result) => {
-      if (result.success) {
-        contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
-          setResults(analyses);
-          setShowLoader(false);
-        });
-      }
-    });
+    try {
+      contentAnalyzerMiddleware.runConsolidation(settings.frontUrl).then((result) => {
+        console.log("runConsolidation result ", result);
+        if (result.success) {
+          contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
+            console.log("runConsolidation getAnalyses analyses ", analyses);
+            setResults(analyses);
+            setShowLoader(false);
+          });
+        }
+      }, (err) => {
+        console.log(err);
+      });
+    } catch (err) {
+      console.log("handleSubmit try catch err ", err);
+    }
   }
 
   return (

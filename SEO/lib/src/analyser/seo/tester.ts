@@ -224,6 +224,7 @@ export class SeoAnalyzer {
   }
 
   private async computeSitemap(browser: puppeteer.Browser, fetchedData: ISitemapPageDetails): Promise<any[]> {
+    console.debug("Begin - ComputeSitemap method");
     let links: ISitemapPageDetails[] = [fetchedData];
     const childLinksToCrawl = this.getLinksFromPage(fetchedData);
     if (childLinksToCrawl) {
@@ -233,27 +234,50 @@ export class SeoAnalyzer {
       }
       return _.uniqBy(links, "url");
     }
+    console.debug("End - ComputeSitemap method");
     return [];
   }
 
   private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<ISitemapPageDetails> {
-    const page = await browser.newPage();
-    await page.goto(url);
-    const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
-      let base64Encode = `data:image/png;base64,${data}`;
-      return base64Encode;
-    });
-    const html = await page.evaluate(() => document.documentElement.outerHTML);
-    return { url, html, screenshot }
+    try {
+      console.debug("Begin - Puppeteer crawl url: ", url);
+      const page = await browser.newPage();
+      await page.goto(url);
+      const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
+        let base64Encode = `data:image/png;base64,${data}`;
+        return base64Encode;
+      });
+      const html = await page.evaluate(() => document.documentElement.outerHTML);
+      console.debug("End - Puppeteer crawl url");
+      return { url, html, screenshot };
+    }
+    catch (err) {
+      console.debug(err);
+      throw err;
+    }
   }
 
   public async run(url: string): Promise<IPageResults> {
-    const browser = await puppeteer.launch();
+    console.debug("Begin - Main process");
+    console.debug("Begin - Puppeteer initialization");
+    let browser: any;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        ignoreHTTPSErrors: true,
+        args: ['--no-sandbox']
+      });
+    }
+    catch (err) {
+      console.debug(err);
+      throw err;
+    }
+    console.debug("End - Puppeteer initialization");
+    
     let globalResults: IPageResults = {
       results: [],
       sitemap: []
     };
-
 
     const fetchedResult = await this.getHtmlFromUrl(browser, url);
     globalResults.sitemap = await this.computeSitemap(browser, fetchedResult);
@@ -272,7 +296,7 @@ export class SeoAnalyzer {
       //console.log("Tags -> ", result.tags);
       console.log("Url -> ", result.url);
     }*/
-
+    console.debug("End - Main process");
     return globalResults;
   }
 };
