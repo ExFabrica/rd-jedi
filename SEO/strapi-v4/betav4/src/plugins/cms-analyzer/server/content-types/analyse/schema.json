@@ -1,0 +1,42 @@
+{
+  "info": {
+    "singularName": "analyse",
+    "pluralName": "analyses",
+    "collectionName": "cmsAnalyzerResults",
+    "displayName": "CmsAnalyzerResults",
+    "description": "Cms Analyzer results"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "apiNames": {
+      "type": "json"
+    },
+    "frontUrl": {
+      "type": "string"
+    },
+    "documentId": {
+      "type": "integer"
+    },
+    "documentFields": {
+      "type": "json"
+    },
+    "seoAnalyse": {
+      "type": "json"
+    },
+    "screenshot": {
+      "type": "string"
+    }
+  }
+}

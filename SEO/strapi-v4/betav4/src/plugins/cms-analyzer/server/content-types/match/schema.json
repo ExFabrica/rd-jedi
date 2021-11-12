@@ -1,0 +1,36 @@
+{
+  "info": {
+    "singularName": "match",
+    "pluralName": "matches",
+    "collectionName": "cmsAnalyzerMatches",
+    "displayName": "CmsAnalyzerMatches",
+    "description": "Cms Analyzer matches"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "apiName": {
+      "type": "string"
+    },
+    "fieldName": {
+      "type": "string"
+    },
+    "tagName": {
+      "type": "string"
+    },
+    "componentName": {
+      "type": "string"
+    }
+  }
+}
