@@ -4,11 +4,7 @@ const analysesService = require('./analyse');
 const matchesService = require('./match');
 const _ = require('lodash');
 
-module.exports = (
-    {
-        strapi
-    }
-) => {
+module.exports = ({ strapi }) => {
     /**
      * cms-analyzer.js service
      *
@@ -26,8 +22,6 @@ module.exports = (
         const value = {
             frontUrl: '',
             enabled: true,
-            //setting3: 0,
-            //setting4: { inner1: "" },
         }
         await pluginStore.set({ key: 'settings', value });
         return pluginStore.get({ key: 'settings' });
@@ -37,8 +31,6 @@ module.exports = (
         const value = {
             frontUrl: data.frontUrl,
             enabled: data.enabled,
-            /*setting3: data.setting3,
-            setting4: { inner1: data.setting4.inner1 },*/
         }
 
         const pluginStore = getPluginStore();

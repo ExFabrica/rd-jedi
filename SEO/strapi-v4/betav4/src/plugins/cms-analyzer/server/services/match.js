@@ -1,22 +1,18 @@
-
+'use strict';
 const { isDraft } = require('@strapi/utils').contentTypes;
 
-module.exports = (
-    {
-        strapi
-    }
-) => {
+module.exports = ({ strapi }) => {
     return {
         find(params, populate) {
-            return strapi.query('match', 'cms-analyzer').find(params, populate);
+            return strapi.query('plugin::cms-analyzer.match').findMany(params, populate);
         },
 
         findOne(params, populate) {
-            return strapi.query('match', 'cms-analyzer').findOne(params, populate);
+            return strapi.query('plugin::cms-analyzer.match').findOne(params, populate);
         },
 
         count(params) {
-            return strapi.query('match', 'cms-analyzer').count(params);
+            return strapi.query('plugin::cms-analyzer.match').count(params);
         },
 
         async create(data, { files } = {}) {
@@ -26,7 +22,7 @@ module.exports = (
                 { isDraft: isDraft(data, strapi.plugins['cms-analyzer'].contentTypes.match) }
             );
 
-            const entry = await strapi.query('match', 'cms-analyzer').create(validData);
+            const entry = await strapi.query('plugin::cms-analyzer.match').create(validData);
 
             if (files) {
                 // automatically uploads the files based on the entry and the model
@@ -41,7 +37,7 @@ module.exports = (
         },
 
         async update(params, data, { files } = {}) {
-            const existingEntry = await strapi.query('match', 'cms-analyzer').findOne(params);
+            const existingEntry = await strapi.query('plugin::cms-analyzer.match').findOne(params);
 
             const validData = await strapi.entityValidator.validateEntityUpdate(
                 strapi.plugins['cms-analyzer'].contentTypes.match,
@@ -49,7 +45,7 @@ module.exports = (
                 { isDraft: isDraft(existingEntry, strapi.plugins['cms-analyzer'].contentTypes.match) }
             );
 
-            const entry = await query('match', 'cms-analyzer').update(params, validData);
+            const entry = await query('plugin::cms-analyzer.match').update(params, validData);
 
             if (files) {
                 // automatically uploads the files based on the entry and the model
@@ -64,19 +60,19 @@ module.exports = (
         },
 
         async delete(params) {
-            return await strapi.query('match', 'cms-analyzer').delete(params);
+            return await strapi.query('plugin::cms-analyzer.match').delete(params);
         },
 
         async deleteAll() {
-            return await strapi.query('match', 'cms-analyzer').delete({id_gt: 0});
+            return await strapi.query('plugin::cms-analyzer.match').delete({id_gt: 0});
         },
 
         async search(params) {
-            return await strapi.query('match', 'cms-analyzer').search(params);
+            return await strapi.query('plugin::cms-analyzer.match').search(params);
         },
 
         async countSearch(params) {
-            return await strapi.query('match', 'cms-analyzer').countSearch(params);
+            return await strapi.query('plugin::cms-analyzer.match').countSearch(params);
         }
     };
 };

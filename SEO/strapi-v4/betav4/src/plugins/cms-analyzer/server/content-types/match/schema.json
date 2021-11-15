@@ -1,8 +1,10 @@
 {
+  "kind": "collectionType",
+  "collectionName": "cms-analyser-matches",
   "info": {
     "singularName": "match",
     "pluralName": "matches",
-    "collectionName": "cmsAnalyzerMatches",
+    "collectionName": "cms-analyser-matches",
     "displayName": "CmsAnalyzerMatches",
     "description": "Cms Analyzer matches"
   },

@@ -1,8 +1,10 @@
 {
+  "kind": "collectionType",
+  "collectionName": "cms-analyser-results",
   "info": {
     "singularName": "analyse",
     "pluralName": "analyses",
-    "collectionName": "cmsAnalyzerResults",
+    "collectionName": "cms-analyser-results",
     "displayName": "CmsAnalyzerResults",
     "description": "Cms Analyzer results"
   },
