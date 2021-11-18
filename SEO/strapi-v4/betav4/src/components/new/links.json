@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_new_links",
+  "info": {
+    "displayName": "links",
+    "icon": "arrow-circle-right"
+  },
+  "options": {},
+  "attributes": {
+    "url": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+}

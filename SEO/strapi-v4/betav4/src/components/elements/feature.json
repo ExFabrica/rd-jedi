@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_elements_features",
+  "info": {
+    "name": "feature",
+    "icon": "traffic-light",
+    "displayName": "feature",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    }
+  }
+}
