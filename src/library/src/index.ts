@@ -1,6 +1,6 @@
-import { IPageResults } from "./analyser/seo/interface";
-import { rules } from "./analyser/seo/rules";
-import { SeoAnalyzer } from "./analyser/seo/tester";
+import { SeoAnalyzer } from "./seo/analyzer";
+import { IPageResults } from "./seo/models/interfaces";
+import { rules } from "./seo/rules/rules";
 
 module.exports = async function analyze(uri: string): Promise<any> {
     uri = !uri ? "https://demo-front.kasty.io/fr" : uri;

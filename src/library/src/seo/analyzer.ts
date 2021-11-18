@@ -1,12 +1,10 @@
-import cheerio from 'cheerio';
-import { IRuleResultMessage, IRule, IAnalysisPageResults, IRuleParametersComparaisonTest, IRuleParametersForBooleanTest, IPageResults, ISitemapPageDetails, ITags } from './interface';
 const _ = require('lodash');
+import cheerio from 'cheerio';
+import { IAnalysisPageResults, IPageResults, ISitemapPageResults, ITags } from './models/interfaces';
 import puppeteer from 'puppeteer'
+import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
+import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
 
-export const defaultPreferences = {
-  internalLinksLowerCase: true,
-  internalLinksTrailingSlash: true,
-};
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
@@ -106,7 +104,7 @@ export class SeoAnalyzer {
     await currentRule.validator(
       { result: extractedTags, response: { url, host: this.host }, preferences: {} },
       {
-        test: (params: IRuleParametersComparaisonTest) => {
+        compareTest: (params: ITesterCompareParams) => {
           try {
             params.assert(params.value1, params.value2);
           }
@@ -114,7 +112,7 @@ export class SeoAnalyzer {
             currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
           }
         },
-        trueOrFalse: (params: IRuleParametersForBooleanTest) => {
+        BooleanTest: (params: ITesterBooleanParams) => {
           try {
             params.assert(params.value);
           }
@@ -122,7 +120,7 @@ export class SeoAnalyzer {
             currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
           }
         },
-        lint: (params: IRuleParametersForBooleanTest) => {
+        BooleanLint: (params: ITesterBooleanParams) => {
           try {
             params.assert(params.value);
           }
@@ -205,7 +203,7 @@ export class SeoAnalyzer {
     }
   }
 
-  private getLinksFromPage(fetchedData: ISitemapPageDetails): string[] {
+  private getLinksFromPage(fetchedData: ISitemapPageResults): string[] {
     const result: { aTags: any[] } = this.getAnchors(fetchedData.html);
     if (result.aTags && result.aTags.length > 0) {
       const links: string[] = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
@@ -223,9 +221,9 @@ export class SeoAnalyzer {
     }
   }
 
-  private async computeSitemap(browser: puppeteer.Browser, fetchedData: ISitemapPageDetails): Promise<any[]> {
+  private async computeSitemap(browser: puppeteer.Browser, fetchedData: ISitemapPageResults): Promise<any[]> {
     console.debug("Begin - ComputeSitemap method");
-    let links: ISitemapPageDetails[] = [fetchedData];
+    let links: ISitemapPageResults[] = [fetchedData];
     const childLinksToCrawl = this.getLinksFromPage(fetchedData);
     if (childLinksToCrawl) {
       for (const link of childLinksToCrawl) {
@@ -238,7 +236,7 @@ export class SeoAnalyzer {
     return [];
   }
 
-  private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<ISitemapPageDetails> {
+  private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<ISitemapPageResults> {
     try {
       console.debug("Begin - Puppeteer crawl url: ", url);
       const page = await browser.newPage();
@@ -273,7 +271,7 @@ export class SeoAnalyzer {
       throw err;
     }
     console.debug("End - Puppeteer initialization");
-    
+
     let globalResults: IPageResults = {
       results: [],
       sitemap: []
