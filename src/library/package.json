@@ -14,6 +14,7 @@
   "license": "MIT",
   "scripts": {
     "start:dev": "nodemon src/local.ts",
+    "start:images": "nodemon src/image-comparison/index.ts",
     "build": "rimraf ./dist && tsc",
     "start": "yarn run dist && node dist/index.js",
     "lint": "eslint . --ext .ts"
@@ -24,8 +25,10 @@
     "axios": "^0.21.4",
     "cheerio": "^1.0.0-rc.10",
     "lodash": "^4.17.21",
+    "mz": "^2.7.0",
     "nodemon": "^2.0.12",
     "puppeteer": "^10.4.0",
+    "resemblejs": "^4.0.0",
     "simplecrawler": "^1.1.9",
     "ts-node": "^10.2.1",
     "typescript": "^4.4.3",
