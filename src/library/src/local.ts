@@ -1,6 +1,6 @@
-const analyser = require("./index");
+import { terminator } from "./index";
 
-analyser("http://localhost:3000").then((results) => {
+terminator(["https://kasty.io/"], ['SEO']).then((results) => {
     console.debug("success", results);
 }, (err) => {
     console.debug("error on main side", err);
