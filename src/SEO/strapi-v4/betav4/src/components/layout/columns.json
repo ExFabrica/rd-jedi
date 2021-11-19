@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_layout_columns",
+  "info": {
+    "displayName": "Columns",
+    "icon": "arrow-alt-circle-right"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "links": {
+      "type": "component",
+      "repeatable": true,
+      "component": "links.link"
+    }
+  }
+}

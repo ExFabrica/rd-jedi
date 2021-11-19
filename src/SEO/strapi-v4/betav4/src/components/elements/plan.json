@@ -2,9 +2,8 @@
   "collectionName": "components_elements_plans",
   "info": {
     "name": "plan",
-    "icon": "search-dollar",
-    "displayName": "plan",
-    "description": ""
+    "displayName": "Pricing plan",
+    "icon": "search-dollar"
   },
   "options": {},
   "attributes": {
@@ -13,6 +12,11 @@
     },
     "description": {
       "type": "text"
+    },
+    "features": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.feature"
     },
     "isRecommended": {
       "type": "boolean"

@@ -2,9 +2,8 @@
   "collectionName": "components_meta_metadata",
   "info": {
     "name": "Metadata",
-    "icon": "robot",
-    "displayName": "metadata",
-    "description": ""
+    "displayName": "Metadata",
+    "icon": "robot"
   },
   "options": {},
   "attributes": {
@@ -17,12 +16,12 @@
       "required": true
     },
     "shareImage": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
       "allowedTypes": [
         "images"
-      ]
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": false
     },
     "twitterCardType": {
       "type": "enumeration",

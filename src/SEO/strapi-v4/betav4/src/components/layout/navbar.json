@@ -2,24 +2,29 @@
   "collectionName": "components_layout_navbars",
   "info": {
     "name": "Navbar",
+    "displayName": "Navbar",
     "icon": "map-signs",
-    "description": "",
-    "displayName": "navBar"
+    "description": ""
   },
   "options": {},
   "attributes": {
-    "logo": {
-      "type": "media",
-      "multiple": false,
-      "required": true,
-      "allowedTypes": [
-        "images"
-      ]
-    },
     "links": {
       "type": "component",
       "repeatable": true,
       "component": "links.link"
+    },
+    "button": {
+      "type": "component",
+      "repeatable": false,
+      "component": "links.button-link"
+    },
+    "logo": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": true
     }
   }
 }

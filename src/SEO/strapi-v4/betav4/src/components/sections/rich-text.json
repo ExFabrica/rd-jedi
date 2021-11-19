@@ -2,9 +2,8 @@
   "collectionName": "components_sections_rich_texts",
   "info": {
     "name": "RichText",
-    "icon": "text-height",
-    "displayName": "richText",
-    "description": ""
+    "displayName": "Rich text",
+    "icon": "text-height"
   },
   "options": {},
   "attributes": {

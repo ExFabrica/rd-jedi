@@ -2,9 +2,8 @@
   "collectionName": "components_links_footer_sections",
   "info": {
     "name": "FooterSection",
-    "icon": "chevron-circle-down",
-    "displayName": "footerSection",
-    "description": ""
+    "displayName": "Footer section",
+    "icon": "chevron-circle-down"
   },
   "options": {},
   "attributes": {
