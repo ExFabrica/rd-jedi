@@ -2,9 +2,8 @@
   "collectionName": "components_elements_features",
   "info": {
     "name": "feature",
-    "icon": "traffic-light",
-    "displayName": "feature",
-    "description": ""
+    "displayName": "Feature",
+    "icon": "traffic-light"
   },
   "options": {},
   "attributes": {

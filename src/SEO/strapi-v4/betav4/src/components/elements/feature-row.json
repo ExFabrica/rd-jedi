@@ -1,14 +1,16 @@
 {
-  "collectionName": "components_elements_feature_rows",
+  "collectionName": "components_slices_feature_rows",
   "info": {
-    "displayName": "FeatureRow",
-    "icon": "arrow-alt-circle-left",
+    "name": "FeatureRow",
+    "displayName": "Feature row",
+    "icon": "arrows-alt-h",
     "description": ""
   },
   "options": {},
   "attributes": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
       "type": "text"
@@ -16,11 +18,16 @@
     "media": {
       "allowedTypes": [
         "images",
-        "files",
         "videos"
       ],
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "required": true
+    },
+    "link": {
+      "type": "component",
+      "repeatable": false,
+      "component": "links.link"
     }
   }
 }

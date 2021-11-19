@@ -61,6 +61,16 @@
         }
       }
     },
+    "navbar": {
+      "type": "component",
+      "repeatable": false,
+      "component": "layout.navbar",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "footer": {
       "type": "component",
       "repeatable": false,
@@ -70,16 +80,6 @@
           "localized": true
         }
       }
-    },
-    "navBar": {
-      "type": "component",
-      "repeatable": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "component": "layout.navbar"
     }
   }
 }

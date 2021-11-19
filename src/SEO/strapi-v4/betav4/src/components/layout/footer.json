@@ -2,8 +2,8 @@
   "collectionName": "components_layout_footers",
   "info": {
     "name": "Footer",
+    "displayName": "Footer",
     "icon": "caret-square-down",
-    "displayName": "footer",
     "description": ""
   },
   "options": {},
@@ -18,6 +18,12 @@
     },
     "smallText": {
       "type": "string"
+    },
+    "columns": {
+      "displayName": "Columns",
+      "type": "component",
+      "repeatable": true,
+      "component": "layout.columns"
     }
   }
 }

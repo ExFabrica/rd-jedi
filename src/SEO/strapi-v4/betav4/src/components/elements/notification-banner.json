@@ -2,9 +2,8 @@
   "collectionName": "components_elements_notification_banners",
   "info": {
     "name": "NotificationBanner",
-    "icon": "exclamation",
-    "displayName": "notificationBanner",
-    "description": ""
+    "displayName": "Notification banner",
+    "icon": "exclamation"
   },
   "options": {},
   "attributes": {

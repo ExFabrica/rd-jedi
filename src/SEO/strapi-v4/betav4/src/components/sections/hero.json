@@ -2,9 +2,8 @@
   "collectionName": "components_slices_heroes",
   "info": {
     "name": "Hero",
-    "icon": "heading",
-    "displayName": "hero",
-    "description": ""
+    "displayName": "Hero",
+    "icon": "heading"
   },
   "options": {},
   "attributes": {
@@ -18,12 +17,12 @@
       "type": "string"
     },
     "picture": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
       "allowedTypes": [
         "images"
-      ]
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": false
     },
     "smallTextWithLink": {
       "type": "richtext"
