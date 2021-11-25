@@ -1,7 +1,5 @@
 'use strict';
 const analyzer = require('exfabrica-cms-engine-analyzer');
-const analysesService = require('./analyse');
-const matchesService = require('./match');
 const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
@@ -66,7 +64,7 @@ module.exports = ({ strapi }) => {
 
         getContents: async () => {
             let potentialFields = [];
-            let contentTypes = await module.exports.getContentTypes();
+            let contentTypes = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContentTypes();
 
             for (const contentType of contentTypes) {
                 let item = {
@@ -115,46 +113,60 @@ module.exports = ({ strapi }) => {
         runConsolidationProcess: async (url) => {
             try {
                 let results = [];
-                await module.exports.clear();
+                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').clear();
                 // Get documents and attributes sorted by apiName
-                const strapiDocumentsByApiName = await module.exports.getStrapiDocumentsByApiName();
+                const strapiDocumentsByApiName = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getStrapiDocumentsByApiName();
                 // Get pages from analyzer
-                const pages = await module.exports.getAnalyzedPages(url);
+                const pages = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getAnalyzedPages(url);
                 // Iterate on pages and documents to match data
                 for (const page of pages) {
                     for (const tag of page.tags) {
                         for (const documentByApiName of strapiDocumentsByApiName) {
                             for (const document of documentByApiName.documents) {
                                 for (const attribute of documentByApiName.attributes) {
-                                    results = module.exports.getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
+                                    results = strapi.service('plugin::cms-analyzer.cmsAnalyzer').getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
                                 }
                             }
                         }
                     }
                 }
                 //Put founded data in plugin collection
-                await module.exports.pushResultsInCollection(results);
+                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').pushResultsInCollection(results);
                 //Work on result to extract relations ships between front tags and Strapi fields
-                await module.exports.pushMatchesInCollection(results);
+                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').pushMatchesInCollection(results);
             }
             catch (ex) {
+                console.debug("Error", ex);
                 return Promise.reject({ success: false, error: ex });
             }
             return Promise.resolve({ success: true })
         },
 
         getStrapiDocumentsByApiName: async () => {
-            const contents = await module.exports.getContents();
+            const contents = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContents();
             let documentsByApiName = [];
             for (const content of contents) {
-                const contentDocuments = await strapi.services[content.apiName].find();
-                if (contentDocuments)
-                    documentsByApiName = _.concat(documentsByApiName,
-                        {
-                            apiName: content.apiName,
-                            documents: _.isArray(contentDocuments) ? contentDocuments : [contentDocuments],
-                            attributes: content.attributes
-                        });
+                // TODO manage pagination
+                const contentDocuments = await strapi.services[`api::${content.apiName}.${content.apiName}`].find();
+                if (contentDocuments) {
+                    if (contentDocuments.hasOwnProperty("results")) {
+
+                        documentsByApiName = _.concat(documentsByApiName,
+                            {
+                                apiName: content.apiName,
+                                documents: contentDocuments.results,
+                                attributes: content.attributes
+                            });
+                    }
+                    else {
+                        documentsByApiName = _.concat(documentsByApiName,
+                            {
+                                apiName: content.apiName,
+                                documents: [contentDocuments],
+                                attributes: content.attributes
+                            });
+                    }
+                }
             }
             return documentsByApiName;
         },
@@ -241,12 +253,12 @@ module.exports = ({ strapi }) => {
                 case "text":
                     docfieldValue = document[attributeKey];
                     if (docfieldValue)
-                        module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
+                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
                     break;
                 case "component":
-                    docfieldValue = document[attribute.componentName][attributeKey];
+                    docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null; 
                     if (docfieldValue)
-                        module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
                     break;
                 case "componentInZone":
                     const section = document[attribute.zone];
@@ -257,13 +269,13 @@ module.exports = ({ strapi }) => {
                                 for (const feature of componentChild.features) {
                                     docfieldValue = feature[attributeKey];
                                     if (docfieldValue)
-                                        module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
                                 }
                             }
                             else {
                                 docfieldValue = componentChild[attributeKey];
                                 if (docfieldValue)
-                                    module.exports.setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
+                                    strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
                             }
                         }
                     }
@@ -274,7 +286,7 @@ module.exports = ({ strapi }) => {
 
         pushResultsInCollection: async (results) => {
             for (const result of results) {
-                await analysesService.create({
+                await strapi.service('plugin::cms-analyzer.analyse').create({
                     apiNames: JSON.stringify(result.apiNames ? result.apiNames : {}),
                     frontUrl: result.frontUrl,
                     documentId: result.documentId,
@@ -292,7 +304,7 @@ module.exports = ({ strapi }) => {
             fields = _.uniqBy(fields, v => [v.componentName, v.tagName, v.apiName, v.fieldName].join());
 
             for (const field of fields) {
-                await matchesService.create({
+                await strapi.service('plugin::cms-analyzer.match').create({
                     apiName: field.apiName,
                     componentName: field.componentName,
                     tagName: field.tagName,
@@ -302,8 +314,8 @@ module.exports = ({ strapi }) => {
         },
 
         clear: async () => {
-            await analysesService.deleteAll();
-            await matchesService.deleteAll();
+            await strapi.service('plugin::cms-analyzer.analyse').deleteAll();
+            await strapi.service('plugin::cms-analyzer.match').deleteAll();
         }
     };
 };

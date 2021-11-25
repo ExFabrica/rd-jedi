@@ -22,7 +22,7 @@ module.exports = ({ strapi }) => {
                 { isDraft: isDraft(data, strapi.plugins['cms-analyzer'].contentTypes.match) }
             );
 
-            const entry = await strapi.query('plugin::cms-analyzer.match').create(validData);
+            const entry = await strapi.query('plugin::cms-analyzer.match').create({ data: validData });
 
             if (files) {
                 // automatically uploads the files based on the entry and the model
@@ -45,7 +45,7 @@ module.exports = ({ strapi }) => {
                 { isDraft: isDraft(existingEntry, strapi.plugins['cms-analyzer'].contentTypes.match) }
             );
 
-            const entry = await query('plugin::cms-analyzer.match').update(params, validData);
+            const entry = await query('plugin::cms-analyzer.match').update(params, { data: validData });
 
             if (files) {
                 // automatically uploads the files based on the entry and the model
@@ -64,7 +64,7 @@ module.exports = ({ strapi }) => {
         },
 
         async deleteAll() {
-            return await strapi.query('plugin::cms-analyzer.match').delete({id_gt: 0});
+            return await strapi.query('plugin::cms-analyzer.match').delete({ where: { id: { $gt: 0 } } });
         },
 
         async search(params) {
