@@ -15,7 +15,7 @@ import { Stack } from '@strapi/design-system/Stack';
 import { Main } from '@strapi/design-system/Main';
 import { Box } from '@strapi/design-system/Box';
 import { Flex } from '@strapi/design-system/Flex';
-import { H2, H3,Text } from '@strapi/design-system/Text';
+import { H2, H3, Text } from '@strapi/design-system/Text';
 import { Button } from '@strapi/design-system/Button';
 import Plus from '@strapi/icons/Plus';
 import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
@@ -27,6 +27,19 @@ import {
 } from '@strapi/helper-plugin';
 import { ToggleInput } from '@strapi/design-system/ToggleInput';
 
+//TABLE
+import Pencil from '@strapi/icons/Pencil';
+import Trash from '@strapi/icons/Trash';
+import { VisuallyHidden } from '@strapi/design-system/VisuallyHidden';
+import { BaseCheckbox } from '@strapi/design-system/BaseCheckbox';
+import { Table, Thead, Tbody, Tr, Td, Th, TFooter } from '@strapi/design-system/Table';
+import { Typography } from '@strapi/design-system/Typography';
+import { Avatar } from '@strapi/design-system/Avatar';
+import { IconButton } from '@strapi/design-system/IconButton';
+//TAB
+import { Tabs, Tab, TabGroup, TabPanels, TabPanel } from '@strapi/design-system/Tabs';
+import { Badge } from '@strapi/design-system/Badge';
+
 
 const HomePage = (props) => {
   const { formatMessage } = useIntl();
@@ -34,12 +47,34 @@ const HomePage = (props) => {
   const [results, setResults] = useState();
   const [isLoading, setIsLoading] = useState();
 
+  const ROW_COUNT = 6;
+  const COL_COUNT = 10;
+  const entry = {
+    cover: 'https://avatars.githubusercontent.com/u/3874873?v=4',
+    description: 'Chez Léon is a human sized Parisian',
+    category: 'French cuisine',
+    contact: 'Leon Lafrite'
+  };
+  const [entries, setEntries] = useState([]);
+
+
   useEffect(() => {
     console.log("getAnalyses component mount");
     try {
       contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
         console.log("getAnalyses analyses ", analyses);
         setResults(analyses);
+
+
+        let entries = [];
+        for (let i = 0; i < 5; i++) {
+          entries.push({
+            ...entry,
+            id: i
+          });
+        }
+        setEntries(entries);
+
       }, (err) => {
         console.log(err);
       });
@@ -73,139 +108,118 @@ const HomePage = (props) => {
     }
   }
 
-  return (
-    <Main labelledBy="title" aria-busy={isLoading}>
-      <HeaderLayout
-        id="title"
-        title={formatMessage({ id: getTrad("plugin.homepage.title") })}
-        subtitle={formatMessage({ id: getTrad("plugin.settings.subtitle") })}
-        primaryAction={
-          <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
-            {"Run Analyzer"}
-          </Button>
-        }
-      >
-      </HeaderLayout>
-      <ContentLayout>
-        {isLoading ? (
-          <LoadingIndicatorPage />
-        ) : (
-          <Layout>
-            <Stack size={2}>
-              {
-                results ?
-                  <>
-                    <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
-                      {results.map((item) => {
-                        const apiNames = item.apiNames;
-                        return <div style={{ marginTop: "20px", padding: "30px", "border": "1px solid gray", "backgroundColor": "#f5f5f5" }} key={item.uid}>
-                          <div style={{ "display": "flex" }}>
-                            <div style={{ "flex": "1" }}>
-                              <h1>{item.frontUrl}</h1>
-                              <Link to={`/plugins/content-manager/collectionType/application::${apiNames[0]}.${apiNames[0]}/${item.documentId}`}>Link to Strapi Document</Link>
-                              <br /><a target="_blank" href={item.frontUrl}>Link to Front</a>
-                            </div>
-                          </div>
-                          <div style={{ "display": "flex" }}>
-                            <div style={{ "flex": "1", "margin": "auto" }}>
-                              <img width="98%" src={item.screenshot} alt={item.url} />
-                            </div>
-                            <div style={{ "flex": "1", "paddingTop": "30px" }}>
-                              <h2>SEO rules to check</h2>
-                              <br />
-                              <h3>For Content Manager:</h3>
-                              <br />
-                              <GenericGrid headers={
-                                [
-                                  {
-                                    name: 'Message',
-                                    value: 'message',
-                                    isSortEnabled: true,
-                                  },
-                                  {
-                                    name: 'Level',
-                                    value: 'level',
-                                    isSortEnabled: true,
-                                  }
-                                ]}
-                                datasource={() => {
-                                  let seoAnalyse = item.seoAnalyse;
-                                  if (seoAnalyse)
-                                    seoAnalyse = seoAnalyse.filter(item => item.target === 0 || item.target === 2).map(item => {
-                                      return {
-                                        message: item.message.length > 90 ? item.message.substring(0, 90) + "..." : item.message,
-                                        level: item.level
-                                      }
-                                    });
-                                  return Promise.resolve(seoAnalyse);
-                                }} ></GenericGrid>
-                              <br />
-                              <h3>For Developer:</h3>
-                              <br />
-                              <GenericGrid headers={
-                                [
-                                  {
-                                    name: 'Message',
-                                    value: 'message',
-                                    isSortEnabled: true,
-                                  },
-                                  {
-                                    name: 'Level',
-                                    value: 'level',
-                                    isSortEnabled: true,
-                                  }]}
-                                datasource={() => {
-                                  let seoAnalyse = item.seoAnalyse;
-                                  if (seoAnalyse)
-                                    seoAnalyse = seoAnalyse.filter(item => item.target === 1 || item.target === 2).map(item => {
-                                      return {
-                                        message: item.message.length > 90 ? item.message.substring(0, 90) + "..." : item.message,
-                                        level: item.level
-                                      }
-                                    });
-                                  return Promise.resolve(seoAnalyse);
-                                }} ></GenericGrid>
-                            </div>
-                          </div>
-                        </div>
-                      })}
-                    </Box>
-                  </>
-                  : <></>
-              }
+  return <Main labelledBy="title" aria-busy={isLoading}>
+    <HeaderLayout
+      id="title"
+      title={formatMessage({ id: getTrad("plugin.homepage.title") })}
+      subtitle={formatMessage({ id: getTrad("plugin.settings.subtitle") })}
+      primaryAction={
+        <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
+          {"Run Analyzer"}
+        </Button>
+      }
+    >
+    </HeaderLayout>
+    <ContentLayout>
+      {isLoading ? (
+        <LoadingIndicatorPage />
+      ) : (
+        <Layout>
+          <Box padding={8} background="primary100">
+            <TabGroup label="Some stuff for the label" id="tabs" onTabChange={selected => console.log(selected)}>
+              <Tabs>
+                <Tab>Content Manager</Tab>
+                <Tab>Developer</Tab>
+                <Tab>Not display</Tab>
+              </Tabs>
+              <TabPanels>
+                <TabPanel>
+                  <Box padding={4} background="neutral0">
+                    <Table colCount={COL_COUNT} rowCount={ROW_COUNT} footer={<TFooter icon={<Plus />}>Add another field to this collection type</TFooter>}>
+                      <Thead>
+                        <Tr>
+                          <Th>
+                            <BaseCheckbox aria-label="Select all entries" />
+                          </Th>
+                          <Th>
+                            <Typography variant="sigma">ID</Typography>
+                          </Th>
+                          <Th>
+                            <Typography variant="sigma">Cover</Typography>
+                          </Th>
+                          <Th>
+                            <Typography variant="sigma">Description</Typography>
+                          </Th>
+                          <Th>
+                            <Typography variant="sigma">Categories</Typography>
+                          </Th>
+                          <Th>
+                            <Typography variant="sigma">Contact</Typography>
+                          </Th>
+                          <Th>
+                            <VisuallyHidden>Actions</VisuallyHidden>
+                          </Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {entries.map(entry => <Tr key={entry.id}>
+                          <Td>
+                            <BaseCheckbox aria-label={`Select ${entry.contact}`} />
+                          </Td>
+                          <Td>
+                            <Typography textColor="neutral800">{entry.id}</Typography>
+                          </Td>
+                          <Td>
+                            <Avatar src={entry.cover} alt={entry.contact} />
+                          </Td>
+                          <Td>
+                            <Typography textColor="neutral800">{entry.description}</Typography>
+                          </Td>
+                          <Td>
+                            <Typography textColor="neutral800">{entry.category}</Typography>
+                          </Td>
+                          <Td>
+                            <Typography textColor="neutral800">{entry.contact}</Typography>
+                          </Td>
+                          <Td>
+                            <Flex>
+                              <IconButton onClick={() => console.log('edit')} label="Edit" noBorder icon={<Pencil />} />
+                              <Box paddingLeft={1}>
+                                <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
+                              </Box>
+                            </Flex>
+                          </Td>
+                        </Tr>)}
+                      </Tbody>
+                    </Table>
+                  </Box>
+                </TabPanel>
+                <TabPanel>
+                  <Box padding={4} background="neutral0">
+                    Second panel
+                  </Box>
+                </TabPanel>
+                <TabPanel>
+                  <Box padding={4} background="neutral0">
+                    Third panel
+                  </Box>
+                </TabPanel>
+              </TabPanels>
+            </TabGroup>
+          </Box>
 
-              <Box background="neutral0" padding={6} shadow="filterShadow" hasRadius>
-                <Stack size={2}>
-                  <Flex>
-                    <H2>
-                      {"Analyzer settings in your current STRAPI application"}
-                    </H2>
-                  </Flex>
-                  {settings ?
-                    <Grid gap={6}>
-                      <GridItem col={6} s={12}>
-                        <Stack size={2}>
-                          <H3>Front to analyze</H3>
-                          <Text>{settings.frontUrl}</Text>
-                        </Stack>
-                      </GridItem>
-                      <GridItem col={6} s={12}>
-                        <Stack size={2}>
-                          <H3>Enabled</H3>
-                          <Text>{settings.enabled}</Text>
-                        </Stack>
-                      </GridItem>
-                    </Grid>
-                    : <></>
-                  }
-                </Stack>
-              </Box>
-            </Stack>
-          </Layout>
-        )}
-      </ContentLayout>
-    </Main>
-  );
+
+
+
+        </Layout>
+      )}
+    </ContentLayout>
+  </Main>
+
+
+
+
+
 };
 
 export default memo(HomePage);
