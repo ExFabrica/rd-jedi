@@ -13,12 +13,17 @@ import { AnalyseExcludeGrid } from './analyse-exclude-grid';
 
 export const AnalysePage = (props) => {
     const { formatMessage } = useIntl();
-    const [seoAnalyse, setSeoAnalyse] = useState([]);
+    const [seoForContent, setSeoForContent] = useState([]);
+    const [seoForFront, setSeoForFront] = useState([]);
 
     useEffect(() => {
         if (props.value && props.value.seoAnalyse) {
             const analyses = JSON.parse(props.value.seoAnalyse);
-            setSeoAnalyse(analyses);
+            if(analyses && analyses.length > 0) { 
+                //Analyses filtering for content Manager && front dev.
+                setSeoForContent(analyses.filter(item => item.target === 0 || item.target === 2));
+                setSeoForFront(analyses.filter(item => item.target === 1 || item.target === 2));
+            }
         }
     }, []);
 
@@ -26,22 +31,22 @@ export const AnalysePage = (props) => {
         <Box padding={8} background="primary100">
             <TabGroup label="Some stuff for the label" id="tabs" onTabChange={selected => console.log(selected)}>
                 <Tabs>
-                    <Tab>Content optimisation</Tab>
-                    <Tab>Front optimisation</Tab>
+                    <Tab>Content optimisation ({seoForContent.length})</Tab>
+                    <Tab>Front optimisation ({seoForFront.length})</Tab>
                     <Tab>Don't show again</Tab>
                 </Tabs>
                 <TabPanels>
                     <TabPanel>
-                        <AnalyseContentGrid value={seoAnalyse}></AnalyseContentGrid>
+                        <AnalyseContentGrid value={seoForContent}></AnalyseContentGrid>
                     </TabPanel>
                     <TabPanel>
                         <Box padding={4} background="neutral0">
-                            <AnalyseFrontGrid value={seoAnalyse}></AnalyseFrontGrid>
+                            <AnalyseFrontGrid value={seoForFront}></AnalyseFrontGrid>
                         </Box>
                     </TabPanel>
                     <TabPanel>
                         <Box padding={4} background="neutral0">
-                            <AnalyseExcludeGrid value={seoAnalyse}></AnalyseExcludeGrid>
+                            <AnalyseExcludeGrid value={[]}></AnalyseExcludeGrid>
                         </Box>
                     </TabPanel>
                 </TabPanels>

@@ -41,20 +41,11 @@ const HomePage = (props) => {
   const [toggleState, setToggleState] = useState({});
 
   useEffect(() => {
-    console.log("getAnalyses component mount");
     try {
       contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
-        console.log("getAnalyses analyses ", analyses);
+        console.log("Retrieved analyses:", analyses);
         setResults(analyses);
-
-        let index = 0;
-        let toggleState = {};
-        for (const analyse of analyses) {
-          const id = `acc-${index}`;
-          toggleState[id] = index === 0;
-          index++;
-        }
-        setToggleState(toggleState);
+        initToggleState(analyses);
       }, (err) => {
         console.log(err);
       });
@@ -63,9 +54,19 @@ const HomePage = (props) => {
       });
     }
     catch (err) {
-      console.log("getAnalyses component mount try catch: ", err);
+      console.log("HomePage mount error: ", err);
     }
   }, []);
+  
+  const initToggleState = (analyses) => {
+    let index = 0;
+    let toggleState = {};
+    for (const analyse of analyses) {
+      toggleState[`acc-${index}`] = index === 0;
+      index++;
+    }
+    setToggleState(toggleState);
+  }
 
   const handleSubmit = () => {
     console.log("handleSubmit Click");
@@ -99,6 +100,10 @@ const HomePage = (props) => {
     setToggleState(state);
   }
 
+  const configure = () => {
+    console.log("settings to do");
+  }
+
   return <Main labelledBy="title" aria-busy={isLoading}>
     <HeaderLayout
       id="title"
@@ -110,7 +115,7 @@ const HomePage = (props) => {
         </Button>
       }
       secondaryAction={
-        <Button variant="tertiary" onClick={handleSubmit} startIcon={<Pencil />}>
+        <Button variant="tertiary" onClick={configure} startIcon={<Pencil />}>
           {"Settings"}
         </Button>
       }
