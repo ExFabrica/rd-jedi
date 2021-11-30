@@ -4,6 +4,8 @@ import pluginId from './pluginId';
 import Initializer from './components/Initializer';
 import PluginIcon from './components/PluginIcon';
 import pluginPermissions from './permissions';
+import { StrapiZoneMarker } from './components/injected/strapi-zone-marker';
+import { StrapiListZoneItem } from './components/injected/strapi-list-zone-item';
 const name = pluginPkg.strapi.name;
 
 export default {
@@ -57,7 +59,29 @@ export default {
     );
   },
 
-  bootstrap(app) { },
+  bootstrap(app) { 
+    // Inject component in Admin
+    app.injectContentManagerComponent('editView', 'informations', {
+      name: 'hal-9000',
+      Component: StrapiZoneMarker,
+    });
+
+    app.injectContentManagerComponent('listView', 'actions', {
+      name: 'hal-9000-list',
+      Component: StrapiZoneMarker,
+    });
+
+    app.injectContentManagerComponent('listView', 'deleteModalAdditionalInfos', {
+      name: 'hal-9000-modal',
+      Component: StrapiZoneMarker,
+    });
+
+    app.injectContentManagerComponent('editView', 'right-links', {
+      name: 'hal-9000-links',
+      Component: StrapiListZoneItem,
+    });
+
+  },
   async registerTrads({ locales }) {
     const importedTrads = await Promise.all(
       locales.map(locale => {
