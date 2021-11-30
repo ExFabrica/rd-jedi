@@ -5,9 +5,12 @@ import PropTypes from 'prop-types';
 //Layout
 import { Box } from '@strapi/design-system/Box';
 import { Flex } from '@strapi/design-system/Flex';
-//Table
+//Icons
 import Pencil from '@strapi/icons/Pencil';
 import Trash from '@strapi/icons/Trash';
+import Earth from '@strapi/icons/Earth';
+import Eye from '@strapi/icons/EyeStriked';
+//Table
 import { BaseCheckbox } from '@strapi/design-system/BaseCheckbox';
 import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
 import { Typography } from '@strapi/design-system/Typography';
@@ -50,12 +53,12 @@ export const AnalyseContentGrid = (props) => {
                 </Td>
                 <Td>
                     <Flex>
-                        <IconButton onClick={() => console.log('edit')} label="Edit" noBorder icon={<Pencil />} />
+                        <IconButton onClick={() => console.log('View')} label="View" noBorder icon={<Earth />} />
                         <Box paddingLeft={1}>
-                            <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
+                            <IconButton onClick={() => console.log("Don't show again")} label="Don't show again" noBorder icon={<Eye />} />
                         </Box>
                         <Box paddingLeft={1}>
-                            <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
+                            <IconButton onClick={() => console.log('edit')} label="Edit" noBorder icon={<Pencil />} />
                         </Box>
                         <Box paddingLeft={1}>
                             <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />

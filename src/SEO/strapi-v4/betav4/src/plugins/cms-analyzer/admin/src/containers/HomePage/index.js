@@ -4,34 +4,29 @@
  *
  */
 import React, { memo, useEffect, useState } from 'react';
+//I18n
 import { useIntl } from 'react-intl';
 import getTrad from '../../utils/getTrad';
+//Middlewares
 import settingsMiddleware from '../../middlewares/settings/ui-settings';
 import contentAnalyzerMiddleware from '../../middlewares/analyzer/ui-contentAnalyzer';
-
-import { Stack } from '@strapi/design-system/Stack';
-import { Main } from '@strapi/design-system/Main';
-import { Box } from '@strapi/design-system/Box';
-import { Flex } from '@strapi/design-system/Flex';
-import { Button } from '@strapi/design-system/Button';
-import Plus from '@strapi/icons/Plus';
-import Pencil from '@strapi/icons/Pencil';
-import User from '@strapi/icons/User';
-import Trash from '@strapi/icons/Trash';
-import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
+//Some components
 import {
   CheckPagePermissions,
   LoadingIndicatorPage,
   useNotification,
 } from '@strapi/helper-plugin';
-import { ToggleInput } from '@strapi/design-system/ToggleInput';
-//Content page grid
-import { AnalysePage } from './components/analyse-page';
+//Custom
+import { Button } from '@strapi/design-system/Button';
+import Plus from '@strapi/icons/Plus';
+import Cog from '@strapi/icons/Cog';
+//Layout
+import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
+import { Main } from '@strapi/design-system/Main';
 //ACCORDION
-
-import { AccordionGroup, Accordion, AccordionToggle, AccordionContent } from '@strapi/design-system/Accordion';
-import { KeyboardNavigable } from '@strapi/design-system/KeyboardNavigable';
-import { IconButton } from '@strapi/design-system/IconButton';
+import { AccordionGroup } from '@strapi/design-system/Accordion';
+//Custom ACCORDION content
+import { AnalyseAccordion } from './components/analyse-accordion';
 
 const HomePage = (props) => {
   const { formatMessage } = useIntl();
@@ -57,7 +52,7 @@ const HomePage = (props) => {
       console.log("HomePage mount error: ", err);
     }
   }, []);
-  
+
   const initToggleState = (analyses) => {
     let index = 0;
     let toggleState = {};
@@ -115,7 +110,7 @@ const HomePage = (props) => {
         </Button>
       }
       secondaryAction={
-        <Button variant="tertiary" onClick={configure} startIcon={<Pencil />}>
+        <Button variant="tertiary" onClick={configure} startIcon={<Cog />}>
           {"Settings"}
         </Button>
       }
@@ -129,17 +124,7 @@ const HomePage = (props) => {
           <AccordionGroup>
             {results.map((analyse, index) => {
               const id = `acc-${index}`;
-              return (
-                <Accordion key={id} expanded={toggleState[id]} toggle={() => toggle(id)} id={id}>
-                  <AccordionToggle startIcon={<User aria-hidden={true} />} action={<Stack horizontal size={0}>
-                    <IconButton noBorder onClick={() => console.log('edit')} label="Edit" icon={<Pencil />} />
-                  </Stack>} title={analyse.frontUrl} togglePosition="left" />
-                  <AccordionContent>
-                    <Box padding={3}>
-                      <AnalysePage key={`contentpage-${index}`} value={analyse}></AnalysePage>
-                    </Box>
-                  </AccordionContent>
-                </Accordion>)
+              return <AnalyseAccordion toggleState={toggleState} key={`contentpage-${index}`} id={id} value={analyse} onToggle={toggle}></AnalyseAccordion>
             })}
           </AccordionGroup>
         </Layout>

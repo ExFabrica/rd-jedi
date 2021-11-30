@@ -3,11 +3,10 @@ import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 
 //Layout
-import { Box } from '@strapi/design-system/Box';
 import { Flex } from '@strapi/design-system/Flex';
+//Icons
+import Eye from '@strapi/icons/Eye';
 //Table
-import Pencil from '@strapi/icons/Pencil';
-import Trash from '@strapi/icons/Trash';
 import { BaseCheckbox } from '@strapi/design-system/BaseCheckbox';
 import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
 import { Typography } from '@strapi/design-system/Typography';
@@ -50,16 +49,7 @@ export const AnalyseExcludeGrid = (props) => {
                 </Td>
                 <Td>
                     <Flex>
-                        <IconButton onClick={() => console.log('edit')} label="Edit" noBorder icon={<Pencil />} />
-                        <Box paddingLeft={1}>
-                            <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
-                        </Box>
-                        <Box paddingLeft={1}>
-                            <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
-                        </Box>
-                        <Box paddingLeft={1}>
-                            <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
-                        </Box>
+                        <IconButton onClick={() => console.log('Show again')} label="Show again" noBorder icon={<Eye />} />
                     </Flex>
                 </Td>
             </Tr>)}
