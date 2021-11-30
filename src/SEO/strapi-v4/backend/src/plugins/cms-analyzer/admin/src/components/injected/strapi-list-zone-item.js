@@ -1,63 +1,38 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import styled from 'styled-components';
 import { StrapiAnalyzerPanel } from './strapi-analyzer-panel';
 import { StrapiUIRefresher } from './strapi-ui-refresher'
 
-const ComponentStyleA = styled.a`
-  display: block;
-  color: #333740;
-  width: 100%;
-  text-decoration: none;
-  span,
-  i,
-  svg {
-    color: #333740;
-    width: 13px;
-    height: 12px;
-    margin-right: 10px;
-    vertical-align: 0;
-  }
-  span {
-    font-size: 13px;
-  }
-  i {
-    display: inline-block;
-    background-image: url("");
-    background-size: contain;
-  }
-  &:hover {
-    text-decoration: none;
-    span,
-    i,
-    svg {
-      color: #007eff;
-    }
-  }
-`;
+import Globe from '@strapi/icons/Globe';
+import { LinkButton } from '@strapi/design-system/LinkButton';
 
 export const StrapiListZoneItem = () => {
-    const [showPanel, setShowPanel] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
 
-    const togglePanel = () => {
-        setShowPanel(!showPanel);
-    };
+  const togglePanel = () => {
+    setShowPanel(!showPanel);
+  };
 
-    return (
-        <>
-            {ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))}
-            <li>
-                <ComponentStyleA
-                    onClick={() => {
-                        togglePanel();
-                    }}
-                >
-                    <i />
-                    <span>Show results from CMS ANALYZER</span>
-                </ComponentStyleA>
-
-                <StrapiUIRefresher />
-            </li>
-        </>
-    );
+  //TODO check if the strapi object is the analyzed list.
+  return (
+    <>
+      {/*inject the html refresher*/}
+      {ReactDOM.createPortal(<StrapiUIRefresher />, document.getElementById("app"))}
+      {/*inject the assisant panel into page*/}
+      {ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))}
+      {/*TODO Add permission*/}
+      <LinkButton
+        onClick={() => {
+          togglePanel();
+        }}
+        size="S"
+        startIcon={<Globe />}
+        style={{ width: '100%' }}
+        variant="secondary"
+        to="#"
+      >
+        {"Analyzer tips"}
+      </LinkButton>
+    </>
+  );
 };
