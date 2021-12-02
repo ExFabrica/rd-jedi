@@ -8,6 +8,9 @@ module.exports = ({ strapi }) => {
      *
      * @description: A set of functions similar to controller's actions to avoid code duplication.
      */
+    const current = () => {
+        return strapi.service('plugin::cms-analyzer.cmsAnalyzer');
+    };
     const getPluginStore = () => {
         return strapi.store({
             environment: '',
@@ -64,11 +67,11 @@ module.exports = ({ strapi }) => {
 
         getContents: async () => {
             let potentialFields = [];
-            let contentTypes = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContentTypes();
+            let contentTypes = await current().getContentTypes();
 
             for (const contentType of contentTypes) {
                 let item = {
-                    apiName: contentType.apiName,
+                    uid: contentType.uid,
                     kind: contentType.kind,
                     attributes: []
                 }
@@ -97,6 +100,14 @@ module.exports = ({ strapi }) => {
                                 for (const [keyC, valueC] of Object.entries(component.attributes)) {
                                     if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
                                         item.attributes.push({ key: keyC, value: valueC, type: "componentInZone", zone: key, componentName: componentName });
+                                    /*else if (valueC.type === "component") {
+                                        console.log("valueC", valueC);
+                                        const subComponent = strapi.components[valueC.component];
+                                        for (const [keyD, valueD] of Object.entries(subComponent.attributes)) {
+                                            if (valueD.type === "text" || valueD.type === "string" || valueD.type === "richtext" || valueD.type === "number")
+                                                item.attributes.push({ key: keyD, value: valueD, type: "nestedComponentIncomponentInZone", zone: `${key}.${keyC}`, componentName: valueC.component });
+                                        }
+                                    }*/
                                 }
                             }
                             break;
@@ -113,27 +124,30 @@ module.exports = ({ strapi }) => {
         runConsolidationProcess: async (url) => {
             try {
                 let results = [];
-                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').clear();
+                await current().clear();
+
                 // Get documents and attributes sorted by apiName
-                const strapiDocumentsByApiName = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getStrapiDocumentsByApiName();
+                const strapiDocumentsByContentType = await current().getStrapiDocumentsByContentType();
+                console.log("strapiDocumentsByContentType", strapiDocumentsByContentType);
                 // Get pages from analyzer
-                const pages = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getAnalyzedPages(url);
+                const pages = await current().getAnalyzedPages(url);
+
                 // Iterate on pages and documents to match data
                 for (const page of pages) {
                     for (const tag of page.tags) {
-                        for (const documentByApiName of strapiDocumentsByApiName) {
-                            for (const document of documentByApiName.documents) {
-                                for (const attribute of documentByApiName.attributes) {
-                                    results = strapi.service('plugin::cms-analyzer.cmsAnalyzer').getAttributeComparaison(results, page, documentByApiName.apiName, document, attribute, tag);
+                        for (const documentByContentType of strapiDocumentsByContentType) {
+                            for (const document of documentByContentType.documents) {
+                                for (const attribute of documentByContentType.contentType.attributes) {
+                                    results = current().getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
                                 }
                             }
                         }
                     }
                 }
                 //Put founded data in plugin collection
-                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').pushResultsInCollection(results);
+                await current().pushResultsInCollection(results);
                 //Work on result to extract relations ships between front tags and Strapi fields
-                await strapi.service('plugin::cms-analyzer.cmsAnalyzer').pushMatchesInCollection(results);
+                await current().pushMatchesInCollection(results);
             }
             catch (ex) {
                 console.debug("Error", ex);
@@ -142,33 +156,22 @@ module.exports = ({ strapi }) => {
             return Promise.resolve({ success: true })
         },
 
-        getStrapiDocumentsByApiName: async () => {
-            const contents = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContents();
-            let documentsByApiName = [];
-            for (const content of contents) {
-                // TODO manage pagination
-                const contentDocuments = await strapi.services[`api::${content.apiName}.${content.apiName}`].find();
-                if (contentDocuments) {
-                    if (contentDocuments.hasOwnProperty("results")) {
-
-                        documentsByApiName = _.concat(documentsByApiName,
-                            {
-                                apiName: content.apiName,
-                                documents: contentDocuments.results,
-                                attributes: content.attributes
-                            });
-                    }
-                    else {
-                        documentsByApiName = _.concat(documentsByApiName,
-                            {
-                                apiName: content.apiName,
-                                documents: [contentDocuments],
-                                attributes: content.attributes
-                            });
-                    }
+        getStrapiDocumentsByContentType: async () => {
+            const contentTypes = await current().getContents();
+            let documentsByContentType = [];
+            for (const contentType of contentTypes) {
+                const contentTypeDocuments = await strapi.query(contentType.uid).findMany({
+                    populate: true,
+                });
+                if (contentTypeDocuments) {
+                    documentsByContentType = _.concat(documentsByContentType,
+                        {
+                            contentType: contentType,
+                            documents: _.isArray(contentTypeDocuments) ? contentTypeDocuments : [contentTypeDocuments],
+                        });
                 }
             }
-            return documentsByApiName;
+            return documentsByContentType;
         },
 
         getAnalyzedPages: async (url) => {
@@ -191,7 +194,7 @@ module.exports = ({ strapi }) => {
                         stringTags = _.concat(stringTags, tags.h4s);
                         stringTags = _.concat(stringTags, tags.h5s);
                         stringTags = _.concat(stringTags, tags.h6s);
-                        stringTags = _.concat(stringTags, tags.ps);
+                        //stringTags = _.concat(stringTags, tags.ps);
                     }
                     page.tags = stringTags;
                     pages.push(page);
@@ -200,7 +203,7 @@ module.exports = ({ strapi }) => {
             return pages;
         },
 
-        setFields: (page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentName) => {
+        setFields: (page, document, uid, tag, attributeKey, docfieldValue, text, results, componentName, dynamicZoneName) => {
             if (docfieldValue && text) {
                 let comparaison = false;
                 if (text.length > 30)
@@ -222,21 +225,21 @@ module.exports = ({ strapi }) => {
                     if (!item)
                         results.push(
                             {
-                                apiNames: [apiName],
+                                apiNames: [uid],
                                 frontUrl: page.url,
                                 documentId: document.id,
-                                documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName }],
+                                documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }],
                                 seoAnalyse: page.seoAnalyse,
                                 screenshot: page.screenshot
                             });
                     else {
                         let field = componentName ?
-                            _.find(item.documentFields, { fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag, componentName: componentName }) :
-                            _.find(item.documentFields, { fieldName: attributeKey, apiName: apiName, value: docfieldValue, tagName: tag.tag });
+                            _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }) :
+                            _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag });
                         if (!field) {
-                            item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: apiName, tagName: tag.tag, componentName: componentName });
-                            if (!item.apiNames.includes(apiName))
-                                item.apiNames.push(apiName);
+                            item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName });
+                            if (!item.apiNames.includes(uid))
+                                item.apiNames.push(uid);
                         }
                     }
                 }
@@ -253,32 +256,29 @@ module.exports = ({ strapi }) => {
                 case "text":
                     docfieldValue = document[attributeKey];
                     if (docfieldValue)
-                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
+                        current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
                     break;
                 case "component":
-                    docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null; 
+                    docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
                     if (docfieldValue)
-                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                        current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
                     break;
                 case "componentInZone":
                     const section = document[attribute.zone];
                     if (_.isArray(section)) {
                         for (const componentChild of section) {
-                            //TODO check that !
-                            if (componentChild.features) {
-                                for (const feature of componentChild.features) {
-                                    docfieldValue = feature[attributeKey];
-                                    if (docfieldValue)
-                                        strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
-                                }
-                            }
-                            else {
-                                docfieldValue = componentChild[attributeKey];
-                                if (docfieldValue)
-                                    strapi.service('plugin::cms-analyzer.cmsAnalyzer').setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component);
-                            }
+                            docfieldValue = componentChild[attributeKey];
+                            if (docfieldValue)
+                                current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
                         }
                     }
+                    break;
+                /*case "nestedComponentIncomponentInZone" : 
+                    docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
+                    if (docfieldValue)
+                        current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                    break;*/
+                default:
                     break;
             }
             return results;
@@ -309,6 +309,7 @@ module.exports = ({ strapi }) => {
                     componentName: field.componentName,
                     tagName: field.tagName,
                     fieldName: field.fieldName,
+                    dynamicZoneName: field.dynamicZoneName
                 });
             }
         },

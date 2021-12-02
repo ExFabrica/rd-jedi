@@ -64,7 +64,15 @@ module.exports = ({ strapi }) => {
         },
 
         async deleteAll() {
-            return await strapi.query('plugin::cms-analyzer.match').delete({ where: { id: { $gt: 0 } } });
+            return await strapi.query('plugin::cms-analyzer.match').deleteMany(
+                {
+                    where: {
+                        id: {
+                            $gt: 0,
+                        },
+                    }
+                }
+            );
         },
 
         async search(params) {

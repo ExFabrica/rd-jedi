@@ -23,6 +23,17 @@ module.exports = {
     const entity = await strapi.plugins['cms-analyzer'].services.match.findOne({ id });
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match });
   },
+  async findByUid(ctx) {
+    const { slug } = ctx.params;
+    console.log("uid", slug);
+
+    const entities = await strapi.plugins['cms-analyzer'].services.match.find({
+      where: {
+        apiName: { $eq: slug }
+      }
+    });
+    return entities.map(entity => sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match }));
+  },
   async count(ctx) {
     if (ctx.query._q) {
       return await strapi.plugins['cms-analyzer'].services.match.countSearch(ctx.query);
@@ -62,6 +73,6 @@ module.exports = {
   },
   async deleteAll(ctx) {
     const entity = await strapi.plugins['cms-analyzer'].services.match.deleteAll();
-    return {"success": true};
+    return { "success": true };
   },
 };

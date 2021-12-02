@@ -17,7 +17,7 @@ export const StrapiListZoneItem = () => {
   return (
     <>
       {/*inject the html refresher*/}
-      {ReactDOM.createPortal(<StrapiUIRefresher />, document.getElementById("app"))}
+      {/*ReactDOM.createPortal(, document.getElementById("app"))*/}
       {/*inject the assisant panel into page*/}
       {ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))}
       {/*TODO Add permission*/}
@@ -29,10 +29,11 @@ export const StrapiListZoneItem = () => {
         startIcon={<Globe />}
         style={{ width: '100%' }}
         variant="secondary"
-        to="#"
+        to=""
       >
         {"Analyzer tips"}
       </LinkButton>
+      <StrapiUIRefresher />
     </>
   );
 };

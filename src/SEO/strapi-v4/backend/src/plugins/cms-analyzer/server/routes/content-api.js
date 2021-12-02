@@ -101,6 +101,12 @@ module.exports = {
       config: { policies: [] }
     },
     {
+      method: 'GET',
+      path: '/matches/uid/:slug',
+      handler: 'match.findByUid',
+      config: { policies: [] }
+    },
+    {
       method: 'POST',
       path: '/matches',
       handler: 'match.create',
