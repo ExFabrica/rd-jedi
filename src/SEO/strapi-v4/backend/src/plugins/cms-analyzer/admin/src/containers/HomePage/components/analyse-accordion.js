@@ -4,13 +4,11 @@ import PropTypes from 'prop-types';
 
 //Layout
 import { Box } from '@strapi/design-system/Box';
-import { Flex } from '@strapi/design-system/Flex';
 import { Stack } from '@strapi/design-system/Stack';
 //Accordion
 import { Accordion, AccordionToggle, AccordionContent } from '@strapi/design-system/Accordion';
 import { IconButton } from '@strapi/design-system/IconButton';
-import Trash from '@strapi/icons/Trash';
-import User from '@strapi/icons/User';
+import Globe from '@strapi/icons/Globe';
 import Pencil from '@strapi/icons/Pencil';
 //Tab
 import { Tabs, Tab, TabGroup, TabPanels, TabPanel } from '@strapi/design-system/Tabs';
@@ -46,7 +44,7 @@ export const AnalyseAccordion = (props) => {
     }, []);
 
     return <Accordion key={props.id} expanded={props.toggleState[props.id]} toggle={() => props.onToggle(props.id)} id={props.id}>
-        <AccordionToggle startIcon={<User aria-hidden={true} />} action={<Stack horizontal size={0}>
+        <AccordionToggle startIcon={<Globe aria-hidden={true} />} action={<Stack horizontal size={0}>
             <IconButton noBorder onClick={() => setEditTitleModalVisible(prev => !prev)} label="Edit" icon={<Pencil />} />
         </Stack>} title={props.value.frontUrl} togglePosition="left" />
         <AccordionContent>
