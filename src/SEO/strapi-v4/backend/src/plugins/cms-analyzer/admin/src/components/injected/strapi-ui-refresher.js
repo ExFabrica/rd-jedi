@@ -15,7 +15,6 @@ export const StrapiUIRefresher = () => {
         request(`/cms-analyzer/matches/uid/${context.slug}`, {
             method: 'GET'
         }).then(result => {
-            console.log("result", result);
             if (result)
                 setDocumentFields(result);
         });
@@ -43,16 +42,16 @@ export const StrapiUIRefresher = () => {
         }
     }
 
-    const removeAnalyzerStrapiTags = () => {
-        const analyzerDivList = document.querySelectorAll("[id$='_analyzer']");
-        if (analyzerDivList && analyzerDivList.length > 0)
-            analyzerDivList.forEach(node => {
-                node.remove();
+    const removeAnalyzerStrapiContainers = () => {
+        const containers = document.querySelectorAll("[id$='_analyzer']");
+        if (containers && containers.length > 0)
+            containers.forEach(container => {
+                container.remove();
             });
     }
 
     const HtmlLookup = () => {
-        removeAnalyzerStrapiTags();
+        removeAnalyzerStrapiContainers();
         for (const documentField of documentFields) {
             if (documentField.componentName) {
                 //Dynamic Zone component
@@ -83,7 +82,6 @@ export const StrapiUIRefresher = () => {
                 const inputItem = document.getElementById(documentField.fieldName);
                 createAnalyzerPanel(inputItem, documentField.tagName);
             }
-            //}
         }
     }
 
