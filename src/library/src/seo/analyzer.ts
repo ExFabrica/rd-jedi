@@ -1,6 +1,6 @@
 const _ = require('lodash');
 import cheerio from 'cheerio';
-import { IAnalysisPageResults, IPageResults, ISitemapPageResults, ITags } from './models/interfaces';
+import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
 import puppeteer from 'puppeteer'
 import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
 import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
@@ -165,8 +165,9 @@ export class SeoAnalyzer {
     }
   }
 
-  private async getGlobalSEOAnalysis(html: string, url: string): Promise<IAnalysisPageResults> {
+  private async getGlobalSEOAnalysis(pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
     try {
+      const {html, url} = pageInfo;
       let results: IRule[] = [];
       let pageResults: IAnalysisPageResults = this.getBlankpageResults(url);
 
@@ -191,62 +192,23 @@ export class SeoAnalyzer {
       pageResults.results = this.formatResults(results);
       return pageResults;
     } catch (err) {
-      console.debug("Seo global anysis", err);
+      console.debug("Seo global analysis", err);
       throw err;
     }
   };
 
-  private getAnchors(html: string): { aTags: any[] } {
-    const $ = cheerio.load(html);
-    return {
-      aTags: this.getAttributes($, 'a'),
-    }
-  }
-
-  private getLinksFromPage(fetchedData: ISitemapPageResults): string[] {
-    const result: { aTags: any[] } = this.getAnchors(fetchedData.html);
-    if (result.aTags && result.aTags.length > 0) {
-      const links: string[] = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
-      const internalLinks: string[] = links.filter(link =>
-        !link.includes('#') &&
-        !link.includes('http') &&
-        !link.includes(fetchedData.url) &&
-        !link.includes('mailto:') &&
-        !link.includes('tel:') &&
-        link !== '/').map(item => {
-          if (_.startsWith(item, '/'))
-            return `${fetchedData.url}${item}`;
-        })
-      return internalLinks;
-    }
-  }
-
-  private async computeSitemap(browser: puppeteer.Browser, fetchedData: ISitemapPageResults): Promise<any[]> {
-    console.debug("Begin - ComputeSitemap method");
-    let links: ISitemapPageResults[] = [fetchedData];
-    const childLinksToCrawl = this.getLinksFromPage(fetchedData);
-    if (childLinksToCrawl) {
-      for (const link of childLinksToCrawl) {
-        const childrenFetchedData = await this.getHtmlFromUrl(browser, link);
-        links.push(childrenFetchedData);
-      }
-      return _.uniqBy(links, "url");
-    }
-    console.debug("End - ComputeSitemap method");
-    return [];
-  }
-
-  private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<ISitemapPageResults> {
+  private async getHtmlFromUrl(page: puppeteer.Page): Promise<IPageInfo> {
     try {
-      console.debug("Begin - Puppeteer crawl url: ", url);
-      const page = await browser.newPage();
-      await page.goto(url);
+      const url = page.url();
+      console.debug("Begin - SEO screenshot url: ", url);
       const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
         let base64Encode = `data:image/png;base64,${data}`;
         return base64Encode;
       });
+      console.debug("End - SEO screenshot");
+      console.debug("Begin - SEO get HTML of url; ", url);
       const html = await page.evaluate(() => document.documentElement.outerHTML);
-      console.debug("End - Puppeteer crawl url");
+      console.debug("End - SEO get HTML");
       return { url, html, screenshot };
     }
     catch (err) {
@@ -255,46 +217,11 @@ export class SeoAnalyzer {
     }
   }
 
-  public async run(url: string): Promise<IPageResults> {
-    console.debug("Begin - Main process");
-    console.debug("Begin - Puppeteer initialization");
-    let browser: any;
-    try {
-      browser = await puppeteer.launch({
-        headless: true,
-        ignoreHTTPSErrors: true,
-        args: ['--no-sandbox']
-      });
-    }
-    catch (err) {
-      console.debug(err);
-      throw err;
-    }
-    console.debug("End - Puppeteer initialization");
-
-    let globalResults: IPageResults = {
-      results: [],
-      sitemap: []
-    };
-
-    const fetchedResult = await this.getHtmlFromUrl(browser, url);
-    globalResults.sitemap = await this.computeSitemap(browser, fetchedResult);
-
-    //Compute Rules
-    for (const fetchedData of globalResults.sitemap) {
-      let results = await this.getGlobalSEOAnalysis(fetchedData.html, fetchedData.url);
-      if (results)
-        globalResults.results.push(results);
-      fetchedData.html = "";
-    }
-
-    /*for (const result of globalResults.results) {
-      console.log("****************************************************************************");
-      console.log("Seo -> ", result.results);
-      //console.log("Tags -> ", result.tags);
-      console.log("Url -> ", result.url);
-    }*/
-    console.debug("End - Main process");
-    return globalResults;
+  public async run(page: puppeteer.Page): Promise<IPageResult> {
+    console.debug("Begin - SEO Main process");
+    const pageInfo = await this.getHtmlFromUrl(page);
+    const result = await this.getGlobalSEOAnalysis(pageInfo);
+    console.debug("End - SEO Main process");
+    return { type:"SEO", result, pageInfo};
   }
 };

@@ -1,8 +1,29 @@
 import { SeoAnalyzer } from "./seo/analyzer";
-import { IPageResults } from "./seo/models/interfaces";
-import { rules } from "./seo/rules/rules";
-import puppeteer, {JSHandle} from 'puppeteer'
-import { error } from "console";
+import { IPageResult as SEOPageResult } from "./seo/models/interfaces";
+import {rules as SEORules} from "./seo/rules/rules"
+import puppeteer from 'puppeteer'
+
+type SeoPreview = Omit<SEOPageResult, "type">
+interface ComputedResults {
+  Sitemap: string[];
+  SEO?: SeoPreview[];
+}
+
+/**
+ * Use URL API to retrive base url from given URL
+ * @param url URL to check
+ * @returns base url as string
+ */
+const retriveBaseUrl = (url: string): string => {
+  let baseUrl;
+  try {
+    const { protocol, host } = new URL(url);
+    baseUrl = `${protocol}//${host}/`;
+  } catch (error) {
+    console.error("Fail to compute baseURL ", error);
+  }
+  return baseUrl;
+}
 
 /**
  * Check url validity
@@ -10,25 +31,30 @@ import { error } from "console";
  * @returns boolean value, TRUE = is valid, FALSE = is not valid
  */
 const isValidUrl = (url: string) => {
-    return url.startsWith("http")
+  let isValid = false;
+  try {
+    const _url = new URL(url)
+    isValid = true
+  } catch (error) {
+    console.log("Fail to pass URL validation => ", error)
+  }
+  return isValid
 }
 
-const mockAnalizerResolve = async (duration: number): Promise<any> => {
-    return new Promise((resolve, reject) => setTimeout(() => {
-        // console.log('Resolving something')
-        resolve(true)},
-        duration,
-        'param1'));
+const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, analysis: PromiseSettledResult<SEOPageResult>[], features: string[]) => {
+  results.Sitemap.push(pptrPage.url());
+  for (const analyseResult of analysis) {
+    if (features.includes('SEO')) {
+      if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "SEO") {
+        //Remove analysis type to avoid redoundancy information 
+        const {result, pageInfo} = analyseResult?.value
+        results.SEO.push({result, pageInfo});
+      } else if (analyseResult.status == "rejected") {
+        console.error("SEO Analysis failed : ", analyseResult?.reason);
+      }
+    }
+  }
 }
-
-const mockAnalizerReject = async (duration: number): Promise<any> => {
-    return new Promise((resolve, reject) => setTimeout(() => {
-        // console.log('Rejecting something')
-        reject(false)},
-        duration,
-        'param1'));
-}
-
 
 /**
    * Explore a list of URL, navigate throught the links found on the pages
@@ -41,19 +67,24 @@ const mockAnalizerReject = async (duration: number): Promise<any> => {
     const exploredURL = new Set<string>();
     const toExploreURL = new Set<string>();
     //Init puppeteer
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: true,
+      ignoreHTTPSErrors: true,
+      args: ['--no-sandbox']
+    });
     const puppeteerPage = await browser.newPage();
 
     //Iterate over all given urls
     for(const url of urls){
-      //start with url provided
-      toExploreURL.add(url)
-      if(exploredURL.has(url)){
+      //Start with url provided;
+      //Retrieve the base url from the given string
+      let baseURL;
+      baseURL = retriveBaseUrl(url);
+      if(exploredURL.has(baseURL)){
         continue;
       }
+      toExploreURL.add(baseURL)
 
-      //TODO: determine baseURL
-      const baseURL = 'https://kasty.io/'
       while (toExploreURL.size > 0) {
         const toExploreIterator = toExploreURL[Symbol.iterator]()
         
@@ -70,9 +101,10 @@ const mockAnalizerReject = async (duration: number): Promise<any> => {
         //Add each link to toExplore Set, unicity is maintained by Set object
         for(const pptrElement of linksFound) {
             const link = await pptrElement.getProperty('href').then(r => r._remoteObject.value)
-          if(!exploredURL.has(link)//add only unexplored links
-          && !toExploreURL.has(link)//avoid setting a value already existing
-          && link.startsWith(baseURL)){//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+          if(link != currentUrl
+            && !exploredURL.has(link)//add only unexplored links
+            && !toExploreURL.has(link)//avoid setting a value already existing
+            && link.startsWith(baseURL)){//add only link on the same base URL, we dont want to crawl the whole (S)WEB
             toExploreURL.add(link);
           }
         }
@@ -81,7 +113,7 @@ const mockAnalizerReject = async (duration: number): Promise<any> => {
         exploredURL.add(currentUrl);
         toExploreURL.delete(currentUrl);
 
-        console.log("Explored URLs", exploredURL)
+        console.log("Already explored URLs", exploredURL)
         console.log('URLs to explore', toExploreURL)
 
         yield puppeteerPage; //Expose each navigable page only once for different analysis
@@ -96,14 +128,14 @@ const mockAnalizerReject = async (duration: number): Promise<any> => {
    * @param features List of analyse to run on selected website; ex: ['SEO', 'Image']
    * @returns Analysis made by selected features on each website
    */
-const terminator = async (siteUrls: string[], features: string[]): Promise<string[]> => {
-    console.log('Terminator is walking in the streets')
+const terminator = async (siteUrls: string[], features: string[]): Promise<ComputedResults> => {
+    console.log('Terminator: Sarah Connor ?')
     console.log('Provided URLs => ', siteUrls)
     console.log("Active features ", features)
 
     //Init
     const urls = new Set(siteUrls)//Deduplicate urls
-    const results = undefined;
+    const results = {Sitemap: [], SEO: []} as ComputedResults;
 
     //Guard clauses for
     if(urls.size > 0 && [...urls].every(isValidUrl)) {
@@ -113,28 +145,25 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<strin
           //Page is a DOMElement or equivalent exposed by puppeteer
           const pageName = await pptrPage?.title();
           console.log("Explorer return a pptrPage name => ", pageName);
-          
-          //Set selected feature Promise array
-          //TODO: invoke each selected feature from the lib
           console.log('Launch Analysis =====>')
+          
           const selectedFeatures = []
-          //Setting Analyzer to run
-          selectedFeatures.push(mockAnalizerResolve(800))
-          selectedFeatures.push(mockAnalizerResolve(1800))
-          selectedFeatures.push(mockAnalizerReject(200))
-          selectedFeatures.push(mockAnalizerResolve(1200))
-          selectedFeatures.push(mockAnalizerResolve(300))
-          selectedFeatures.push(mockAnalizerReject(2000))
+          //Setting Analyzers to run
+          if(features.includes('SEO')){
+            const seoAnalyzer = new SeoAnalyzer(SEORules, "")
+            selectedFeatures.push(seoAnalyzer.run(pptrPage))
+          }
+
           const analysis = await Promise.allSettled(selectedFeatures)
-        //   console.log("analysis results => ", analysis.map(x => x.status))
-          //Store analysis result for this page
+          console.log("analysis results => ", analysis.map(x => x.status))
+         
+          //Store analysis result for this page by feature
+          categorizedResult(results, pptrPage, analysis, features);
         }
 
         //Post process; Consolidate analysis ?
 
-        //Build relations between result analysis and CMS content,
-        //categorized by profile (Contributor / Developer)
-
+        console.log('Terminator : I’ll be back.')
         return Promise.resolve(results);
     }
     else {
