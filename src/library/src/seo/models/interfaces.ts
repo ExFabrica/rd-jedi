@@ -30,13 +30,14 @@ export interface IAnalysisPageResults {
     tags: ITags
 };
 
-export interface ISitemapPageResults {
+export interface IPageInfo {
     url: string,
     html: string;
     screenshot: string;
 };
 
-export interface IPageResults {
-    results: IAnalysisPageResults[];
-    sitemap: ISitemapPageResults[];
+export interface IPageResult {
+    type?: string,
+    result: IAnalysisPageResults;
+    pageInfo: IPageInfo;
 };
