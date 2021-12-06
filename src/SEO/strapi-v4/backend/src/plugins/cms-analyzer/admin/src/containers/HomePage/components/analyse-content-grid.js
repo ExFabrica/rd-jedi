@@ -15,6 +15,8 @@ import { BaseCheckbox } from '@strapi/design-system/BaseCheckbox';
 import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
 import { Typography } from '@strapi/design-system/Typography';
 import { IconButton } from '@strapi/design-system/IconButton';
+//Badge
+import { Badge } from '@strapi/design-system/Badge';
 
 export const AnalyseContentGrid = (props) => {
     const { formatMessage } = useIntl();
@@ -25,9 +27,6 @@ export const AnalyseContentGrid = (props) => {
             <Tr>
                 <Th>
                     <Typography variant="sigma">Message</Typography>
-                </Th>
-                <Th>
-                    <Typography variant="sigma">Priority</Typography>
                 </Th>
                 <Th>
                     <Typography variant="sigma">Level</Typography>
@@ -43,10 +42,11 @@ export const AnalyseContentGrid = (props) => {
                     <Typography textColor="neutral800">{entry.message}</Typography>
                 </Td>
                 <Td>
-                    <Typography textColor="neutral800">{entry.priority}</Typography>
-                </Td>
-                <Td>
-                    <Typography textColor="neutral800">{entry.level}</Typography>
+                    {
+                        entry.level === "warnings"
+                            ? <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
+                            : <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
+                    }
                 </Td>
                 <Td>
                     <Typography textColor="neutral800">{entry.content}</Typography>

@@ -20,7 +20,7 @@ export const StrapiListZoneItem = () => {
       const slugs = _.groupBy(result, "apiName");
       if(slugs)
         setIsVisible(Object.getOwnPropertyNames(slugs).includes(slug));
-  });
+    });
   }, []);
 
   const togglePanel = () => {
