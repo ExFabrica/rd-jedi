@@ -175,30 +175,28 @@ module.exports = ({ strapi }) => {
         },
 
         getAnalyzedPages: async (url) => {
-            const rs = await analyzer(url);
+            const rs = await analyzer.terminator([url], ['SEO']);
             let pages = [];
-            for (const fetchedData of rs.sitemap) {
-                const foundPages = rs.results.filter(item => item.url === fetchedData.url);
-                if (foundPages && foundPages.length > 0) {
-                    let page = { uid: foundPages[0].uid, url: fetchedData.url, tags: [], seoAnalyse: foundPages[0].results, screenshot: fetchedData.screenshot };
-                    let stringTags = [];
-                    const tags = foundPages[0].tags;
-                    if (tags) {
-                        stringTags = _.concat(stringTags, tags.title);
-                        const description = tags.meta.filter(item => item.name === "description");
-                        if (description && description.length > 0)
-                            stringTags = _.concat(stringTags, description[0]);
-                        stringTags = _.concat(stringTags, tags.h1s);
-                        stringTags = _.concat(stringTags, tags.h2s);
-                        stringTags = _.concat(stringTags, tags.h3s);
-                        stringTags = _.concat(stringTags, tags.h4s);
-                        stringTags = _.concat(stringTags, tags.h5s);
-                        stringTags = _.concat(stringTags, tags.h6s);
-                        //stringTags = _.concat(stringTags, tags.ps);
-                    }
-                    page.tags = stringTags;
-                    pages.push(page);
+            //console.log("rs", rs.SEO[0].pageInfo);
+            for (const seo of rs.SEO) {
+                let page = { uid: seo.result.uid, url: seo.pageInfo.url, tags: [], seoAnalyse: seo.result.results, screenshot: seo.pageInfo.screenshot };
+                let stringTags = [];
+                const tags = seo.result.tags;
+                if (tags) {
+                    stringTags = _.concat(stringTags, tags.title);
+                    const description = tags.meta.filter(item => item.name === "description");
+                    if (description && description.length > 0)
+                        stringTags = _.concat(stringTags, description[0]);
+                    stringTags = _.concat(stringTags, tags.h1s);
+                    stringTags = _.concat(stringTags, tags.h2s);
+                    stringTags = _.concat(stringTags, tags.h3s);
+                    stringTags = _.concat(stringTags, tags.h4s);
+                    stringTags = _.concat(stringTags, tags.h5s);
+                    stringTags = _.concat(stringTags, tags.h6s);
+                    //stringTags = _.concat(stringTags, tags.ps);
                 }
+                page.tags = stringTags;
+                pages.push(page);
             }
             return pages;
         },
