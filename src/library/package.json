@@ -7,8 +7,7 @@
     "strapi",
     "cms",
     "seo",
-    "engine",
-    "analizer"
+    "engine"
   ],
   "author": "ExFabrica.io (https://exfabrica.io)",
   "license": "MIT",
@@ -22,17 +21,14 @@
   "dependencies": {
     "@types/node": "^16.9.6",
     "@types/puppeteer": "^5.4.4",
-    "axios": "^0.21.4",
     "cheerio": "^1.0.0-rc.10",
     "lodash": "^4.17.21",
     "mz": "^2.7.0",
     "nodemon": "^2.0.12",
     "puppeteer": "^10.4.0",
     "resemblejs": "^4.0.0",
-    "simplecrawler": "^1.1.9",
     "ts-node": "^10.2.1",
-    "typescript": "^4.4.3",
-    "usus": "^1.6.0"
+    "typescript": "^4.4.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.31.2",
