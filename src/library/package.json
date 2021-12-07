@@ -21,7 +21,6 @@
   "dependencies": {
     "@types/node": "^16.9.6",
     "@types/puppeteer": "^5.4.4",
-    "cheerio": "^1.0.0-rc.10",
     "lodash": "^4.17.21",
     "mz": "^2.7.0",
     "nodemon": "^2.0.12",

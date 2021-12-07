@@ -1,10 +1,9 @@
 const _ = require('lodash');
-import cheerio from 'cheerio';
+import puppeteer from 'puppeteer';
+//import cheerio from 'cheerio';
 import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
-import puppeteer from 'puppeteer'
 import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
 import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
-
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
@@ -45,7 +44,34 @@ export class SeoAnalyzer {
       currentRule.success = true;
   }
 
-  private getAttributes($: any, search: string): any[] {
+  private async getAttributes(page: puppeteer.Page, search: string): Promise<any[]> {
+    const tags = await page.$$eval(search, (elements: Element[]) => {
+      return elements.map((element: Element) => {
+        const out = {
+          tag: element.tagName,
+          innerHTML: element.innerHTML,
+          innerText: element.textContent,
+          attributes: element.getAttributeNames().reduce((obj, name) => ({
+            ...obj,
+            [name]: element.getAttribute(name)
+          }), {})
+        };
+      
+        if (out.attributes) {
+          Object.entries(out.attributes).forEach((attr) => {
+            out[attr[0].toLowerCase()] = attr[1];
+          });
+        }
+
+        delete out.attributes
+        return out;
+      });
+    });
+
+    return tags;
+  };
+
+  /*private getAttributes($: any, search: string): any[] {
     const arr = [];
     $(search).each(function () {
       const namespace = $(this)[0].namespace;
@@ -66,9 +92,9 @@ export class SeoAnalyzer {
       }
     });
     return arr;
-  };
+  };*/
 
-  private getSelectedTagsFromHtml(html: string): ITags {
+  /*private async getSelectedTagsFromHtml(page: puppeteer.Page, html: string): Promise<ITags> {
     const $ = cheerio.load(html);
     const result = {
       html: this.getAttributes($, 'html'),
@@ -88,9 +114,30 @@ export class SeoAnalyzer {
       ps: this.getAttributes($, 'p'),
       body: this.getAttributes($, "body")
     };
+    return Promise.resolve(result);
+  }*/
+
+  private async getSelectedTagsFromHtml(page: puppeteer.Page): Promise<ITags> {
+    const result = {
+      html: await this.getAttributes(page, 'html'),
+      title: await this.getAttributes(page, 'title'),
+      meta: await this.getAttributes(page, 'meta'),
+      ldjson: await this.getAttributes(page, 'script[type="application/ld+json"]'),
+      h1s: await this.getAttributes(page, 'h1'),
+      h2s: await this.getAttributes(page, 'h2'),
+      h3s: await this.getAttributes(page, 'h3'),
+      h4s: await this.getAttributes(page, 'h4'),
+      h5s: await this.getAttributes(page, 'h5'),
+      h6s: await this.getAttributes(page, 'h6'),
+      canonical: await this.getAttributes(page, '[rel="canonical"]'),
+      imgs: await this.getAttributes(page, 'img'),
+      aTags: await this.getAttributes(page, 'a'),
+      linkTags: await this.getAttributes(page, 'link'),
+      ps: await this.getAttributes(page, 'p'),
+      body: await this.getAttributes(page, "body")
+    };
     return result;
   }
-
 
   private getRuleDeepCopy(rule: IRule) {
     let currentRule: IRule = Object.assign({}, rule);
@@ -165,13 +212,13 @@ export class SeoAnalyzer {
     }
   }
 
-  private async getGlobalSEOAnalysis(pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
+  private async getGlobalSEOAnalysis(page: puppeteer.Page, pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
     try {
-      const {html, url} = pageInfo;
+      const { html, url } = pageInfo;
       let results: IRule[] = [];
       let pageResults: IAnalysisPageResults = this.getBlankpageResults(url);
 
-      const extractedTags = this.getSelectedTagsFromHtml(html);
+      const extractedTags = await this.getSelectedTagsFromHtml(page);
       pageResults.tags = extractedTags;
 
       this.siteWideLinks.set(url, extractedTags.aTags);
@@ -220,8 +267,8 @@ export class SeoAnalyzer {
   public async run(page: puppeteer.Page): Promise<IPageResult> {
     console.debug("Begin - SEO Main process");
     const pageInfo = await this.getHtmlFromUrl(page);
-    const result = await this.getGlobalSEOAnalysis(pageInfo);
+    const result = await this.getGlobalSEOAnalysis(page, pageInfo);
     console.debug("End - SEO Main process");
-    return { type:"SEO", result, pageInfo};
+    return { type: "SEO", result, pageInfo };
   }
 };
