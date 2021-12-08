@@ -56,7 +56,7 @@ export class SeoAnalyzer {
             [name]: element.getAttribute(name)
           }), {})
         };
-      
+        // tranform attributes array in properties directly accessible in object structure.
         if (out.attributes) {
           Object.entries(out.attributes).forEach((attr) => {
             out[attr[0].toLowerCase()] = attr[1];
@@ -67,58 +67,11 @@ export class SeoAnalyzer {
         return out;
       });
     });
-
     return tags;
   };
 
-  /*private getAttributes($: any, search: string): any[] {
-    const arr = [];
-    $(search).each(function () {
-      const namespace = $(this)[0].namespace;
-      if (!namespace || namespace.includes('html')) {
-        const out = {
-          tag: $(this)[0].name,
-          innerHTML: $(this).html(),
-          innerText: $(this).text(),
-        };
-
-        if ($(this)[0].attribs) {
-          Object.entries($(this)[0].attribs).forEach((attr) => {
-            out[attr[0].toLowerCase()] = attr[1];
-          });
-        }
-
-        arr.push(out);
-      }
-    });
-    return arr;
-  };*/
-
-  /*private async getSelectedTagsFromHtml(page: puppeteer.Page, html: string): Promise<ITags> {
-    const $ = cheerio.load(html);
-    const result = {
-      html: this.getAttributes($, 'html'),
-      title: this.getAttributes($, 'title'),
-      meta: this.getAttributes($, 'head meta'),
-      ldjson: this.getAttributes($, 'script[type="application/ld+json"]'),
-      h1s: this.getAttributes($, 'h1'),
-      h2s: this.getAttributes($, 'h2'),
-      h3s: this.getAttributes($, 'h3'),
-      h4s: this.getAttributes($, 'h4'),
-      h5s: this.getAttributes($, 'h5'),
-      h6s: this.getAttributes($, 'h6'),
-      canonical: this.getAttributes($, '[rel="canonical"]'),
-      imgs: this.getAttributes($, 'img'),
-      aTags: this.getAttributes($, 'a'),
-      linkTags: this.getAttributes($, 'link'),
-      ps: this.getAttributes($, 'p'),
-      body: this.getAttributes($, "body")
-    };
-    return Promise.resolve(result);
-  }*/
-
-  private async getSelectedTagsFromHtml(page: puppeteer.Page): Promise<ITags> {
-    const result = {
+  private async getSEOTags(page: puppeteer.Page): Promise<ITags> {
+    return {
       html: await this.getAttributes(page, 'html'),
       title: await this.getAttributes(page, 'title'),
       meta: await this.getAttributes(page, 'meta'),
@@ -136,7 +89,6 @@ export class SeoAnalyzer {
       ps: await this.getAttributes(page, 'p'),
       body: await this.getAttributes(page, "body")
     };
-    return result;
   }
 
   private getRuleDeepCopy(rule: IRule) {
@@ -147,7 +99,7 @@ export class SeoAnalyzer {
     return currentRule;
   }
 
-  private async analyzeRule(currentRule: IRule, extractedTags: any, url: string) {
+  private async validateARule(currentRule: IRule, extractedTags: any, url: string) {
     await currentRule.validator(
       { result: extractedTags, response: { url, host: this.host }, preferences: {} },
       {
@@ -212,13 +164,14 @@ export class SeoAnalyzer {
     }
   }
 
-  private async getGlobalSEOAnalysis(page: puppeteer.Page, pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
+  private async getSEOAnalysis(page: puppeteer.Page, pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
     try {
-      const { html, url } = pageInfo;
+      console.debug("Begin - SEO get analysis");
+      const { url } = pageInfo;
       let results: IRule[] = [];
       let pageResults: IAnalysisPageResults = this.getBlankpageResults(url);
 
-      const extractedTags = await this.getSelectedTagsFromHtml(page);
+      const extractedTags = await this.getSEOTags(page);
       pageResults.tags = extractedTags;
 
       this.siteWideLinks.set(url, extractedTags.aTags);
@@ -231,44 +184,46 @@ export class SeoAnalyzer {
 
       for (let rule of this.rulesToUse) {
         let currentRule = this.getRuleDeepCopy(rule);
-        await this.analyzeRule(currentRule, extractedTags, url);
+        await this.validateARule(currentRule, extractedTags, url);
         this.finishRule(currentRule)
         results.push(currentRule);
       }
 
       pageResults.results = this.formatResults(results);
+      console.debug("End - SEO get analysis");
       return pageResults;
     } catch (err) {
-      console.debug("Seo global analysis", err);
       throw err;
     }
   };
 
-  private async getHtmlFromUrl(page: puppeteer.Page): Promise<IPageInfo> {
+  private async getPageInfo(page: puppeteer.Page): Promise<IPageInfo> {
     try {
+      console.debug("Begin - Get PageInfo");
       const url = page.url();
-      console.debug("Begin - SEO screenshot url: ", url);
       const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
         let base64Encode = `data:image/png;base64,${data}`;
+        console.debug("End - Get PageInfo");
         return base64Encode;
       });
-      console.debug("End - SEO screenshot");
-      console.debug("Begin - SEO get HTML of url; ", url);
-      const html = await page.evaluate(() => document.documentElement.outerHTML);
-      console.debug("End - SEO get HTML");
-      return { url, html, screenshot };
+      return { url, screenshot };
     }
     catch (err) {
-      console.debug(err);
       throw err;
     }
   }
 
   public async run(page: puppeteer.Page): Promise<IPageResult> {
-    console.debug("Begin - SEO Main process");
-    const pageInfo = await this.getHtmlFromUrl(page);
-    const result = await this.getGlobalSEOAnalysis(page, pageInfo);
-    console.debug("End - SEO Main process");
-    return { type: "SEO", result, pageInfo };
+    try {
+      console.debug("Begin - SEO Main process");
+      const pageInfo = await this.getPageInfo(page);
+      const seoResult = await this.getSEOAnalysis(page, pageInfo);
+      console.debug("End - SEO Main process");
+      return { type: "SEO", result: seoResult, pageInfo };
+    }
+    catch (err) {
+      console.debug("Err: SEO Main process", err);
+      throw err;
+    }
   }
 };

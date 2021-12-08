@@ -32,7 +32,7 @@ export interface IAnalysisPageResults {
 
 export interface IPageInfo {
     url: string,
-    html: string;
+    //html: string;
     screenshot: string;
 };
 
