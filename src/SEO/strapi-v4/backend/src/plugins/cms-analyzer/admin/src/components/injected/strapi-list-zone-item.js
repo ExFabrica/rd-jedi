@@ -43,7 +43,7 @@ export const StrapiListZoneItem = () => {
         startIcon={<Globe />}
         style={{ width: '100%' }}
         variant="secondary"
-        to=""
+        to="#"
       >
         {"Analyzer tips"}
       </LinkButton>

@@ -65,6 +65,43 @@ module.exports = ({ strapi }) => {
             return contentTypes;
         },
 
+        getComponentsToPopulate: async () => {
+            let contentTypes = await current().getContentTypes();
+            const components = [];
+
+            for (const contentType of contentTypes) {
+                components.push({ uid: contentType.uid, components: [], dynamicZones: [] });
+                for (const [key, value] of Object.entries(contentType.attributes)) {
+                    switch (value.type) {
+                        case "component":
+                            components.filter(item => item.uid === contentType.uid)[0].components.push(key);
+                            break;
+                        case "dynamiczone":
+                            components.filter(item => item.uid === contentType.uid)[0].dynamicZones.push(key);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            return components;
+        },
+
+        getPopulateObjectForUID: async (uid) => {
+            const componentsToPopulate = await current().getComponentsToPopulate();
+            let populate = {};
+            const componentToPopulate = componentsToPopulate.filter(item => item.uid === uid);
+            if (componentToPopulate && componentToPopulate.length > 0) {
+                componentToPopulate[0].components?.forEach(component => {
+                    populate[component] = { populate: true }
+                });
+                componentToPopulate[0].dynamicZones?.forEach(dynamicZone => {
+                    populate[dynamicZone] = { populate: true }
+                });
+            }
+            return populate;
+        },
+
         getContents: async () => {
             let potentialFields = [];
             let contentTypes = await current().getContentTypes();
@@ -100,14 +137,14 @@ module.exports = ({ strapi }) => {
                                 for (const [keyC, valueC] of Object.entries(component.attributes)) {
                                     if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
                                         item.attributes.push({ key: keyC, value: valueC, type: "componentInZone", zone: key, componentName: componentName });
-                                    /*else if (valueC.type === "component") {
+                                    else if (valueC.type === "component") {
                                         console.log("valueC", valueC);
                                         const subComponent = strapi.components[valueC.component];
                                         for (const [keyD, valueD] of Object.entries(subComponent.attributes)) {
                                             if (valueD.type === "text" || valueD.type === "string" || valueD.type === "richtext" || valueD.type === "number")
-                                                item.attributes.push({ key: keyD, value: valueD, type: "nestedComponentIncomponentInZone", zone: `${key}.${keyC}`, componentName: valueC.component });
+                                                item.attributes.push({ key: keyD, value: valueD, type: "nestedComponentIncomponentInZone", zone: `${key}|${componentName}`, componentName: keyC });
                                         }
-                                    }*/
+                                    }
                                 }
                             }
                             break;
@@ -159,9 +196,11 @@ module.exports = ({ strapi }) => {
         getStrapiDocumentsByContentType: async () => {
             const contentTypes = await current().getContents();
             let documentsByContentType = [];
+
             for (const contentType of contentTypes) {
+                const populate = await current().getPopulateObjectForUID(contentType.uid);
                 const contentTypeDocuments = await strapi.query(contentType.uid).findMany({
-                    populate: true,
+                    populate: populate
                 });
                 if (contentTypeDocuments) {
                     documentsByContentType = _.concat(documentsByContentType,
@@ -177,7 +216,6 @@ module.exports = ({ strapi }) => {
         getAnalyzedPages: async (url) => {
             const rs = await analyzer.terminator([url], ['SEO']);
             let pages = [];
-            //console.log("rs", rs.SEO[0].pageInfo);
             for (const seo of rs.SEO) {
                 let page = { uid: seo.result.uid, url: seo.pageInfo.url, tags: [], seoAnalyse: seo.result.results, screenshot: seo.pageInfo.screenshot };
                 let stringTags = [];
@@ -185,8 +223,10 @@ module.exports = ({ strapi }) => {
                 if (tags) {
                     stringTags = _.concat(stringTags, tags.title);
                     const description = tags.meta.filter(item => item.name === "description");
-                    if (description && description.length > 0)
+                    if (description && description.length > 0) {
+                        description[0].tag = `${description[0].tag} (${description[0].name})`
                         stringTags = _.concat(stringTags, description[0]);
+                    }
                     stringTags = _.concat(stringTags, tags.h1s);
                     stringTags = _.concat(stringTags, tags.h2s);
                     stringTags = _.concat(stringTags, tags.h3s);
@@ -219,11 +259,12 @@ module.exports = ({ strapi }) => {
 
                 //if (docfieldValue.toLowerCase() === text.toLowerCase()) {
                 if (comparaison) {
-                    const item = _.find(results, { frontUrl: page.url });
+                    const item = _.find(results, { key: `${uid}_${page.url}` });
                     if (!item)
                         results.push(
                             {
-                                apiNames: [uid],
+                                key: `${uid}_${page.url}`,
+                                apiName: uid,
                                 frontUrl: page.url,
                                 documentId: document.id,
                                 documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }],
@@ -236,8 +277,6 @@ module.exports = ({ strapi }) => {
                             _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag });
                         if (!field) {
                             item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName });
-                            if (!item.apiNames.includes(uid))
-                                item.apiNames.push(uid);
                         }
                     }
                 }
@@ -247,7 +286,7 @@ module.exports = ({ strapi }) => {
         getAttributeComparaison: (results, page, apiName, document, attribute, tag) => {
             const attributeKey = attribute.key;
             let docfieldValue = "";
-            const text = tag.tag === "meta" ? tag.content : tag.innerText;
+            const text = tag.tag.includes("META") ? tag.content : tag.innerText;
             //console.log(`attributeKey -> ${attributeKey} *** DocfieldValue: ${docfieldValue} *** TEXT -> ${text} *** TAG -> ${tag.tag}`);
             switch (attribute.type) {
                 case "enumeration":
@@ -271,11 +310,26 @@ module.exports = ({ strapi }) => {
                         }
                     }
                     break;
-                /*case "nestedComponentIncomponentInZone" : 
-                    docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
-                    if (docfieldValue)
-                        current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
-                    break;*/
+                case "nestedComponentIncomponentInZone":
+                    const componentsName = attribute.zone.split("|");
+                    const zone = componentsName[0];
+                    const nestedCompoent = componentsName[1];
+                    const nestedInnerComponents = document[zone].filter(item => item.__component === nestedCompoent);
+                    if (nestedInnerComponents && nestedInnerComponents.length > 0) {
+                        if (_.isArray(nestedInnerComponents[0][attribute.componentName])) {
+                            nestedInnerComponents[0][attribute.componentName].forEach(element => {
+                                docfieldValue = element[attributeKey];
+                                if (docfieldValue)
+                                    current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                            });
+                        }
+                        else {
+                            docfieldValue = nestedInnerComponents[0][attribute.componentName][attributeKey];
+                            if (docfieldValue)
+                                current().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -285,7 +339,8 @@ module.exports = ({ strapi }) => {
         pushResultsInCollection: async (results) => {
             for (const result of results) {
                 await strapi.service('plugin::cms-analyzer.analyse').create({
-                    apiNames: JSON.stringify(result.apiNames ? result.apiNames : {}),
+                    key: result.key,
+                    apiName: result.apiName,
                     frontUrl: result.frontUrl,
                     documentId: result.documentId,
                     seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),

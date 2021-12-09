@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+// tools from helper
 import { useCMEditViewDataManager, request } from '@strapi/helper-plugin';
 //Badge
 import { Badge } from '@strapi/design-system/Badge';
@@ -17,8 +18,14 @@ export const StrapiUIRefresher = () => {
     const [seoAnalyses, setSeoAnalyses] = useState([]);
 
     useEffect(() => {
+        console.log("inputsCollection update");
         HtmlLookup();
-    }, [structureFields.length, inputsCollection.length, modifiedData]);
+    }, [structureFields.length, inputsCollection.length]);
+
+    useEffect(() => {
+        console.log("modifiedData update");
+        HtmlLookup();
+    }, [modifiedData]);
 
     useEffect(() => {
         request(`/cms-analyzer/matches/uid/${context.slug}`, {
@@ -73,6 +80,7 @@ export const StrapiUIRefresher = () => {
 
     const createAnalyzerPanel = (inputItem, tagName) => {
         const inputItemHtmlControl = document.getElementById(inputItem.id);
+
         if (inputItemHtmlControl) {
             const parent = inputItemHtmlControl.parentNode?.parentNode;
             if (parent) {
@@ -96,14 +104,46 @@ export const StrapiUIRefresher = () => {
             if (documentField.componentName) {
                 //Dynamic Zone component
                 if (documentField.dynamicZoneName) {
-                    if (modifiedData && modifiedData[documentField.dynamicZoneName]) {
-                        const dynamicZoneComponents = modifiedData[documentField.dynamicZoneName].map(item => item.__component);
-                        const index = dynamicZoneComponents.indexOf(documentField.componentName);
-                        if (index > -1) {
-                            const inputName = `${documentField.dynamicZoneName}.${index}.${documentField.fieldName}`;
-                            const inputItem = document.getElementById(inputName);
-                            if (inputItem)
-                                createAnalyzerPanel(inputItem, documentField.tagName);
+                    if (!documentField.dynamicZoneName.includes("|")) {
+                        if (modifiedData && modifiedData[documentField.dynamicZoneName]) {
+                            const dynamicZoneComponents = modifiedData[documentField.dynamicZoneName].map(item => item.__component);
+                            const index = dynamicZoneComponents.indexOf(documentField.componentName);
+                            if (index > -1) {
+                                const inputName = `${documentField.dynamicZoneName}.${index}.${documentField.fieldName}`;
+                                const inputItem = document.getElementById(inputName);
+                                if (inputItem)
+                                    createAnalyzerPanel(inputItem, documentField.tagName);
+                            }
+                        }
+                    }
+                    else {
+                        const splittedNames = documentField.dynamicZoneName.split("|");
+                        const dynamicZoneName = splittedNames[0];
+                        const componentName = splittedNames[1];
+                        if (modifiedData && modifiedData[dynamicZoneName]) {
+                            const dynamicZoneComponents = modifiedData[dynamicZoneName].map(item => item.__component);
+                            const componentIndex = dynamicZoneComponents.indexOf(componentName);
+                            if (componentIndex > -1) {
+                                const documentParentComponent = modifiedData[dynamicZoneName].filter(item => item.__component === componentName);
+                                if (documentParentComponent && documentParentComponent.length > 0) {
+                                    const innerComponent = documentParentComponent[0][documentField.componentName];
+                                    if (_.isArray(innerComponent)) {
+                                        innerComponent.forEach((element, index) => {
+                                            const inputName = `${dynamicZoneName}.${componentIndex}.${documentField.componentName}.${index}.${documentField.fieldName}`;
+                                            //console.log("inputName", inputName);
+                                            const inputItem = document.getElementById(inputName);
+                                            if (inputItem)
+                                                createAnalyzerPanel(inputItem, documentField.tagName);
+                                        });
+                                    }
+                                    else {
+                                        const inputName = `${dynamicZoneName}.${componentIndex}.${documentField.componentName}.${documentField.fieldName}`;
+                                        const inputItem = document.getElementById(inputName);
+                                        if (inputItem)
+                                            createAnalyzerPanel(inputItem, documentField.tagName);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -129,11 +169,11 @@ export const StrapiUIRefresher = () => {
             {seoAnalyses && seoAnalyses.length > 0 ?
                 seoAnalyses.map(item => {
                     return item.level === "warnings"
-                        ? <Box id={item.id}>
+                        ? <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="3" paddingRight="3">Low</Badge>
                             &nbsp;<Typography textColor="neutral800" marginLeft="10">{item.message}</Typography>
                         </Box>
-                        : <Box id={item.id}>
+                        : <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="3" paddingRight="3">High</Badge>
                             &nbsp;<Typography textColor="neutral800" marginLeft="10">{item.message}</Typography>
                         </Box>

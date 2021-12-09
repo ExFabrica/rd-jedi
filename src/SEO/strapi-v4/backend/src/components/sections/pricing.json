@@ -3,7 +3,8 @@
   "info": {
     "name": "Pricing",
     "displayName": "Pricing",
-    "icon": "dollar-sign"
+    "icon": "dollar-sign",
+    "description": ""
   },
   "options": {},
   "attributes": {

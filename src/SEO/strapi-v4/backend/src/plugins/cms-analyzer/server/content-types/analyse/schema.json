@@ -22,8 +22,11 @@
     }
   },
   "attributes": {
-    "apiNames": {
-      "type": "json"
+    "key" : {
+      "type": "string"
+    },
+    "apiName": {
+      "type": "string"
     },
     "frontUrl": {
       "type": "string"

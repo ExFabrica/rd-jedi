@@ -21,13 +21,21 @@ module.exports = {
   async findOne(ctx) {
     const { id } = ctx.params;
 
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({ id });
+    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({
+      where: {
+        id: id
+      }
+    });
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
   },
   async findByDocumentId(ctx) {
     const { documentId } = ctx.params;
-
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({ documentId });
+    //TODO regenerate the document ?
+    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({
+      where: {
+        documentId: documentId
+      }
+    });
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
   },
   async count(ctx) {
@@ -52,11 +60,19 @@ module.exports = {
     let entity;
     if (ctx.is('multipart')) {
       const { data, files } = parseMultipartData(ctx);
-      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({ id }, data, {
+      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({
+        where: {
+          id: id
+        }
+      }, data, {
         files,
       });
     } else {
-      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({ id }, ctx.request.body);
+      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({
+        where: {
+          id: id
+        }
+      }, ctx.request.body);
     }
 
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
@@ -64,11 +80,15 @@ module.exports = {
   async delete(ctx) {
     const { id } = ctx.params;
 
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.delete({ id });
+    const entity = await strapi.plugins['cms-analyzer'].services.analyse.delete({
+      where: {
+        id: id
+      }
+    });
     return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
   },
   async deleteAll(ctx) {
     const entity = await strapi.plugins['cms-analyzer'].services.analyse.deleteAll();
-    return {"success": true};
+    return { "success": true };
   },
 };

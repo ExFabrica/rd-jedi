@@ -1,5 +1,4 @@
 'use strict';
-const analyzer = require('exfabrica-cms-engine-analyzer');
 const _ = require('lodash');
 /**
  * cms-analyzer.js controller
@@ -46,14 +45,6 @@ module.exports = {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(documents);
-  },
-  getAnalyzer: async (ctx) => {
-    const { url } = ctx.query;
-    let result;
-    result = await analyzer(url).catch(err => {
-      ctx.send({ "status": 500, message: err });
-    });
-    ctx.send(result);
   },
   runConsolidation: async (ctx) => {
     // remove url property from context

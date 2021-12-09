@@ -42,12 +42,6 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/analyzer',
-      handler: 'cms-analyzer.getAnalyzer',
-      config: { policies: [] }
-    },
-    {
-      method: 'GET',
       path: '/analyses',
       handler: 'analyse.find',
       config: { policies: [] }

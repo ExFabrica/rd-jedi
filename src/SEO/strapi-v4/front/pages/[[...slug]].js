@@ -75,13 +75,65 @@ export async function getStaticProps(context) {
     populate: {
       metadata: {
         populate: {
-          shareImage : {
-            populate: "*"            
+          shareImage: {
+            populate: "*"
           }
         },
       },
       contentSections: {
-        populate: "*"
+        populate: {
+          "plans": {
+            populate: "*"
+          },
+          "buttons": {
+            populate: "*"
+          },
+          "button": {
+            populate: "*"
+          },
+          "links": {
+            populate: "*"
+          },
+          "link": {
+            populate: "*"
+          },
+          "features": {
+            populate: "*"
+          },
+          "feature": {
+            populate: "*"
+          },
+          "logos": {
+            populate: "*"
+          },
+          "icons": {
+            populate: "*"
+          },
+          "medias": {
+            populate: "*"
+          },
+          "feature-colunms": {
+            populate: "*"
+          },
+          "feature-rows": {
+            populate: "*"
+          },
+          "testimonials": {
+            populate: "*"
+          },
+          "button-links": {
+            populate: "*"
+          },
+          "columns": {
+            populate: "*"
+          },
+          "footer": {
+            populate: "*"
+          },
+          "navbar": {
+            populate: "*"
+          },
+        }
       },
       localizations: "*",
     },
