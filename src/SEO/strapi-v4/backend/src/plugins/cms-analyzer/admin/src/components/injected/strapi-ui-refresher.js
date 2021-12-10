@@ -13,21 +13,26 @@ import { Box } from '@strapi/design-system/Box';
 export const StrapiUIRefresher = () => {
     const context = useCMEditViewDataManager();
     const { modifiedData } = context;
-    const [inputsCollection, setInputsCollection] = useState([]);
+    const [nodeElementsCollectionCount, setNodeElementsCollectionCount] = useState(0);
     const [structureFields, setStructureFields] = useState([]);
     const [seoAnalyses, setSeoAnalyses] = useState([]);
+    const [structure, setStructure] = useState([]);
+    const [isStructureRunning, setIsStructureRunning] = useState(false);
 
     useEffect(() => {
-        console.log("inputsCollection update");
-        HtmlLookup();
-    }, [structureFields.length, inputsCollection.length]);
+        if (!isStructureRunning)
+            HtmlLookup();
+    }, [nodeElementsCollectionCount, modifiedData]);
 
     useEffect(() => {
-        console.log("modifiedData update");
-        HtmlLookup();
-    }, [modifiedData]);
+        request(`/cms-analyzer/analyses/documents/${modifiedData.id}`, {
+            method: 'GET'
+        }).then(result => {
+            const seoAnalyses = JSON.parse(result.seoAnalyse);
+            seoAnalyses.forEach(item => item["id"] = uuidv4());
+            setSeoAnalyses(seoAnalyses);
+        });
 
-    useEffect(() => {
         request(`/cms-analyzer/matches/uid/${context.slug}`, {
             method: 'GET'
         }).then(result => {
@@ -35,23 +40,14 @@ export const StrapiUIRefresher = () => {
                 setStructureFields(result);
         });
 
-        request(`/cms-analyzer/analyses/documents/${modifiedData.id}`, {
-            method: 'GET'
-        }).then(result => {
-            const seoAnalyses = JSON.parse(result.seoAnalyse);
-            for (let analyse of seoAnalyses) {
-                analyse["id"] = uuidv4();
-            }
-            console.log("seoAnalyses", seoAnalyses);
-            setSeoAnalyses(seoAnalyses);
-        });
-
         const interval = window.setInterval(() => {
-            let inputsCollection = Array.from(document.getElementsByTagName("input"));
-            inputsCollection = inputsCollection.concat(Array.from(document.getElementsByTagName("textarea")));
-            setInputsCollection(inputsCollection);
-        }, 300);
-        return () => clearInterval(interval);
+            const count = document.querySelectorAll('*').length;
+            setNodeElementsCollectionCount(count);
+        }, 200);
+
+        return () => {
+            clearInterval(interval);
+        };
     }, []);
 
     const updateInputLabel = (tagName, parent) => {
@@ -79,8 +75,7 @@ export const StrapiUIRefresher = () => {
     }
 
     const createAnalyzerPanel = (inputItem, tagName) => {
-        const inputItemHtmlControl = document.getElementById(inputItem.id);
-
+        const inputItemHtmlControl = document.querySelector(`[id='${inputItem.id}']`);
         if (inputItemHtmlControl) {
             const parent = inputItemHtmlControl.parentNode?.parentNode;
             if (parent) {
@@ -98,26 +93,32 @@ export const StrapiUIRefresher = () => {
             });
     }
 
+    //TODO refactor this big method.
     const HtmlLookup = () => {
+        const tempStructure = [];
+        setIsStructureRunning(true);
         removeAnalyzerStrapiContainers();
-        for (const documentField of structureFields) {
-            if (documentField.componentName) {
+        setStructure([]);
+        for (const structureField of structureFields) {
+            if (structureField.componentName) {
                 //Dynamic Zone component
-                if (documentField.dynamicZoneName) {
-                    if (!documentField.dynamicZoneName.includes("|")) {
-                        if (modifiedData && modifiedData[documentField.dynamicZoneName]) {
-                            const dynamicZoneComponents = modifiedData[documentField.dynamicZoneName].map(item => item.__component);
-                            const index = dynamicZoneComponents.indexOf(documentField.componentName);
+                if (structureField.dynamicZoneName) {
+                    if (!structureField.dynamicZoneName.includes("|")) {
+                        if (modifiedData && modifiedData[structureField.dynamicZoneName]) {
+                            const dynamicZoneComponents = modifiedData[structureField.dynamicZoneName].map(item => item.__component);
+                            const index = dynamicZoneComponents.indexOf(structureField.componentName);
                             if (index > -1) {
-                                const inputName = `${documentField.dynamicZoneName}.${index}.${documentField.fieldName}`;
+                                const inputName = `${structureField.dynamicZoneName}.${index}.${structureField.fieldName}`;
                                 const inputItem = document.getElementById(inputName);
-                                if (inputItem)
-                                    createAnalyzerPanel(inputItem, documentField.tagName);
+                                if (inputItem) {
+                                    tempStructure.push({ type: "ZC", keys: [structureField.dynamicZoneName, index, structureField.fieldName] });
+                                    createAnalyzerPanel(inputItem, structureField.tagName);
+                                }
                             }
                         }
                     }
                     else {
-                        const splittedNames = documentField.dynamicZoneName.split("|");
+                        const splittedNames = structureField.dynamicZoneName.split("|");
                         const dynamicZoneName = splittedNames[0];
                         const componentName = splittedNames[1];
                         if (modifiedData && modifiedData[dynamicZoneName]) {
@@ -126,21 +127,24 @@ export const StrapiUIRefresher = () => {
                             if (componentIndex > -1) {
                                 const documentParentComponent = modifiedData[dynamicZoneName].filter(item => item.__component === componentName);
                                 if (documentParentComponent && documentParentComponent.length > 0) {
-                                    const innerComponent = documentParentComponent[0][documentField.componentName];
+                                    const innerComponent = documentParentComponent[0][structureField.componentName];
                                     if (_.isArray(innerComponent)) {
                                         innerComponent.forEach((element, index) => {
-                                            const inputName = `${dynamicZoneName}.${componentIndex}.${documentField.componentName}.${index}.${documentField.fieldName}`;
-                                            //console.log("inputName", inputName);
+                                            const inputName = `${dynamicZoneName}.${componentIndex}.${structureField.componentName}.${index}.${structureField.fieldName}`;
                                             const inputItem = document.getElementById(inputName);
-                                            if (inputItem)
-                                                createAnalyzerPanel(inputItem, documentField.tagName);
+                                            if (inputItem) {
+                                                tempStructure.push({ type: "ZCICA", keys: [dynamicZoneName, componentIndex, structureField.componentName, index, structureField.fieldName] });
+                                                createAnalyzerPanel(inputItem, structureField.tagName);
+                                            }
                                         });
                                     }
                                     else {
-                                        const inputName = `${dynamicZoneName}.${componentIndex}.${documentField.componentName}.${documentField.fieldName}`;
+                                        const inputName = `${dynamicZoneName}.${componentIndex}.${structureField.componentName}.${structureField.fieldName}`;
                                         const inputItem = document.getElementById(inputName);
-                                        if (inputItem)
-                                            createAnalyzerPanel(inputItem, documentField.tagName);
+                                        if (inputItem) {
+                                            tempStructure.push({ type: "ZCIC", keys: [dynamicZoneName, componentIndex, structureField.componentName, structureField.fieldName] });
+                                            createAnalyzerPanel(inputItem, structureField.tagName);
+                                        }
                                     }
                                 }
                             }
@@ -149,19 +153,25 @@ export const StrapiUIRefresher = () => {
                 }
                 //simple component
                 else {
-                    const inputName = `${documentField.componentName}.${documentField.fieldName}`;
+                    const inputName = `${structureField.componentName}.${structureField.fieldName}`;
                     const inputItem = document.getElementById(inputName);
-                    if (inputItem)
-                        createAnalyzerPanel(inputItem, documentField.tagName);
+                    if (inputItem) {
+                        tempStructure.push({ type: "SC", keys: [structureField.componentName, structureField.fieldName] });
+                        createAnalyzerPanel(inputItem, structureField.tagName);
+                    }
                 }
             }
             else {
                 //simple field
-                const inputItem = document.getElementById(documentField.fieldName);
-                if (inputItem)
-                    createAnalyzerPanel(inputItem, documentField.tagName);
+                const inputItem = document.getElementById(structureField.fieldName);
+                if (inputItem) {
+                    tempStructure.push({ type: "SF", keys: [structureField.fieldName] });
+                    createAnalyzerPanel(inputItem, structureField.tagName);
+                }
             }
         }
+        setIsStructureRunning(false);
+        setStructure(tempStructure);
     }
 
     return <>
@@ -171,11 +181,11 @@ export const StrapiUIRefresher = () => {
                     return item.level === "warnings"
                         ? <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="3" paddingRight="3">Low</Badge>
-                            &nbsp;<Typography textColor="neutral800" marginLeft="10">{item.message}</Typography>
+                            &nbsp;<Typography textColor="danger500" marginLeft="10" variant="pi">{item.message}</Typography>
                         </Box>
                         : <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="3" paddingRight="3">High</Badge>
-                            &nbsp;<Typography textColor="neutral800" marginLeft="10">{item.message}</Typography>
+                            &nbsp;<Typography textColor="danger700" marginLeft="10" variant="pi">{item.message}</Typography>
                         </Box>
                 }) : <></>
             }
