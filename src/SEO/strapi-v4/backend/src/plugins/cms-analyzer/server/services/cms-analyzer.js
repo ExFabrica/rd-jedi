@@ -251,13 +251,6 @@ module.exports = ({ strapi }) => {
                 else
                     comparaison = (docfieldValue.toLowerCase() === text.toLowerCase());
 
-                //_.startsWith(docfieldValue.toLowerCase(), text.toLowerCase())
-                //: _.startsWith(text.toLowerCase(), docfieldValue.toLowerCase());
-
-                //docfieldValue.toLowerCase().includes(text.toLowerCase()) :
-                //text.toLowerCase().includes(docfieldValue.toLowerCase());
-
-                //if (docfieldValue.toLowerCase() === text.toLowerCase()) {
                 if (comparaison) {
                     const item = _.find(results, { key: `${uid}_${page.url}` });
                     if (!item)
@@ -269,7 +262,8 @@ module.exports = ({ strapi }) => {
                                 documentId: document.id,
                                 documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }],
                                 seoAnalyse: page.seoAnalyse,
-                                screenshot: page.screenshot
+                                screenshot: page.screenshot,
+                                tags: page.tags
                             });
                     else {
                         let field = componentName ?
@@ -345,7 +339,8 @@ module.exports = ({ strapi }) => {
                     documentId: result.documentId,
                     seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),
                     documentFields: JSON.stringify(result.documentFields ? result.documentFields : {}),
-                    screenshot: result.screenshot
+                    screenshot: result.screenshot,
+                    tags: JSON.stringify(result.tags ? result.tags : {}),
                 });
             }
         },

@@ -29,6 +29,7 @@ export const StrapiUIRefresher = () => {
             method: 'GET'
         }).then(result => {
             const seoAnalyses = JSON.parse(result.seoAnalyse);
+            console.log("seoAnalyses", seoAnalyses);
             seoAnalyses.forEach(item => item["id"] = uuidv4());
             setSeoAnalyses(seoAnalyses);
         });
@@ -171,6 +172,7 @@ export const StrapiUIRefresher = () => {
             }
         }
         setIsStructureRunning(false);
+        console.log("tempStructure", tempStructure);
         setStructure(tempStructure);
     }
 

@@ -1,7 +1,8 @@
 import { SeoAnalyzer } from "./seo/analyzer";
 import { IPageResult as SEOPageResult } from "./seo/models/interfaces";
-import { rules as SEORules } from "./seo/rules/rules"
-import puppeteer from 'puppeteer'
+import { rules as SEORules } from "./seo/rules/rules";
+import { RTRules } from "./seo/rules/real-time.rules";
+import puppeteer from "puppeteer";
 
 type SeoPreview = Omit<SEOPageResult, "type">
 interface ComputedResults {
@@ -121,6 +122,11 @@ const explorer = async function* (urls: string[]) {
   return null;
 }
 
+const realTimeAnalyses = async (payload: any) => {
+  const seoAnalyzer = new SeoAnalyzer(RTRules, "");
+  return await seoAnalyzer.runRealTimeRules(payload);
+}
+
 /**
   * Schedule analysis while exploring pages of given urls
   * @param siteUrls List of website URL to run the tool on; ex: ['https://www.exfabrica.io/', https://kasty.io/]
@@ -171,4 +177,4 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
   }
 }
 
-export { terminator }
+export { terminator, realTimeAnalyses }

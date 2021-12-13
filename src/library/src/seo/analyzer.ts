@@ -4,6 +4,7 @@ import puppeteer from 'puppeteer';
 import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
 import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
 import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
@@ -99,9 +100,41 @@ export class SeoAnalyzer {
     return currentRule;
   }
 
-  private async validateARule(currentRule: IRule, extractedTags: any, url: string) {
+  private async validateSEORule(currentRule: IRule, extractedTags: any, url: string) {
     await currentRule.validator(
       { result: extractedTags, response: { url, host: this.host }, preferences: {} },
+      {
+        compareTest: (params: ITesterCompareParams) => {
+          try {
+            params.assert(params.value1, params.value2);
+          }
+          catch (ex) {
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+          }
+        },
+        BooleanTest: (params: ITesterBooleanParams) => {
+          try {
+            params.assert(params.value);
+          }
+          catch (ex) {
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+          }
+        },
+        BooleanLint: (params: ITesterBooleanParams) => {
+          try {
+            params.assert(params.value);
+          }
+          catch (ex) {
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+          }
+        }
+      },
+    )
+  }
+
+  private async validateSEORTRule(currentRule: IRule, payload: any) {
+    await currentRule.validator(
+      { ...payload },
       {
         compareTest: (params: ITesterCompareParams) => {
           try {
@@ -184,7 +217,7 @@ export class SeoAnalyzer {
 
       for (let rule of this.rulesToUse) {
         let currentRule = this.getRuleDeepCopy(rule);
-        await this.validateARule(currentRule, extractedTags, url);
+        await this.validateSEORule(currentRule, extractedTags, url);
         this.finishRule(currentRule)
         results.push(currentRule);
       }
@@ -211,6 +244,31 @@ export class SeoAnalyzer {
     catch (err) {
       throw err;
     }
+  }
+
+  private runRealTimeRule = async (payload: any): Promise<any> => {
+    let results: any = [];
+    const rules = this.rulesToUse.filter(item => item.name === payload.tag);
+    if (rules && rules.length > 0) {
+      let currentRule = this.getRuleDeepCopy(rules[0]);
+      await this.validateSEORTRule(currentRule, payload);
+      this.finishRule(currentRule);
+      results.push(currentRule);
+    }
+    return results;
+  }
+
+  public async runRealTimeRules(payloads: any): Promise<any> {
+    let results: any = [];
+    if (!_.isArray(payloads))
+      results = await this.runRealTimeRule(payloads);
+    else {
+      await payloads.forEach(async payload => {
+        const result = await this.runRealTimeRule(payload);
+        results.push(...result);
+      });
+    }
+    return results;
   }
 
   public async run(page: puppeteer.Page): Promise<IPageResult> {

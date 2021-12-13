@@ -40,6 +40,9 @@
     "seoAnalyse": {
       "type": "json"
     },
+    "tags": {
+      "type": "json"
+    },
     "screenshot": {
       "type": "string"
     }
