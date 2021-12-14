@@ -109,7 +109,7 @@ export class SeoAnalyzer {
             params.assert(params.value1, params.value2);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanTest: (params: ITesterBooleanParams) => {
@@ -117,7 +117,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanLint: (params: ITesterBooleanParams) => {
@@ -125,14 +125,14 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         }
       },
     )
   }
 
-  private async validateSEORTRule(currentRule: IRule, payload: any) {
+  private async validateSEORTRule(currentRule: IRule, payload: any): Promise<void> {
     await currentRule.validator(
       { ...payload },
       {
@@ -141,7 +141,7 @@ export class SeoAnalyzer {
             params.assert(params.value1, params.value2);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanTest: (params: ITesterBooleanParams) => {
@@ -149,7 +149,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanLint: (params: ITesterBooleanParams) => {
@@ -157,14 +157,14 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         }
       },
     )
   }
 
-  private formatResults(results: IRule[]) {
+  private async formatResults(results: IRule[]): Promise<IRuleResultMessage[]> {
     const display = ['warnings', 'errors'];
     return display
       .reduce((out, key) => {
@@ -222,7 +222,7 @@ export class SeoAnalyzer {
         results.push(currentRule);
       }
 
-      pageResults.results = this.formatResults(results);
+      pageResults.results = await this.formatResults(results);
       console.debug("End - SEO get analysis");
       return pageResults;
     } catch (err) {
@@ -246,7 +246,7 @@ export class SeoAnalyzer {
     }
   }
 
-  private runRealTimeRule = async (payload: any): Promise<any> => {
+  private async runRealTimeRule(payload: any): Promise<IRuleResultMessage[]> {
     let results: any = [];
     const rules = this.rulesToUse.filter(item => item.name === payload.tag);
     if (rules && rules.length > 0) {
@@ -258,17 +258,17 @@ export class SeoAnalyzer {
     return results;
   }
 
-  public async runRealTimeRules(payloads: any): Promise<any> {
+  public async runRealTimeRules(payloads: any): Promise<IRuleResultMessage[]> {
     let results: any = [];
     if (!_.isArray(payloads))
       results = await this.runRealTimeRule(payloads);
     else {
-      await payloads.forEach(async payload => {
+      for (const payload of payloads) {
         const result = await this.runRealTimeRule(payload);
         results.push(...result);
-      });
+      };
     }
-    return results;
+    return this.formatResults(results);
   }
 
   public async run(page: puppeteer.Page): Promise<IPageResult> {

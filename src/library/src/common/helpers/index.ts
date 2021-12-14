@@ -9,6 +9,7 @@ export class Helper {
         value2: any,
         message: string,
         target: IUserTarget,
+        tag: string,
         content?: string,
     ): ITesterCompareParams => {
         return {
@@ -19,6 +20,7 @@ export class Helper {
             message: message,
             target: target,
             content: content,
+            tag: tag
         };
     }
 
@@ -28,6 +30,7 @@ export class Helper {
         value: any,
         message: string,
         target: IUserTarget,
+        tag: string,
         content?: string,
     ): ITesterBooleanParams => {
         return {
@@ -36,7 +39,8 @@ export class Helper {
             value: value,
             message: message,
             target: target,
-            content: content
+            content: content,
+            tag: tag
         };
     }
 

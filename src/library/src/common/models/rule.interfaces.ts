@@ -6,6 +6,7 @@ export interface IRuleResultMessage {
     priority: number;
     content: any;
     target: IUserTarget;
+    tag: string;
 };
 
 export interface IRule {
@@ -15,6 +16,6 @@ export interface IRule {
     errors?: IRuleResultMessage[],
     warnings?: IRuleResultMessage[],
     info?: IRuleResultMessage[],
-    validator?: (payload: any, param2: ITester) => void;
+    validator?: (payload: any, param2: ITester) => Promise<void>;
     testData?: any
 };

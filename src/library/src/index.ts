@@ -3,6 +3,7 @@ import { IPageResult as SEOPageResult } from "./seo/models/interfaces";
 import { rules as SEORules } from "./seo/rules/rules";
 import { RTRules } from "./seo/rules/real-time.rules";
 import puppeteer from "puppeteer";
+import { IRuleResultMessage } from "./common/models/rule.interfaces";
 
 type SeoPreview = Omit<SEOPageResult, "type">
 interface ComputedResults {
@@ -122,7 +123,7 @@ const explorer = async function* (urls: string[]) {
   return null;
 }
 
-const realTimeAnalyses = async (payload: any) => {
+const runSEORealTimeRulesAnalyse = async (payload: any): Promise<IRuleResultMessage[]> => {
   const seoAnalyzer = new SeoAnalyzer(RTRules, "");
   return await seoAnalyzer.runRealTimeRules(payload);
 }
@@ -177,4 +178,4 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
   }
 }
 
-export { terminator, realTimeAnalyses }
+export { terminator, runSEORealTimeRulesAnalyse }

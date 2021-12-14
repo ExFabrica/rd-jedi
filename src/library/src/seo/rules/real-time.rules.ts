@@ -29,6 +29,7 @@ export const RTRules: IRule[] = [
                     0,
                     'Title tags should not be empty',
                     IUserTarget.both,
+                    "TITLE",
                 ));
 
             if (value) {
@@ -38,6 +39,7 @@ export const RTRules: IRule[] = [
                     value.length > 10,
                     'This title tag is shorter than the recommended minimum limit of 10.',
                     IUserTarget.contentManager,
+                    "TITLE",
                     value
                 ));
 
@@ -48,6 +50,7 @@ export const RTRules: IRule[] = [
                         value.length < 70,
                         'This title tag is longer than the recommended limit of 70.',
                         IUserTarget.contentManager,
+                        "TITLE",
                         value
                     ));
 
@@ -57,6 +60,7 @@ export const RTRules: IRule[] = [
                     value.length < 200,
                     `Something could be wrong this title tag is over 200 chars. : ${value}`,
                     IUserTarget.contentManager,
+                    "TITLE",
                     value
                 ));
 
@@ -68,6 +72,7 @@ export const RTRules: IRule[] = [
                     value.includes(stopWords.join('|')),
                     `Title tag includes stopword`,
                     IUserTarget.contentManager,
+                    "TITLE",
                     value
                 ));
             }
@@ -92,6 +97,7 @@ export const RTRules: IRule[] = [
                 0,
                 'Meta description should not be empty',
                 IUserTarget.contentManager,
+                "META",
             ));
 
             tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -100,6 +106,7 @@ export const RTRules: IRule[] = [
                 value.length > 10,
                 `This meta description is shorter than the recommended minimum limit of 10. (${value})`,
                 IUserTarget.contentManager,
+                "META",
                 value
             ));
 
@@ -109,6 +116,7 @@ export const RTRules: IRule[] = [
                 value.length < 120,
                 `This meta description is longer than the recommended limit of 120. ${value.length} (${value})`,
                 IUserTarget.contentManager,
+                "META",
                 value
             ));
 
@@ -118,6 +126,7 @@ export const RTRules: IRule[] = [
                 value.length < 300,
                 'Investigate this meta description. Something could be wrong as it is over 300 chars.',
                 IUserTarget.contentManager,
+                "META",
                 value
             ));
 
@@ -138,6 +147,7 @@ export const RTRules: IRule[] = [
                         matches.length >= 1,
                         'Meta description should include at least 1 of the words in the title tag.',
                         IUserTarget.contentManager,
+                        "META",
                         value
                     ));
                 }
@@ -163,6 +173,7 @@ export const RTRules: IRule[] = [
                 0,
                 'H1 tags should not be empty',
                 IUserTarget.contentManager,
+                "H1"
             ));
 
             tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -171,6 +182,7 @@ export const RTRules: IRule[] = [
                 value.length < 70,
                 `H1 tag is longer than the recommended limit of 70. (${value})`,
                 IUserTarget.contentManager,
+                "H1",
                 value
             ));
 
@@ -180,6 +192,7 @@ export const RTRules: IRule[] = [
                 value.length > 10,
                 `H1 tag is shorter than the recommended limit of 10. (${value})`,
                 IUserTarget.contentManager,
+                "H1",
                 value
             ));
 
@@ -201,6 +214,7 @@ export const RTRules: IRule[] = [
                     matches.length >= 1,
                     `H1 tag should have at least 1 word from your title tag.`,
                     IUserTarget.contentManager,
+                    "H1",
                     value
                 ));
             }
@@ -225,6 +239,7 @@ export const RTRules: IRule[] = [
                 0,
                 'H2 tags should not be empty',
                 IUserTarget.contentManager,
+                "H2",
             ));
 
             tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -233,6 +248,7 @@ export const RTRules: IRule[] = [
                 value.length < 100,
                 `H2 tag is longer than the recommended limit of 100. (${value})`,
                 IUserTarget.contentManager,
+                "H2",
                 value
             ));
 
@@ -242,6 +258,7 @@ export const RTRules: IRule[] = [
                 value.length > 7,
                 `H2 tag is shorter than the recommended limit of 7. (${value})`,
                 IUserTarget.contentManager,
+                "H2",
                 value
             ));
 
@@ -263,6 +280,7 @@ export const RTRules: IRule[] = [
                     matches.length >= 1,
                     `H2 tag should have at least 1 word from your title tag.`,
                     IUserTarget.contentManager,
+                    "H2",
                     value
                 ));
             }
@@ -284,7 +302,8 @@ export const RTRules: IRule[] = [
                 value.length,
                 0,
                 'h3 tags should not be empty',
-                IUserTarget.both
+                IUserTarget.both,
+                "H3",
             ));
 
             tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -293,6 +312,7 @@ export const RTRules: IRule[] = [
                 value.length < 100,
                 `h3 tag is longer than the recommended limit of 100. (${value})`,
                 IUserTarget.contentManager,
+                "H3",
                 value
             ));
 
@@ -302,6 +322,7 @@ export const RTRules: IRule[] = [
                 value.length > 7,
                 `h3 tag is shorter than the recommended limit of 7. (${value})`,
                 IUserTarget.contentManager,
+                "H3",
                 value
             ));
         },
@@ -323,7 +344,8 @@ export const RTRules: IRule[] = [
                 value.length,
                 0,
                 'h4 tags should not be empty',
-                IUserTarget.both
+                IUserTarget.both,
+                "H4",
             ));
 
             tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -332,6 +354,7 @@ export const RTRules: IRule[] = [
                 value.length < 100,
                 `h4 tag is longer than the recommended limit of 100. (${value})`,
                 IUserTarget.contentManager,
+                "H4",
                 value
             ));
 
@@ -341,6 +364,7 @@ export const RTRules: IRule[] = [
                 value.length > 7,
                 `h4 tag is shorter than the recommended limit of 7. (${value})`,
                 IUserTarget.contentManager,
+                "H4",
                 value
             ));
         },

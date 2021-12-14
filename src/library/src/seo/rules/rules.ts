@@ -34,7 +34,8 @@ export const rules: IRule[] = [
         canonicals.length,
         1,
         `There should be 1 and only 1 canonical tag, currently there are ${canonicals.length}`,
-        IUserTarget.developer
+        IUserTarget.developer, 
+        "Canonical Tag"
       ));
       if (canonicals[0]) {
         const { url, host } = payload.response;
@@ -77,6 +78,7 @@ export const rules: IRule[] = [
         1,
         `There should only one and only 1 title tag, currently there are ${titles.length}`,
         IUserTarget.developer,
+        "TITLE"
       ));
 
       if (titles.length !== 1) return;
@@ -90,6 +92,7 @@ export const rules: IRule[] = [
           titles[0].innerHTML,
           'The title tag should not wrap other tags. (innerHTML and innerText should match)',
           IUserTarget.developer,
+          "TITLE",
           titles[0].innerText
         ));
 
@@ -101,6 +104,7 @@ export const rules: IRule[] = [
             0,
             'Title tags should not be empty',
             IUserTarget.both,
+            "TITLE"
           ));
 
         tester.BooleanTest(Helper.getBooleanTestParameters(
@@ -109,6 +113,7 @@ export const rules: IRule[] = [
           !titles[0].innerText.includes('undefined'),
           `Title tag includes "undefined"`,
           IUserTarget.both,
+          "TITLE",
           titles[0].innerText,
         ));
 
@@ -118,6 +123,7 @@ export const rules: IRule[] = [
           !titles[0].innerText.includes('null'),
           `Title tag includes "null"`,
           IUserTarget.both,
+          "TITLE",
           titles[0].innerText
         ));
 
@@ -127,6 +133,7 @@ export const rules: IRule[] = [
           titles[0].innerText.length > 10,
           'This title tag is shorter than the recommended minimum limit of 10.',
           IUserTarget.contentManager,
+          "TITLE",
           titles[0].innerText
         ));
 
@@ -137,6 +144,7 @@ export const rules: IRule[] = [
             titles[0].innerText.length < 70,
             'This title tag is longer than the recommended limit of 70.',
             IUserTarget.contentManager,
+            "TITLE",
             titles[0].innerText
           ));
 
@@ -146,6 +154,7 @@ export const rules: IRule[] = [
           titles[0].innerText.length < 200,
           `Something could be wrong this title tag is over 200 chars. : ${titles[0].innerText}`,
           IUserTarget.contentManager,
+          "TITLE",
           titles[0].innerText
         ));
 
@@ -158,6 +167,7 @@ export const rules: IRule[] = [
             titles[0].innerText.toLowerCase().indexOf(` ${sw} `),
             `Title tag includes stopword ${sw}`,
             IUserTarget.contentManager,
+            "TITLE",
             titles[0].innerText
           ));
         });
@@ -196,7 +206,8 @@ export const rules: IRule[] = [
         assert.ok,
         metas.length === 1,
         `There should be 1 and only 1 meta description. Currently there are ${metas.length}`,
-        IUserTarget.developer
+        IUserTarget.developer,
+        "META"
       ));
 
       if (metas[0]) {
@@ -205,7 +216,8 @@ export const rules: IRule[] = [
           assert.ok,
           metas[0] && metas[0].content,
           'Meta description content="" should not be missing.',
-          IUserTarget.developer
+          IUserTarget.developer,
+          "META"
         ));
 
         tester.compareTest(Helper.getComparaisonTestParameters(
@@ -215,6 +227,7 @@ export const rules: IRule[] = [
           0,
           'Meta description should not be empty',
           IUserTarget.contentManager,
+          "META"
         ));
 
         tester.BooleanTest(Helper.getBooleanTestParameters(
@@ -223,6 +236,7 @@ export const rules: IRule[] = [
           !metas[0].content.includes('undefined'),
           `Meta description includes "undefined"`,
           IUserTarget.both,
+          "META",
           metas[0].content
         ));
 
@@ -232,6 +246,7 @@ export const rules: IRule[] = [
           !metas[0].content.includes('null'),
           `Meta description includes "null"`,
           IUserTarget.both,
+          "META",
           metas[0].content
         ));
 
@@ -241,6 +256,7 @@ export const rules: IRule[] = [
           metas[0].content.length > 10,
           `This meta description is shorter than the recommended minimum limit of 10. (${metas[0].content})`,
           IUserTarget.contentManager,
+          "META",
           metas[0].content
         ));
 
@@ -250,6 +266,7 @@ export const rules: IRule[] = [
           metas[0].content.length < 120,
           `This meta description is longer than the recommended limit of 120. ${metas[0].content.length} (${metas[0].content})`,
           IUserTarget.contentManager,
+          "META",
           metas[0].content
         ));
 
@@ -259,6 +276,7 @@ export const rules: IRule[] = [
           metas[0].content.length < 300,
           'Investigate this meta description. Something could be wrong as it is over 300 chars.',
           IUserTarget.contentManager,
+          "META",
           metas[0].content
         ));
 
@@ -279,6 +297,7 @@ export const rules: IRule[] = [
             matches.length >= 1,
             'Meta description should include at least 1 of the words in the title tag.',
             IUserTarget.contentManager,
+            "META",
             metas[0].content
           ));
         }
@@ -323,6 +342,7 @@ export const rules: IRule[] = [
         h1s.length === 1,
         `There should be 1 and only 1 H1 tag on the page. Currently: ${h1s.length}`,
         IUserTarget.developer,
+        "H1",
         h1s[0] ? h1s[0].innerText : ""
       ));
 
@@ -342,6 +362,7 @@ export const rules: IRule[] = [
           0,
           'H1 tags should not be empty',
           IUserTarget.contentManager,
+          "H1",
         ));
 
         tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -350,6 +371,7 @@ export const rules: IRule[] = [
           h1s[0].innerText.length < 70,
           `H1 tag is longer than the recommended limit of 70. (${h1s[0].innerText})`,
           IUserTarget.contentManager,
+          "H1",
           h1s[0].innerText
         ));
 
@@ -359,6 +381,7 @@ export const rules: IRule[] = [
           h1s[0].innerText.length > 10,
           `H1 tag is shorter than the recommended limit of 10. (${h1s[0].innerText})`,
           IUserTarget.contentManager,
+          "H1",
           h1s[0].innerText
         ));
 
@@ -376,6 +399,7 @@ export const rules: IRule[] = [
             matches.length >= 1,
             `H1 tag should have at least 1 word from your title tag.`,
             IUserTarget.contentManager,
+            "H1",
             h1s[0].innerText
           ));
         }
@@ -387,6 +411,7 @@ export const rules: IRule[] = [
           h2s.length === 0,
           `No h1 tag, but h2 tags are defined.`,
           IUserTarget.developer,
+          "H1",
           h2s[0] ? h2s[0].innerText : ""
         ));
 
@@ -396,6 +421,8 @@ export const rules: IRule[] = [
           h3s.length === 0,
           `No h1 tag, but h3 tags are defined.`,
           IUserTarget.developer,
+          "H1",
+          h3s[0] ? h3s[0].innerText : ""
         ));
       }
 
@@ -408,6 +435,7 @@ export const rules: IRule[] = [
           0,
           'H2 tags should not be empty',
           IUserTarget.contentManager,
+          "H2",
         ));
 
         tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -416,6 +444,7 @@ export const rules: IRule[] = [
           h2.innerText.length < 100,
           `H2 tag is longer than the recommended limit of 100. (${h2.innerText})`,
           IUserTarget.contentManager,
+          "H2",
           h2.innerText
         ));
 
@@ -425,6 +454,7 @@ export const rules: IRule[] = [
           h2.innerText.length > 7,
           `H2 tag is shorter than the recommended limit of 7. (${h2.innerText})`,
           IUserTarget.contentManager,
+          "H2",
           h2.innerText
         ));
 
@@ -446,7 +476,8 @@ export const rules: IRule[] = [
           assert.ok,
           usesKeywords,
           `None of your h2 tags use a single word from your title tag.`,
-          IUserTarget.contentManager
+          IUserTarget.contentManager,
+          "H2",
         ));
       }
 
@@ -459,7 +490,8 @@ export const rules: IRule[] = [
           h3.innerText.length,
           0,
           'h3 tags should not be empty',
-          IUserTarget.both
+          IUserTarget.both,
+          "H3",
         ));
 
         tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -468,6 +500,7 @@ export const rules: IRule[] = [
           h3.innerText.length < 100,
           `h3 tag is longer than the recommended limit of 100. (${h3.innerText})`,
           IUserTarget.contentManager,
+          "H3",
           h3.innerText
         ));
 
@@ -477,6 +510,7 @@ export const rules: IRule[] = [
           h3.innerText.length > 7,
           `h3 tag is shorter than the recommended limit of 7. (${h3.innerText})`,
           IUserTarget.contentManager,
+          "H3",
           h3.innerText
         ));
 
@@ -507,7 +541,8 @@ export const rules: IRule[] = [
           h4.innerText.length,
           0,
           'h4 tags should not be empty',
-          IUserTarget.both
+          IUserTarget.both,
+          "H4",
         ));
 
         tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -516,6 +551,7 @@ export const rules: IRule[] = [
           h4.innerText.length < 100,
           `h4 tag is longer than the recommended limit of 100. (${h4.innerText})`,
           IUserTarget.contentManager,
+          "H4",
           h4.innerText
         ));
 
@@ -525,6 +561,7 @@ export const rules: IRule[] = [
           h4.innerText.length > 7,
           `h4 tag is shorter than the recommended limit of 7. (${h4.innerText})`,
           IUserTarget.contentManager,
+          "H4",
           h4.innerText
         ));
       });
@@ -536,6 +573,7 @@ export const rules: IRule[] = [
         !(h2s.length > 0 && h1s.length === 0),
         `There are h2 tags but no h1 tag. Consider If you can move one of your h2s to an h1.`,
         IUserTarget.developer,
+        "H2",
         h2s[0] ? h2s[0].innerText : ""
       ));
 
@@ -545,6 +583,7 @@ export const rules: IRule[] = [
         !(h3s.length > 0 && h2s.length === 0),
         `There are h3 tags but no h2 tags. Consider If you can move h3s to h2s.`,
         IUserTarget.developer,
+        "H3",
         h3s[0] ? h3s[0].innerText : ""
       ));
 
@@ -554,6 +593,7 @@ export const rules: IRule[] = [
         !(h4s.length > 0 && h3s.length === 0),
         `There are h4 tags but no h3 tags. Consider If you can move h4s to h3s.`,
         IUserTarget.developer,
+        "H4",
         h4s[0] ? h4s[0].innerText : ""
       ));
 
@@ -563,6 +603,7 @@ export const rules: IRule[] = [
         !(h5s.length > 0 && h4s.length === 0),
         `There are h5 tags but no h4 tags. Consider If you can move h5s to h4s.`,
         IUserTarget.developer,
+        "H5",
         h5s[0] ? h5s[0].innerText : ""
       ));
 
@@ -572,6 +613,7 @@ export const rules: IRule[] = [
         !(h6s.length > 0 && h5s.length === 0),
         `There are h6 tags but no h5 tags. Consider If you can move h6s to h5s.`,
         IUserTarget.developer,
+        "H6",
         h6s[0] ? h6s[0].innerText : ""
       ));
     },
@@ -594,14 +636,16 @@ export const rules: IRule[] = [
           assert.ok,
           !!viewport,
           `Meta viewport should be defined`,
-          IUserTarget.developer
+          IUserTarget.developer,
+          "Viewport",
         ));
         tester.BooleanLint(Helper.getBooleanTestParameters(
           90,
           assert.ok,
           !!viewport.content,
           `Meta viewport has a content attribute`,
-          IUserTarget.developer
+          IUserTarget.developer,
+          "Viewport",
         ));
         tester.BooleanLint(Helper.getBooleanTestParameters(
           90,
@@ -609,13 +653,15 @@ export const rules: IRule[] = [
           viewport.content.includes('width=device-width'),
           `Meta viewport content includes width=device-width`,
           IUserTarget.developer,
+          "Viewport",
         ));
         tester.BooleanLint(Helper.getBooleanTestParameters(
           90,
           assert.ok,
           viewport.content.includes('initial-scale=1'),
           `Meta viewport content may want to include initial-scale=1`,
-          IUserTarget.developer
+          IUserTarget.developer,
+          "Viewport",
         ));
       }
     },
@@ -655,6 +701,7 @@ export const rules: IRule[] = [
             i.alt && i.alt.length > 0,
             `Images should have alt tags.`,
             IUserTarget.both,
+            "IMG",
             i.src
           ));
         }
