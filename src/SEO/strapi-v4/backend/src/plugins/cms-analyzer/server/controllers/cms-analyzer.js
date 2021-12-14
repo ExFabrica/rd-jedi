@@ -59,6 +59,18 @@ module.exports = {
     }
     ctx.send(result);
   },
+  runRealTimeRulesAnalyze: async (ctx) => {
+    let result;
+    // remove url property from context
+    const { body } = ctx.request;
+    try {
+      result = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').runRealTimeRulesAnalyze(body);
+    }
+    catch (ex) {
+      ctx.send({ "status": 500, message: ex });
+    }
+    ctx.send(result);
+  },
   getSettings: async (ctx) => {
     let config = {};
     try {

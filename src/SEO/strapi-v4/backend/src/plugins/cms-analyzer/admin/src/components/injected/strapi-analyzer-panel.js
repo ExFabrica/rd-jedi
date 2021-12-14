@@ -8,6 +8,9 @@ import { Box } from '@strapi/design-system/Box';
 import { Flex } from '@strapi/design-system/Flex';
 import { Stack } from '@strapi/design-system/Stack';
 
+//Middleware
+const _uiContentAnalyzer = require("../../middlewares/analyzer/ui-contentAnalyzer").default;
+
 const ComponentStyleDiv = styled.div`
   position:fixed;
   bottom:20px;
@@ -27,9 +30,8 @@ export const StrapiAnalyzerPanel = ({ show }) => {
 
     if (context && context.modifiedData)
         useEffect(() => {
-            request(`/cms-analyzer/analyses/documents/${context.modifiedData.id}`, {
-                method: 'GET'
-            }).then(result => {
+            _uiContentAnalyzer.getAnalysesByDocumentId(context.modifiedData.id)
+            .then(result => {
                 if (result) {
                     setFrontUrl(result.frontUrl);
                     if (result.screenshot)

@@ -1,15 +1,15 @@
-import { terminator, realTimeAnalyses } from "./index";
+import { terminator, runSEORealTimeRulesAnalyse } from "./index";
 
-terminator(["http://localhost:3000"], ['SEO']).then((results) => {
+/*terminator(["http://localhost:3000"], ['SEO']).then((results) => {
     console.debug("success", results);
 }, (err) => {
     console.debug("error on main side", err);
-});
+});*/
 
-realTimeAnalyses([
+runSEORealTimeRulesAnalyse([
     {
         tag: "TITLE",
-        value: ""
+        value: "blob of year!"
     },
     {
         tag: "META",

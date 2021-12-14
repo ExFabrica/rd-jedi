@@ -26,6 +26,9 @@ export const AnalyseContentGrid = (props) => {
         <Thead>
             <Tr>
                 <Th>
+                    <Typography variant="sigma">Tag</Typography>
+                </Th>
+                <Th>
                     <Typography variant="sigma">Message</Typography>
                 </Th>
                 <Th>
@@ -38,6 +41,9 @@ export const AnalyseContentGrid = (props) => {
         </Thead>
         <Tbody>
             {props.value.map(entry => <Tr key={`${entry.message}_${entry.content}`}>
+                <Td>
+                    <Typography textColor="neutral800">{entry.tag}</Typography>
+                </Td>
                 <Td>
                     <Typography textColor="neutral800">{entry.message}</Typography>
                 </Td>

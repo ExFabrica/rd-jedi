@@ -123,6 +123,12 @@ module.exports = {
       path: '/matches',
       handler: 'match.deleteAll',
       config: { policies: [] }
-    }
+    },
+    {
+      method: 'POST',
+      path: '/runRealTimeRulesAnalyze',
+      handler: 'cms-analyzer.runRealTimeRulesAnalyze',
+      config: { policies: [] }
+    },
   ]
 }

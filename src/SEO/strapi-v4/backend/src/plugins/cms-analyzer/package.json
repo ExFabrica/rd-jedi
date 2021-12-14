@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@strapi/utils": "4.0.0-next.0",
-    "exfabrica-cms-engine-analyzer": "^0.3.2"
+    "exfabrica-cms-engine-analyzer": "^0.3.6"
   },
   "devDependencies": {
     "rimraf": "3.0.2",

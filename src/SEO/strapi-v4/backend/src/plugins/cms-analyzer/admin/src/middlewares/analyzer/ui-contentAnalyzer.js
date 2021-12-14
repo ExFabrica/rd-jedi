@@ -53,8 +53,39 @@ const contentAnalyzerMiddleware = {
     },
     getAnalysesByDocumentId: async (documentId) => {
         try {
-            return request(`/cms-analyzer/analyses/${documentId}`, {
+            return request(`/cms-analyzer/analyses/documents/${documentId}`, {
                 method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
+    },
+    getMatchesByUID: async (uid) => {
+        try {
+            return request(`/cms-analyzer/matches/uid/${uid}`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
+    },
+    getMatches: async (uid) => {
+        try {
+            return request(`/cms-analyzer/matches`, {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
+    },
+    getRealTimeRulesAnalyze: async (payload) => {
+        try {
+            return await request("/cms-analyzer/runRealTimeRulesAnalyze", {
+                method: 'POST',
+                body:payload
             });
         }
         catch (ex) {

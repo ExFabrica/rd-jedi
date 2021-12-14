@@ -4,11 +4,6 @@ import { IRule } from '../../common/models/rule.interfaces';
 import { IUserTarget } from '../../common/models/target.interface';
 import { ITester } from '../../common/models/tester.interfaces';
 
-const defaultPreferences = {
-    internalLinksLowerCase: true,
-    internalLinksTrailingSlash: true,
-};
-
 export const RTRules: IRule[] = [
     {
         name: 'TITLE',
@@ -64,12 +59,18 @@ export const RTRules: IRule[] = [
                     value
                 ));
 
+                const compareArr = Helper.cleanString(value)
+                    .split(' ')
+                    .filter((i) => [':', '|', '-'].indexOf(i) === -1);
+
                 //TODO localize this part.
                 const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
+                const matches = compareArr.filter((t) => stopWords.indexOf(t) !== -1);
+
                 tester.BooleanLint(Helper.getBooleanTestParameters(
                     20,
                     assert.ok,
-                    value.includes(stopWords.join('|')),
+                    matches.length == 0,
                     `Title tag includes stopword`,
                     IUserTarget.contentManager,
                     "TITLE",
@@ -337,7 +338,7 @@ export const RTRules: IRule[] = [
         testData: {},
         validator: async (payload, tester) => {
             const value = payload.value;
-            
+
             tester.compareTest(Helper.getComparaisonTestParameters(
                 50,
                 assert.notEqual,

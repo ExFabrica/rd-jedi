@@ -1,12 +1,13 @@
+const _ = require('lodash');
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { StrapiAnalyzerPanel } from './strapi-analyzer-panel';
 import { StrapiUIRefresher } from './strapi-ui-refresher'
-
 import Globe from '@strapi/icons/Globe';
 import { LinkButton } from '@strapi/design-system/LinkButton';
-const _ = require('lodash');
 import { useCMEditViewDataManager, request } from '@strapi/helper-plugin';
+//Middleware
+const _uiContentAnalyzer = require("../../middlewares/analyzer/ui-contentAnalyzer").default;
 
 export const StrapiListZoneItem = () => {
   const [showPanel, setShowPanel] = useState(false);
@@ -14,9 +15,7 @@ export const StrapiListZoneItem = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    request('/cms-analyzer/matches', {
-      method: 'GET'
-    }).then(result => {
+    _uiContentAnalyzer.getMatches().then(result => {
       const slugs = _.groupBy(result, "apiName");
       if(slugs)
         setIsVisible(Object.getOwnPropertyNames(slugs).includes(slug));
@@ -47,7 +46,6 @@ export const StrapiListZoneItem = () => {
       >
         {"Analyzer tips"}
       </LinkButton>
-
     </> : <></>
   );
 };

@@ -365,6 +365,10 @@ module.exports = ({ strapi }) => {
         clear: async () => {
             await strapi.service('plugin::cms-analyzer.analyse').deleteAll();
             await strapi.service('plugin::cms-analyzer.match').deleteAll();
+        },
+
+        runRealTimeRulesAnalyze: async (payload) => {
+            return analyzer.runSEORealTimeRulesAnalyse(payload);
         }
     };
 };
