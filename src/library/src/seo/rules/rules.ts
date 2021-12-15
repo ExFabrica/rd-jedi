@@ -84,7 +84,6 @@ export const rules: IRule[] = [
       if (titles.length !== 1) return;
 
       if (titles[0]) {
-
         tester.compareTest(Helper.getComparaisonTestParameters(
           90,
           assert.strictEqual,
@@ -112,7 +111,7 @@ export const rules: IRule[] = [
           assert.ok,
           !titles[0].innerText.includes('undefined'),
           `Title tag includes "undefined"`,
-          IUserTarget.both,
+          IUserTarget.developer,
           "TITLE",
           titles[0].innerText,
         ));
@@ -122,7 +121,7 @@ export const rules: IRule[] = [
           assert.ok,
           !titles[0].innerText.includes('null'),
           `Title tag includes "null"`,
-          IUserTarget.both,
+          IUserTarget.developer,
           "TITLE",
           titles[0].innerText
         ));
@@ -226,7 +225,7 @@ export const rules: IRule[] = [
           metas[0].content.length,
           0,
           'Meta description should not be empty',
-          IUserTarget.contentManager,
+          IUserTarget.both,
           "META"
         ));
 
@@ -235,7 +234,7 @@ export const rules: IRule[] = [
           assert.ok,
           !metas[0].content.includes('undefined'),
           `Meta description includes "undefined"`,
-          IUserTarget.both,
+          IUserTarget.developer,
           "META",
           metas[0].content
         ));
@@ -245,7 +244,7 @@ export const rules: IRule[] = [
           assert.ok,
           !metas[0].content.includes('null'),
           `Meta description includes "null"`,
-          IUserTarget.both,
+          IUserTarget.developer,
           "META",
           metas[0].content
         ));
@@ -354,14 +353,13 @@ export const rules: IRule[] = [
       }
 
       if (h1s[0]) {
-
         tester.compareTest(Helper.getComparaisonTestParameters(
           90,
           assert.notStrictEqual,
           h1s[0].innerText.length,
           0,
           'H1 tags should not be empty',
-          IUserTarget.contentManager,
+          IUserTarget.both,
           "H1",
         ));
 
@@ -403,27 +401,6 @@ export const rules: IRule[] = [
             h1s[0].innerText
           ));
         }
-      } else {
-
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          90,
-          assert.ok,
-          h2s.length === 0,
-          `No h1 tag, but h2 tags are defined.`,
-          IUserTarget.developer,
-          "H1",
-          h2s[0] ? h2s[0].innerText : ""
-        ));
-
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          90,
-          assert.ok,
-          h3s.length === 0,
-          `No h1 tag, but h3 tags are defined.`,
-          IUserTarget.developer,
-          "H1",
-          h3s[0] ? h3s[0].innerText : ""
-        ));
       }
 
       let usesKeywords = false;
@@ -434,7 +411,7 @@ export const rules: IRule[] = [
           h2.innerText.length,
           0,
           'H2 tags should not be empty',
-          IUserTarget.contentManager,
+          IUserTarget.both,
           "H2",
         ));
 
@@ -573,8 +550,7 @@ export const rules: IRule[] = [
         !(h2s.length > 0 && h1s.length === 0),
         `There are h2 tags but no h1 tag. Consider If you can move one of your h2s to an h1.`,
         IUserTarget.developer,
-        "H2",
-        h2s[0] ? h2s[0].innerText : ""
+        "H2"
       ));
 
       tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -583,8 +559,7 @@ export const rules: IRule[] = [
         !(h3s.length > 0 && h2s.length === 0),
         `There are h3 tags but no h2 tags. Consider If you can move h3s to h2s.`,
         IUserTarget.developer,
-        "H3",
-        h3s[0] ? h3s[0].innerText : ""
+        "H3"
       ));
 
       tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -593,8 +568,7 @@ export const rules: IRule[] = [
         !(h4s.length > 0 && h3s.length === 0),
         `There are h4 tags but no h3 tags. Consider If you can move h4s to h3s.`,
         IUserTarget.developer,
-        "H4",
-        h4s[0] ? h4s[0].innerText : ""
+        "H4"
       ));
 
       tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -603,8 +577,7 @@ export const rules: IRule[] = [
         !(h5s.length > 0 && h4s.length === 0),
         `There are h5 tags but no h4 tags. Consider If you can move h5s to h4s.`,
         IUserTarget.developer,
-        "H5",
-        h5s[0] ? h5s[0].innerText : ""
+        "H5"
       ));
 
       tester.BooleanLint(Helper.getBooleanTestParameters(
@@ -613,8 +586,7 @@ export const rules: IRule[] = [
         !(h6s.length > 0 && h5s.length === 0),
         `There are h6 tags but no h5 tags. Consider If you can move h6s to h5s.`,
         IUserTarget.developer,
-        "H6",
-        h6s[0] ? h6s[0].innerText : ""
+        "H6"
       ));
     },
   },

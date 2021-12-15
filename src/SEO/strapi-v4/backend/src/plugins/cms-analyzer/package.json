@@ -8,13 +8,10 @@
     "description": "Analyzer Plugin for Strapi, check your SEO and your sustainabilty."
   },
   "dependencies": {
-    "@strapi/utils": "4.0.0",
-    "exfabrica-cms-engine-analyzer": "^0.3.8"
+    "@strapi/utils": "4.0.0-next.0",
+    "exfabrica-cms-engine-analyzer": "^0.3.9"
   },
-  "devDependencies": {
-    "rimraf": "3.0.2",
-    "strapi-helper-plugin": "4.0.0"
-  },
+  "devDependencies": { },
   "author": {
     "name": "Exfabrica.io",
     "email": "gregory.taudin@exfabrica.io",
