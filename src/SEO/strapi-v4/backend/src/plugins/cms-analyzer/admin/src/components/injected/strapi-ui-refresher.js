@@ -35,18 +35,23 @@ export const StrapiUIRefresher = () => {
         _uiContentAnalyzer.getMatchesByUID(context.slug).then(result => {
             if (result) {
                 setStructureFields(result);
+                countAllTags();
             }
         });
 
         const interval = window.setInterval(() => {
-            const count = document.querySelectorAll('*').length;
-            setNodeElementsCollectionCount(count);
-        }, 300);
+            countAllTags();
+        }, 500);
 
         return () => {
             clearInterval(interval);
         };
     }, []);
+
+    const countAllTags = () => {
+        const count = document.querySelectorAll('*').length;
+        setNodeElementsCollectionCount(count);
+    }
 
     const updateInputLabel = (tagName, parent) => {
         const label = parent.querySelector("label");
@@ -58,32 +63,33 @@ export const StrapiUIRefresher = () => {
         }
     }
 
+    const removeAnalyzerPanels = (name) => {
+        const containers = document.querySelectorAll(`[id$='${name}_analyzer']`);
+        if (containers && containers.length > 0)
+            containers.forEach(container => {
+                container.remove();
+            });
+    }
+
     const createRuleDisplayPanel = (inputItem, parent) => {
-        if (inputItem && inputItem.value) {
-            const analyserDiv = document.querySelector(`[id='${inputItem.id}_analyzer']`);
-            const seoAnalyse = seoAnalyses.filter(item => inputItem.value === item.content);
-            if (seoAnalyse && seoAnalyse.length > 0) {
-                const analyseDiv = document.querySelector(`[id='${seoAnalyse[0].id}']`);
-                if (analyseDiv) {
+        if (inputItem) {
+            removeAnalyzerPanels(inputItem.name);
+            const filteredAnalyses = seoAnalyses.filter(item => item.payload.name === inputItem.name);
+            if (filteredAnalyses && filteredAnalyses.length > 0) {
+                let index = 0;
+                for (const filteredAnalyse of filteredAnalyses) {
+                    const analyseDiv = document.querySelector(`[id='${filteredAnalyse.id}']`);
+                    const analyserDiv = document.querySelector(`[id='${index}.${filteredAnalyse.payload.name}_analyzer']`);
                     if (!analyserDiv) {
                         let div = document.createElement("div");
-                        div.id = `${inputItem.id}_analyzer`;
+                        div.id = `${index}.${filteredAnalyse.payload.name}_analyzer`;
                         div.innerHTML = analyseDiv.innerHTML;
-                        div.style.height = "15px";
                         parent.appendChild(div);
                     }
-                    else {
-                        console.log(analyserDiv.innerText.toLowerCase(), analyseDiv.innerText.toLowerCase(), analyserDiv.innerText.toLowerCase() != analyseDiv.innerText.toLowerCase())
-                        if (analyserDiv.innerText.toLowerCase() != analyseDiv.innerText.toLowerCase()) {
-                            analyserDiv.innerHTML = analyseDiv.innerHTML;
-                        }
-                    }
+                    else
+                        analyserDiv.innerHTML = analyseDiv.innerHTML;
+                    index++;
                 }
-            }
-            else {
-                console.log("seoAnalyse", seoAnalyse);
-                if(analyserDiv)
-                    analyserDiv.innerHTML = "";
             }
         }
     }
@@ -101,18 +107,18 @@ export const StrapiUIRefresher = () => {
 
     const getAnalyses = async (structure) => {
         if (structure && structure.length > 0) {
-            let title;
+            let title = "";
             const titleRows = structure.filter(item => item.tagName === "TITLE");
             if (titleRows && titleRows.length > 0)
                 title = titleRows[0].value;
             const payload = structure.map(item => {
-                return { tag: item.tagName, value: item.value, titleValue: title };
+                return { tag: item.tagName, value: item.value, titleValue: title, name: item.name };
             });
-            console.log("generated payload", payload);
+            console.debug("Payload", payload);
             const results = await _uiContentAnalyzer.getRealTimeRulesAnalyze(payload);
-            console.log("RT analyze results", results);
             if (results) {
                 results.forEach(item => item["id"] = uuidv4());
+                console.log('SeoAnalyses', results);
                 setSeoAnalyses(results);
             }
         }
@@ -121,7 +127,6 @@ export const StrapiUIRefresher = () => {
     //TODO refactor this big method.
     const HtmlLookup = () => {
         let structure = [];
-        //removeAnalyzerStrapiContainers();
         for (const structureField of structureFields) {
             if (structureField.componentName) {
                 //Dynamic Zone component
@@ -134,7 +139,7 @@ export const StrapiUIRefresher = () => {
                                 const inputName = `${structureField.dynamicZoneName}.${index}.${structureField.fieldName}`;
                                 const inputItem = document.getElementById(inputName);
                                 if (inputItem) {
-                                    structure.push({ tagName: structureField.tagName, value: inputItem.value, type: "ZC", keys: [structureField.dynamicZoneName, index, structureField.fieldName] });
+                                    structure.push({ tagName: structureField.tagName, name: inputName, value: inputItem.value });
                                     createAnalyzerPanel(inputItem, structureField.tagName);
                                 }
                             }
@@ -156,7 +161,7 @@ export const StrapiUIRefresher = () => {
                                             const inputName = `${dynamicZoneName}.${componentIndex}.${structureField.componentName}.${index}.${structureField.fieldName}`;
                                             const inputItem = document.getElementById(inputName);
                                             if (inputItem) {
-                                                structure.push({ tagName: structureField.tagName, value: inputItem.value, type: "ZCICA", keys: [dynamicZoneName, componentIndex, structureField.componentName, index, structureField.fieldName] });
+                                                structure.push({ tagName: structureField.tagName, name: inputName, value: inputItem.value });
                                                 createAnalyzerPanel(inputItem, structureField.tagName);
                                             }
                                         });
@@ -165,7 +170,7 @@ export const StrapiUIRefresher = () => {
                                         const inputName = `${dynamicZoneName}.${componentIndex}.${structureField.componentName}.${structureField.fieldName}`;
                                         const inputItem = document.getElementById(inputName);
                                         if (inputItem) {
-                                            structure.push({ tagName: structureField.tagName, value: inputItem.value, type: "ZCIC", keys: [dynamicZoneName, componentIndex, structureField.componentName, structureField.fieldName] });
+                                            structure.push({ tagName: structureField.tagName, name: inputName, value: inputItem.value });
                                             createAnalyzerPanel(inputItem, structureField.tagName);
                                         }
                                     }
@@ -179,7 +184,7 @@ export const StrapiUIRefresher = () => {
                     const inputName = `${structureField.componentName}.${structureField.fieldName}`;
                     const inputItem = document.getElementById(inputName);
                     if (inputItem) {
-                        structure.push({ tagName: structureField.tagName, value: inputItem.value, type: "SC", keys: [structureField.componentName, structureField.fieldName] });
+                        structure.push({ tagName: structureField.tagName, name: inputName, value: inputItem.value });
                         createAnalyzerPanel(inputItem, structureField.tagName);
                     }
                 }
@@ -188,7 +193,7 @@ export const StrapiUIRefresher = () => {
                 //simple field
                 const inputItem = document.getElementById(structureField.fieldName);
                 if (inputItem) {
-                    structure.push({ tagName: structureField.tagName, value: inputItem.value, type: "SF", keys: [structureField.fieldName] });
+                    structure.push({ tagName: structureField.tagName, name: inputItem.name, value: inputItem.value });
                     createAnalyzerPanel(inputItem, structureField.tagName);
                 }
             }

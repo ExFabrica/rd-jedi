@@ -80,7 +80,7 @@ export const RTRules: IRule[] = [
         },
     },
     {
-        name: 'META',
+        name: 'META (description)',
         description: `Validate the meta description tag.`,
         success: false,
         errors: [],

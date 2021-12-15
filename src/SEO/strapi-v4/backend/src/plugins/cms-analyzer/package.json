@@ -3,17 +3,17 @@
   "version": "0.0.0",
   "description": "First Exfabrica Strapi Plugin.",
   "strapi": {
-    "name": "cms-analyzer",
+    "name": "Headless Analyzer",
     "icon": "plug",
-    "description": "First Exfabrica Strapi Plugin."
+    "description": "Analyzer Plugin for Strapi, check your SEO and your sustainabilty."
   },
   "dependencies": {
-    "@strapi/utils": "4.0.0-next.0",
-    "exfabrica-cms-engine-analyzer": "^0.3.6"
+    "@strapi/utils": "4.0.0",
+    "exfabrica-cms-engine-analyzer": "^0.3.8"
   },
   "devDependencies": {
     "rimraf": "3.0.2",
-    "strapi-helper-plugin": "3.6.8"
+    "strapi-helper-plugin": "4.0.0"
   },
   "author": {
     "name": "Exfabrica.io",

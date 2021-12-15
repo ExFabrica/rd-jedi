@@ -33,7 +33,7 @@ export const StrapiListZoneItem = () => {
       {ReactDOM.createPortal(<StrapiUIRefresher />, document.getElementById("app"))}
       {/*inject the assisant panel into page*/}
       {ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))}
-      {/*TODO Add permission*/}
+      {/*TODO Add permission
       <LinkButton
         onClick={() => {
           togglePanel();
@@ -45,7 +45,7 @@ export const StrapiListZoneItem = () => {
         to="#"
       >
         {"Analyzer tips"}
-      </LinkButton>
+      </LinkButton>*/}
     </> : <></>
   );
 };

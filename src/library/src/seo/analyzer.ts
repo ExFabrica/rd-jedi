@@ -132,9 +132,9 @@ export class SeoAnalyzer {
     )
   }
 
-  private async validateSEORTRule(currentRule: IRule, payload: any): Promise<void> {
+  private async validateSEORTRule(currentRule: IRule,): Promise<void> {
     await currentRule.validator(
-      { ...payload },
+      { ...currentRule.data },
       {
         compareTest: (params: ITesterCompareParams) => {
           try {
@@ -177,7 +177,7 @@ export class SeoAnalyzer {
                 ...o,
                 ...ruleResult[key]
                   .sort((a: IRuleResultMessage, b: IRuleResultMessage) => a.priority - b.priority)
-                  .map((r) => ({ ...r, level: key })),
+                  .map((r) => ({ ...r, level: key, payload: ruleResult.data })),
               ];
             }, [] as IRuleResultMessage[]),
         ];
@@ -251,7 +251,10 @@ export class SeoAnalyzer {
     const rules = this.rulesToUse.filter(item => item.name === payload.tag);
     if (rules && rules.length > 0) {
       let currentRule = this.getRuleDeepCopy(rules[0]);
-      await this.validateSEORTRule(currentRule, payload);
+      currentRule.data = {
+        ...payload
+      }
+      await this.validateSEORTRule(currentRule);
       this.finishRule(currentRule);
       results.push(currentRule);
     }
