@@ -114,11 +114,11 @@ export const StrapiUIRefresher = () => {
             const payload = structure.map(item => {
                 return { tag: item.tagName, value: item.value, titleValue: title, name: item.name };
             });
-            console.debug("Payload", payload);
+            //console.debug("Payload", payload);
             const results = await _uiContentAnalyzer.getRealTimeRulesAnalyze(payload);
             if (results) {
                 results.forEach(item => item["id"] = uuidv4());
-                console.log('SeoAnalyses', results);
+                //console.log('SeoAnalyses', results);
                 setSeoAnalyses(results);
             }
         }
