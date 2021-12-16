@@ -1,10 +1,10 @@
 const _ = require('lodash');
-import cheerio from 'cheerio';
-import { IAnalysisPageResults, IPageResults, ISitemapPageResults, ITags } from './models/interfaces';
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer';
+//import cheerio from 'cheerio';
+import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
 import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
 import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
-
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
@@ -45,52 +45,52 @@ export class SeoAnalyzer {
       currentRule.success = true;
   }
 
-  private getAttributes($: any, search: string): any[] {
-    const arr = [];
-    $(search).each(function () {
-      const namespace = $(this)[0].namespace;
-      if (!namespace || namespace.includes('html')) {
+  private async getAttributes(page: puppeteer.Page, search: string): Promise<any[]> {
+    const tags = await page.$$eval(search, (elements: Element[]) => {
+      return elements.map((element: Element) => {
         const out = {
-          tag: $(this)[0].name,
-          innerHTML: $(this).html(),
-          innerText: $(this).text(),
+          tag: element.tagName,
+          innerHTML: element.innerHTML,
+          innerText: element.textContent,
+          attributes: element.getAttributeNames().reduce((obj, name) => ({
+            ...obj,
+            [name]: element.getAttribute(name)
+          }), {})
         };
-
-        if ($(this)[0].attribs) {
-          Object.entries($(this)[0].attribs).forEach((attr) => {
+        // tranform attributes array in properties directly accessible in object structure.
+        if (out.attributes) {
+          Object.entries(out.attributes).forEach((attr) => {
             out[attr[0].toLowerCase()] = attr[1];
           });
         }
 
-        arr.push(out);
-      }
+        delete out.attributes
+        return out;
+      });
     });
-    return arr;
+    return tags;
   };
 
-  private getSelectedTagsFromHtml(html: string): ITags {
-    const $ = cheerio.load(html);
-    const result = {
-      html: this.getAttributes($, 'html'),
-      title: this.getAttributes($, 'title'),
-      meta: this.getAttributes($, 'head meta'),
-      ldjson: this.getAttributes($, 'script[type="application/ld+json"]'),
-      h1s: this.getAttributes($, 'h1'),
-      h2s: this.getAttributes($, 'h2'),
-      h3s: this.getAttributes($, 'h3'),
-      h4s: this.getAttributes($, 'h4'),
-      h5s: this.getAttributes($, 'h5'),
-      h6s: this.getAttributes($, 'h6'),
-      canonical: this.getAttributes($, '[rel="canonical"]'),
-      imgs: this.getAttributes($, 'img'),
-      aTags: this.getAttributes($, 'a'),
-      linkTags: this.getAttributes($, 'link'),
-      ps: this.getAttributes($, 'p'),
-      body: this.getAttributes($, "body")
+  private async getSEOTags(page: puppeteer.Page): Promise<ITags> {
+    return {
+      html: await this.getAttributes(page, 'html'),
+      title: await this.getAttributes(page, 'title'),
+      meta: await this.getAttributes(page, 'meta'),
+      ldjson: await this.getAttributes(page, 'script[type="application/ld+json"]'),
+      h1s: await this.getAttributes(page, 'h1'),
+      h2s: await this.getAttributes(page, 'h2'),
+      h3s: await this.getAttributes(page, 'h3'),
+      h4s: await this.getAttributes(page, 'h4'),
+      h5s: await this.getAttributes(page, 'h5'),
+      h6s: await this.getAttributes(page, 'h6'),
+      canonical: await this.getAttributes(page, '[rel="canonical"]'),
+      imgs: await this.getAttributes(page, 'img'),
+      aTags: await this.getAttributes(page, 'a'),
+      linkTags: await this.getAttributes(page, 'link'),
+      ps: await this.getAttributes(page, 'p'),
+      body: await this.getAttributes(page, "body")
     };
-    return result;
   }
-
 
   private getRuleDeepCopy(rule: IRule) {
     let currentRule: IRule = Object.assign({}, rule);
@@ -100,7 +100,7 @@ export class SeoAnalyzer {
     return currentRule;
   }
 
-  private async analyzeRule(currentRule: IRule, extractedTags: any, url: string) {
+  private async validateSEORule(currentRule: IRule, extractedTags: any, url: string) {
     await currentRule.validator(
       { result: extractedTags, response: { url, host: this.host }, preferences: {} },
       {
@@ -109,7 +109,7 @@ export class SeoAnalyzer {
             params.assert(params.value1, params.value2);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanTest: (params: ITesterBooleanParams) => {
@@ -117,7 +117,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         },
         BooleanLint: (params: ITesterBooleanParams) => {
@@ -125,14 +125,46 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target });
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
           }
         }
       },
     )
   }
 
-  private formatResults(results: IRule[]) {
+  private async validateSEORTRule(currentRule: IRule,): Promise<void> {
+    await currentRule.validator(
+      { ...currentRule.data },
+      {
+        compareTest: (params: ITesterCompareParams) => {
+          try {
+            params.assert(params.value1, params.value2);
+          }
+          catch (ex) {
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+          }
+        },
+        BooleanTest: (params: ITesterBooleanParams) => {
+          try {
+            params.assert(params.value);
+          }
+          catch (ex) {
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+          }
+        },
+        BooleanLint: (params: ITesterBooleanParams) => {
+          try {
+            params.assert(params.value);
+          }
+          catch (ex) {
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+          }
+        }
+      },
+    )
+  }
+
+  private async formatResults(results: IRule[]): Promise<IRuleResultMessage[]> {
     const display = ['warnings', 'errors'];
     return display
       .reduce((out, key) => {
@@ -145,7 +177,7 @@ export class SeoAnalyzer {
                 ...o,
                 ...ruleResult[key]
                   .sort((a: IRuleResultMessage, b: IRuleResultMessage) => a.priority - b.priority)
-                  .map((r) => ({ ...r, level: key })),
+                  .map((r) => ({ ...r, level: key, payload: ruleResult.data })),
               ];
             }, [] as IRuleResultMessage[]),
         ];
@@ -165,12 +197,14 @@ export class SeoAnalyzer {
     }
   }
 
-  private async getGlobalSEOAnalysis(html: string, url: string): Promise<IAnalysisPageResults> {
+  private async getSEOAnalysis(page: puppeteer.Page, pageInfo: IPageInfo): Promise<IAnalysisPageResults> {
     try {
+      console.debug("Begin - SEO get analysis");
+      const { url } = pageInfo;
       let results: IRule[] = [];
       let pageResults: IAnalysisPageResults = this.getBlankpageResults(url);
 
-      const extractedTags = this.getSelectedTagsFromHtml(html);
+      const extractedTags = await this.getSEOTags(page);
       pageResults.tags = extractedTags;
 
       this.siteWideLinks.set(url, extractedTags.aTags);
@@ -183,118 +217,74 @@ export class SeoAnalyzer {
 
       for (let rule of this.rulesToUse) {
         let currentRule = this.getRuleDeepCopy(rule);
-        await this.analyzeRule(currentRule, extractedTags, url);
+        await this.validateSEORule(currentRule, extractedTags, url);
         this.finishRule(currentRule)
         results.push(currentRule);
       }
 
-      pageResults.results = this.formatResults(results);
+      pageResults.results = await this.formatResults(results);
+      console.debug("End - SEO get analysis");
       return pageResults;
     } catch (err) {
-      console.debug("Seo global anysis", err);
       throw err;
     }
   };
 
-  private getAnchors(html: string): { aTags: any[] } {
-    const $ = cheerio.load(html);
-    return {
-      aTags: this.getAttributes($, 'a'),
-    }
-  }
-
-  private getLinksFromPage(fetchedData: ISitemapPageResults): string[] {
-    const result: { aTags: any[] } = this.getAnchors(fetchedData.html);
-    if (result.aTags && result.aTags.length > 0) {
-      const links: string[] = _.uniq(result.aTags.filter(link => link.href).map(link => link.href));
-      const internalLinks: string[] = links.filter(link =>
-        !link.includes('#') &&
-        !link.includes('http') &&
-        !link.includes(fetchedData.url) &&
-        !link.includes('mailto:') &&
-        !link.includes('tel:') &&
-        link !== '/').map(item => {
-          if (_.startsWith(item, '/'))
-            return `${fetchedData.url}${item}`;
-        })
-      return internalLinks;
-    }
-  }
-
-  private async computeSitemap(browser: puppeteer.Browser, fetchedData: ISitemapPageResults): Promise<any[]> {
-    console.debug("Begin - ComputeSitemap method");
-    let links: ISitemapPageResults[] = [fetchedData];
-    const childLinksToCrawl = this.getLinksFromPage(fetchedData);
-    if (childLinksToCrawl) {
-      for (const link of childLinksToCrawl) {
-        const childrenFetchedData = await this.getHtmlFromUrl(browser, link);
-        links.push(childrenFetchedData);
-      }
-      return _.uniqBy(links, "url");
-    }
-    console.debug("End - ComputeSitemap method");
-    return [];
-  }
-
-  private async getHtmlFromUrl(browser: puppeteer.Browser, url: string): Promise<ISitemapPageResults> {
+  private async getPageInfo(page: puppeteer.Page): Promise<IPageInfo> {
     try {
-      console.debug("Begin - Puppeteer crawl url: ", url);
-      const page = await browser.newPage();
-      await page.goto(url);
+      console.debug("Begin - Get PageInfo");
+      const url = page.url();
       const screenshot = await page.screenshot({ encoding: "base64" }).then(function (data) {
         let base64Encode = `data:image/png;base64,${data}`;
+        console.debug("End - Get PageInfo");
         return base64Encode;
       });
-      const html = await page.evaluate(() => document.documentElement.outerHTML);
-      console.debug("End - Puppeteer crawl url");
-      return { url, html, screenshot };
+      return { url, screenshot };
     }
     catch (err) {
-      console.debug(err);
       throw err;
     }
   }
 
-  public async run(url: string): Promise<IPageResults> {
-    console.debug("Begin - Main process");
-    console.debug("Begin - Puppeteer initialization");
-    let browser: any;
+  private async runRealTimeRule(payload: any): Promise<IRuleResultMessage[]> {
+    let results: any = [];
+    const rules = this.rulesToUse.filter(item => item.name === payload.tag);
+    if (rules && rules.length > 0) {
+      let currentRule = this.getRuleDeepCopy(rules[0]);
+      currentRule.data = {
+        ...payload
+      }
+      await this.validateSEORTRule(currentRule);
+      this.finishRule(currentRule);
+      results.push(currentRule);
+    }
+    return results;
+  }
+
+  public async runRealTimeRules(payloads: any): Promise<IRuleResultMessage[]> {
+    let results: any = [];
+    if (!_.isArray(payloads))
+      results = await this.runRealTimeRule(payloads);
+    else {
+      for (const payload of payloads) {
+        const result = await this.runRealTimeRule(payload);
+        results.push(...result);
+      };
+    }
+    return this.formatResults(results);
+  }
+
+  public async run(page: puppeteer.Page): Promise<IPageResult> {
     try {
-      browser = await puppeteer.launch({
-        headless: true,
-        ignoreHTTPSErrors: true,
-        args: ['--no-sandbox']
-      });
+      console.debug("Begin - SEO Main process");
+      const pageInfo = await this.getPageInfo(page);
+      const seoResult = await this.getSEOAnalysis(page, pageInfo);
+      console.debug("End - SEO Main process");
+      return { type: "SEO", result: seoResult, pageInfo };
     }
     catch (err) {
-      console.debug(err);
+      console.debug("Err: SEO Main process", err);
       throw err;
     }
-    console.debug("End - Puppeteer initialization");
-
-    let globalResults: IPageResults = {
-      results: [],
-      sitemap: []
-    };
-
-    const fetchedResult = await this.getHtmlFromUrl(browser, url);
-    globalResults.sitemap = await this.computeSitemap(browser, fetchedResult);
-
-    //Compute Rules
-    for (const fetchedData of globalResults.sitemap) {
-      let results = await this.getGlobalSEOAnalysis(fetchedData.html, fetchedData.url);
-      if (results)
-        globalResults.results.push(results);
-      fetchedData.html = "";
-    }
-
-    /*for (const result of globalResults.results) {
-      console.log("****************************************************************************");
-      console.log("Seo -> ", result.results);
-      //console.log("Tags -> ", result.tags);
-      console.log("Url -> ", result.url);
-    }*/
-    console.debug("End - Main process");
-    return globalResults;
   }
 };

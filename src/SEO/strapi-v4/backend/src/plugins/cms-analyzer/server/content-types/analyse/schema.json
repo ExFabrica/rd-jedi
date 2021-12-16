@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms-analyser-results",
+  "info": {
+    "singularName": "analyse",
+    "pluralName": "analyses",
+    "collectionName": "cms-analyser-results",
+    "displayName": "CmsAnalyzerResults",
+    "description": "Cms Analyzer results"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "key" : {
+      "type": "string"
+    },
+    "apiName": {
+      "type": "string"
+    },
+    "frontUrl": {
+      "type": "string"
+    },
+    "documentId": {
+      "type": "integer"
+    },
+    "documentFields": {
+      "type": "json"
+    },
+    "seoAnalyse": {
+      "type": "json"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "screenshot": {
+      "type": "string"
+    }
+  }
+}

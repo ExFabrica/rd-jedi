@@ -6,15 +6,18 @@ export interface IRuleResultMessage {
     priority: number;
     content: any;
     target: IUserTarget;
+    tag: string;
+    data?: any;
 };
 
 export interface IRule {
     name: string;
     description: string;
+    validator?: (payload: any, param2: ITester) => Promise<void>;
     success?: boolean,
     errors?: IRuleResultMessage[],
     warnings?: IRuleResultMessage[],
     info?: IRuleResultMessage[],
-    validator?: (payload: any, param2: ITester) => void;
-    testData?: any
+    data? : any;
+    testData?: any;
 };

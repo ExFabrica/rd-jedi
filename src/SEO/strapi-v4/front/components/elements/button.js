@@ -46,7 +46,7 @@ const Button = ({
         )}
       >
         {loading && <Loader />}
-        {button.text}
+        {button?.text}
       </div>
     </button>
   )

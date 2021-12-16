@@ -1,5 +1,6 @@
 import { MdCheckBox } from "react-icons/md"
-import classNames from "classnames"
+import classNames from "classnames";
+import NextImage from "../elements/image";
 
 const Pricing = ({ data }) => {
   return (
@@ -24,6 +25,7 @@ const Pricing = ({ data }) => {
             )}
             key={plan.id}
           >
+            <NextImage width="120" height="33" media={plan.icon} />
             <h2 className="text-2xl">{plan.name}</h2>
             <p
               className={classNames("mt-4 text-lg", {

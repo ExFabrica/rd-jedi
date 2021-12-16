@@ -13,7 +13,8 @@ export interface ITesterCompareParams {
     value2: any,
     message: string,
     content?: string,
-    target: IUserTarget
+    target: IUserTarget,
+    tag: string
 }
 
 export interface ITesterBooleanParams {
@@ -22,5 +23,6 @@ export interface ITesterBooleanParams {
     value: any,
     message: string,
     content?: string,
-    target: IUserTarget
+    target: IUserTarget,
+    tag: string
 }
