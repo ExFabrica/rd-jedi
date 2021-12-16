@@ -14,5 +14,4 @@ const settingsMiddleware = {
         });
     }
 }
-
 export default settingsMiddleware;

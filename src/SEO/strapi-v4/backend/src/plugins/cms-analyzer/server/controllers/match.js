@@ -3,10 +3,8 @@
 const { parseMultipartData, sanitizeEntity } = require('@strapi/utils')
 
 module.exports = ({ strapi }) => {
-
   const matchService = strapi.plugins["cms-analyzer"].services.match;
   const matchContentType = strapi.plugins['cms-analyzer'].contentTypes.match;
-
   const findMany = async (ctx) => {
     let entities;
     if (ctx.query._q) {
@@ -17,13 +15,11 @@ module.exports = ({ strapi }) => {
 
     ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
   };
-
   const findOne = async (ctx) => {
     const { id } = ctx.params;
     const entity = await matchService.findOne({ id });
     ctx.send(sanitizeEntity(entity, { model: matchContentType }));
   };
-
   const findByUid = async (ctx) => {
     const { slug } = ctx.params;
     const entities = await matchService.findMany({
@@ -33,14 +29,12 @@ module.exports = ({ strapi }) => {
     });
     ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
   };
-
   const count = async (ctx) => {
     if (ctx.query._q) {
       ctx.send(matchService.countSearch(ctx.query));
     }
     ctx.send(matchService.count(ctx.query));
   };
-
   const create = async (ctx) => {
     let entity;
     if (ctx.is('multipart')) {
@@ -51,7 +45,6 @@ module.exports = ({ strapi }) => {
     }
     ctx.send(sanitizeEntity(entity, { model: matchContentType }));
   };
-
   const update = async (ctx) => {
     const { id } = ctx.params;
 
@@ -67,18 +60,15 @@ module.exports = ({ strapi }) => {
 
     ctx.send(sanitizeEntity(entity, { model: matchContentType }));
   };
-
   const deleteOne = async (ctx) => {
     const { id } = ctx.params;
     await matchService.delete({ id });
     ctx.send({ "success": true });
   }
-
   const deleteAll = async (ctx) => {
     await matchService.deleteAll();
     ctx.send({ "success": true });
   }
-
   return {
     findMany,
     findOne,
@@ -88,5 +78,5 @@ module.exports = ({ strapi }) => {
     update,
     deleteOne,
     deleteAll
-  }
+  };
 }

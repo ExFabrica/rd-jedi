@@ -72,7 +72,6 @@ module.exports = ({ strapi }) => {
     const countSearch = async (params) => {
         return await query.countSearch(params);
     };
-
     return {
         findMany,
         findOne,

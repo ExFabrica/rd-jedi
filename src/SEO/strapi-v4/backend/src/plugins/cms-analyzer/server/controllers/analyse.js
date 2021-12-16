@@ -3,10 +3,8 @@
 const { parseMultipartData, sanitizeEntity } = require('@strapi/utils');
 
 module.exports = ({ strapi }) => {
-
   const analyseService = strapi.plugins["cms-analyzer"].services.analyse;
   const analyseContentType = strapi.plugins['cms-analyzer'].contentTypes.analyse;
-
   const findMany = async (ctx) => {
     let entities;
     if (ctx.query._q) {
@@ -17,7 +15,6 @@ module.exports = ({ strapi }) => {
 
     ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
   };
-
   const findOne = async (ctx) => {
     const { id } = ctx.params;
 
@@ -28,7 +25,6 @@ module.exports = ({ strapi }) => {
     });
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
-
   const findByDocumentId = async (ctx) => {
     const { documentId } = ctx.params;
     const entity = await analyseService.findOne({
@@ -38,14 +34,12 @@ module.exports = ({ strapi }) => {
     });
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
-
   const count = async (ctx) => {
     if (ctx.query._q) {
       ctx.send(analyseService.countSearch(ctx.query));
     }
     ctx.send(analyseService.count(ctx.query));
   };
-
   const create = async (ctx) => {
     let entity;
     if (ctx.is('multipart')) {
@@ -56,7 +50,6 @@ module.exports = ({ strapi }) => {
     }
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
-
   const update = async (ctx) => {
     const { id } = ctx.params;
     let entity;
@@ -78,7 +71,6 @@ module.exports = ({ strapi }) => {
     }
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
-
   const deleteOne = async (ctx) => {
     const { id } = ctx.params;
 
@@ -89,12 +81,10 @@ module.exports = ({ strapi }) => {
     });
     ctx.send({ "success": true });
   };
-
   const deleteAll = async (ctx) => {
     await analyseService.deleteAll();
     ctx.send({ "success": true });
   };
-
   return {
     findMany,
     findOne,
@@ -104,5 +94,5 @@ module.exports = ({ strapi }) => {
     update,
     deleteOne,
     deleteAll
-  }
+  };
 }

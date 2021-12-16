@@ -1,27 +1,7 @@
 module.exports = {
-  // accessible from external endpoint (/api/cms-analyzer/***)
-  //type: 'content-api',
-  // accessible only from admin
+  // accessible only from admin UI
   type: 'admin',
   routes: [
-    {
-      method: 'GET',
-      path: '/contenttypes',
-      handler: 'cms-analyzer.getContentTypes',
-      config: { policies: [] }
-    },
-    {
-      method: 'GET',
-      path: '/documents',
-      handler: 'cms-analyzer.getDocuments',
-      config: { policies: [] }
-    },
-    {
-      method: 'GET',
-      path: '/contents',
-      handler: 'cms-analyzer.getContents',
-      config: { policies: [] }
-    },
     {
       method: 'GET',
       path: '/consolidation',
@@ -29,15 +9,9 @@ module.exports = {
       config: { policies: [] }
     },
     {
-      method: 'GET',
-      path: '/settings',
-      handler: 'cms-analyzer.getSettings',
-      config: { policies: [] }
-    },
-    {
       method: 'POST',
-      path: '/settings',
-      handler: 'cms-analyzer.setSettings',
+      path: '/runRealTimeRulesAnalyze',
+      handler: 'cms-analyzer.runRealTimeRulesAnalyze',
       config: { policies: [] }
     },
     {
@@ -125,9 +99,15 @@ module.exports = {
       config: { policies: [] }
     },
     {
+      method: 'GET',
+      path: '/settings',
+      handler: 'setting.getSettings',
+      config: { policies: [] }
+    },
+    {
       method: 'POST',
-      path: '/runRealTimeRulesAnalyze',
-      handler: 'cms-analyzer.runRealTimeRulesAnalyze',
+      path: '/settings',
+      handler: 'setting.setSettings',
       config: { policies: [] }
     },
   ]

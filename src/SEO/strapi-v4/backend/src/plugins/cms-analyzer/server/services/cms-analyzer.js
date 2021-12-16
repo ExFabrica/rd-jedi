@@ -3,9 +3,9 @@ const analyzer = require('exfabrica-cms-engine-analyzer');
 const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
-    const analyzerService = () => strapi.plugins["cms-analyzer"].services.cmsAnalyzer;
     const analyseService = () => strapi.plugins["cms-analyzer"].services.analyse;
     const matchService = () => strapi.plugins["cms-analyzer"].services.match;
+
     const getPluginStore = () => {
         return strapi.store({
             environment: '',
@@ -55,7 +55,7 @@ module.exports = ({ strapi }) => {
         return contentTypes;
     };
     const getComponentsToPopulate = async () => {
-        let contentTypes = await analyzerService().getContentTypes();
+        let contentTypes = await getContentTypes();
         const components = [];
 
         for (const contentType of contentTypes) {
@@ -76,7 +76,7 @@ module.exports = ({ strapi }) => {
         return components;
     };
     const getPopulateObjectForUID = async (uid) => {
-        const componentsToPopulate = await analyzerService().getComponentsToPopulate();
+        const componentsToPopulate = await getComponentsToPopulate();
         let populate = {};
         const componentToPopulate = componentsToPopulate.filter(item => item.uid === uid);
         if (componentToPopulate && componentToPopulate.length > 0) {
@@ -91,7 +91,7 @@ module.exports = ({ strapi }) => {
     };
     const getContents = async () => {
         let potentialFields = [];
-        let contentTypes = await analyzerService().getContentTypes();
+        let contentTypes = await getContentTypes();
 
         for (const contentType of contentTypes) {
             let item = {
@@ -147,12 +147,12 @@ module.exports = ({ strapi }) => {
     const runConsolidationProcess = async (url) => {
         try {
             let results = [];
-            await analyzerService().clear();
+            await clear();
 
             // Get documents and attributes sorted by apiName
-            const strapiDocumentsByContentType = await analyzerService().getStrapiDocumentsByContentType();
+            const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
             // Get pages from analyzer
-            const pages = await analyzerService().getAnalyzedPages(url);
+            const pages = await getAnalyzedPages(url);
 
             // Iterate on pages and documents to match data
             for (const page of pages) {
@@ -160,18 +160,18 @@ module.exports = ({ strapi }) => {
                     for (const documentByContentType of strapiDocumentsByContentType) {
                         for (const document of documentByContentType.documents) {
                             for (const attribute of documentByContentType.contentType.attributes) {
-                                results = analyzerService().getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
                             }
                         }
                     }
                 }
             }
             //Put founded data in plugin collection
-            await analyzerService().pushResultsInCollection(results);
+            await pushResultsInCollection(results);
             //Work on result to extract relations ships between front tags and Strapi fields
-            await analyzerService().pushMatchesInCollection(results);
+            await pushMatchesInCollection(results);
             //Check the qualtiy of analyses
-            await analyzerService().finalCheck();
+            await finalCheck();
 
         }
         catch (ex) {
@@ -181,11 +181,11 @@ module.exports = ({ strapi }) => {
         return Promise.resolve({ success: true })
     };
     const getStrapiDocumentsByContentType = async () => {
-        const contentTypes = await analyzerService().getContents();
+        const contentTypes = await getContents();
         let documentsByContentType = [];
 
         for (const contentType of contentTypes) {
-            const populate = await analyzerService().getPopulateObjectForUID(contentType.uid);
+            const populate = await getPopulateObjectForUID(contentType.uid);
             const contentTypeDocuments = await strapi.query(contentType.uid).findMany({
                 populate: populate
             });
@@ -270,12 +270,12 @@ module.exports = ({ strapi }) => {
             case "text":
                 docfieldValue = document[attributeKey];
                 if (docfieldValue)
-                    analyzerService().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
+                    setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
                 break;
             case "component":
                 docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
                 if (docfieldValue)
-                    analyzerService().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                    setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
                 break;
             case "componentInZone":
                 const section = document[attribute.zone];
@@ -283,7 +283,7 @@ module.exports = ({ strapi }) => {
                     for (const componentChild of section) {
                         docfieldValue = componentChild[attributeKey];
                         if (docfieldValue)
-                            analyzerService().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
+                            setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
                     }
                 }
                 break;
@@ -297,13 +297,13 @@ module.exports = ({ strapi }) => {
                         nestedInnerComponents[0][attribute.componentName].forEach(element => {
                             docfieldValue = element[attributeKey];
                             if (docfieldValue)
-                                analyzerService().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                                setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
                         });
                     }
                     else {
                         docfieldValue = nestedInnerComponents[0][attribute.componentName][attributeKey];
                         if (docfieldValue)
-                            analyzerService().setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                            setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
                     }
                 }
                 break;
@@ -354,7 +354,7 @@ module.exports = ({ strapi }) => {
         const matches = await matchService().findMany();
         for (const analyse of analyses) {
             const filteredMatches = matches.filter(item => item.apiName === analyse.apiName);
-            const populate = await analyzerService().getPopulateObjectForUID(analyse.apiName);
+            const populate = await getPopulateObjectForUID(analyse.apiName);
             const contentTypeDocuments = await strapi.query(analyse.apiName).findMany({
                 populate: populate
             });
@@ -363,15 +363,9 @@ module.exports = ({ strapi }) => {
             }
         }
     };
-    return {
-        //Settings (TODO -> create a separate service)
-        getSettings,
-        setSettings,
-
-        //CONTENT-TYPES
+    return {        
         getContentTypes,
         getComponentsToPopulate,
-
         getPopulateObjectForUID,
         getContents,
         runConsolidationProcess,
@@ -384,5 +378,5 @@ module.exports = ({ strapi }) => {
         clear,
         runRealTimeRulesAnalyze,
         finalCheck
-    }
+    };
 }
