@@ -26,6 +26,7 @@
     "cheerio": "^1.0.0-rc.10",
     "lodash": "^4.17.21",
     "mz": "^2.7.0",
+    "nodejs-resemble": "^0.4.1",
     "nodemon": "^2.0.12",
     "puppeteer": "^10.4.0",
     "resemblejs": "^4.0.0",

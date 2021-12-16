@@ -1,4 +1,5 @@
 import { compare }  from 'resemblejs'
+import resemble  from 'nodejs-resemble'
 import fs from "mz/fs";
 
 export default async function startImageAnalysis(): Promise<any> {
@@ -22,9 +23,14 @@ export default async function startImageAnalysis(): Promise<any> {
                     ignoreColors: true
                 };
 
+                //1. resemblejs
                 compare(file1, file2, options, function (err, data) {
                     if (err) {
-                        console.log("An error!");
+                        console.log(err);
+                        //2. Node-resemble
+                        const diff = resemble(file1).compareTo(file2).ignoreColors().onComplete(function(data){
+                            console.log("Front : " + frontFile + " Cms: " + cmsFile  + " match: " + data.misMatchPercentage);
+                        });
                     } else {
                         console.log("Front : " + frontFile + " Cms: " + cmsFile  + " match: " + data.misMatchPercentage);
                     }
