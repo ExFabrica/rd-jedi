@@ -43,7 +43,7 @@ module.exports = {
     {
       method: 'GET',
       path: '/analyses',
-      handler: 'analyse.find',
+      handler: 'analyse.findMany',
       config: { policies: [] }
     },
     {
@@ -73,7 +73,7 @@ module.exports = {
     {
       method: 'DELETE',
       path: '/analyses/:id',
-      handler: 'analyse.delete',
+      handler: 'analyse.deleteOne',
       config: { policies: [] }
     },
     {
@@ -85,7 +85,7 @@ module.exports = {
     {
       method: 'GET',
       path: '/matches',
-      handler: 'match.find',
+      handler: 'match.findMany',
       config: { policies: [] }
     },
     {
@@ -115,7 +115,7 @@ module.exports = {
     {
       method: 'DELETE',
       path: '/matches/:id',
-      handler: 'match.delete',
+      handler: 'match.deleteOne',
       config: { policies: [] }
     },
     {

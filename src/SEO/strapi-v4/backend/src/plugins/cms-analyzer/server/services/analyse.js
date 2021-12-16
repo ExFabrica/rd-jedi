@@ -3,85 +3,87 @@
 const { isDraft } = require('@strapi/utils').contentTypes;
 
 module.exports = ({ strapi }) => {
-    return {
-        find(params, populate) {
-            return strapi.query('plugin::cms-analyzer.analyse').findMany(params, populate);
-        },
+    const query = strapi.query('plugin::cms-analyzer.analyse');
+    const analyseContentType = strapi.plugins['cms-analyzer'].contentTypes.analyse;
+    const findMany = async (params, populate) => {
+        return query.findMany(params, populate);
+    };
+    const findOne = async (params, populate) => {
+        return query.findOne(params, populate);
+    };
+    const count = async (params) => {
+        return query.count(params);
+    }
+    const create = async (data, { files } = {}) => {
+        const validData = await strapi.entityValidator.validateEntityCreation(
+            analyseContentType,
+            data,
+            { isDraft: isDraft(data, analyseContentType) }
+        );
 
-        findOne(params, populate) {
-            return strapi.query('plugin::cms-analyzer.analyse').findOne(params, populate);
-        },
+        const entry = await query.create({ data: validData });
 
-        count(params) {
-            return strapi.query('plugin::cms-analyzer.analyse').count(params);
-        },
-
-        async create(data, { files } = {}) {
-            const validData = await strapi.entityValidator.validateEntityCreation(
-                strapi.plugins['cms-analyzer'].contentTypes.analyse,
-                data,
-                { isDraft: isDraft(data, strapi.plugins['cms-analyzer'].contentTypes.analyse) }
-            );
-
-            const entry = await strapi.query('plugin::cms-analyzer.analyse').create({ data: validData });
-
-            if (files) {
-                // automatically uploads the files based on the entry and the model
-                await strapi.entityService.uploadFiles(entry, files, {
-                    model: 'analyses',
-                    // if you are using a plugin's model you will have to add the `source` key (source: 'users-permissions')
-                });
-                return this.findOne({ id: entry.id });
-            }
-
-            return entry;
-        },
-
-        async update(params, data, { files } = {}) {
-            const existingEntry = await strapi.query('plugin::cms-analyzer.analyse').findOne(params);
-
-            const validData = await strapi.entityValidator.validateEntityUpdate(
-                strapi.plugins['cms-analyzer'].contentTypes.analyse,
-                data,
-                { isDraft: isDraft(existingEntry, strapi.plugins['cms-analyzer'].contentTypes.analyse) }
-            );
-
-            const entry = await query('plugin::cms-analyzer.analyse').update(params, { data: validData });
-
-            if (files) {
-                // automatically uploads the files based on the entry and the model
-                await strapi.entityService.uploadFiles(entry, files, {
-                    model: 'analyses',
-                    // if you are using a plugin's model you will have to add the `source` key (source: 'users-permissions')
-                });
-                return this.findOne({ id: entry.id });
-            }
-
-            return entry;
-        },
-
-        async delete(params) {
-            return await strapi.query('plugin::cms-analyzer.analyse').delete(params);
-        },
-
-        async deleteAll() {
-            return await strapi.query('plugin::cms-analyzer.analyse').deleteMany(
-                {
-                    where: {
-                        id: {
-                            $gt: 0,
-                        },
-                    }
-                }
-            );
-        },
-
-        async search(params) {
-            return await strapi.query('plugin::cms-analyzer.analyse').search(params);
-        },
-
-        async countSearch(params) {
-            return await strapi.query('plugin::cms-analyzer.analyse').countSearch(params);
+        if (files) {
+            // automatically uploads the files based on the entry and the model
+            await strapi.entityService.uploadFiles(entry, files, {
+                model: 'analyses',
+                // if you are using a plugin's model you will have to add the `source` key (source: 'users-permissions')
+            });
+            return this.findOne({ id: entry.id });
         }
+
+        return entry;
+    };
+    const update = async (params, data, { files } = {}) => {
+        const existingEntry = await query.findOne(params);
+
+        const validData = await strapi.entityValidator.validateEntityUpdate(
+            analyseContentType,
+            data,
+            { isDraft: isDraft(existingEntry, analyseContentType) }
+        );
+
+        const entry = await query.update(params, { data: validData });
+        if (files) {
+            // automatically uploads the files based on the entry and the model
+            await strapi.entityService.uploadFiles(entry, files, {
+                model: 'analyses',
+                // if you are using a plugin's model you will have to add the `source` key (source: 'users-permissions')
+            });
+            return this.findOne({ id: entry.id });
+        }
+
+        return entry;
+    };
+    const deleteAll = async () => {
+        return query.deleteMany(
+            {
+                where: {
+                    id: {
+                        $gt: 0,
+                    },
+                }
+            }
+        );
+    };
+    const search = async (params) => {
+        return query.search(params);
+    };
+    const countSearch = async (params) => {
+        return await query.countSearch(params);
+    };
+
+    return {
+        findMany,
+        findOne,
+        count,
+        create,
+        update,
+        async delete(params) {
+            return await query.delete(params);
+        },
+        deleteAll,
+        search,
+        countSearch
     };
 };

@@ -1,66 +1,68 @@
 
+'use strict';
 const { parseMultipartData, sanitizeEntity } = require('@strapi/utils');
 
-module.exports = {
-  /**
- * Retrieve records.
- *
- * @return {Array}
- */
+module.exports = ({ strapi }) => {
 
-  async find(ctx) {
+  const analyseService = strapi.plugins["cms-analyzer"].services.analyse;
+  const analyseContentType = strapi.plugins['cms-analyzer'].contentTypes.analyse;
+
+  const findMany = async (ctx) => {
     let entities;
     if (ctx.query._q) {
-      entities = await strapi.plugins['cms-analyzer'].services.analyse.search(ctx.query);
+      entities = await analyseService.search(ctx.query);
     } else {
-      entities = await strapi.plugins['cms-analyzer'].services.analyse.find(ctx.query);
+      entities = await analyseService.findMany(ctx.query);
     }
 
-    return entities.map(entity => sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse }));
-  },
-  async findOne(ctx) {
+    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+  };
+
+  const findOne = async (ctx) => {
     const { id } = ctx.params;
 
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({
+    const entity = await analyseService.findOne({
       where: {
         id: id
       }
     });
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
-  },
-  async findByDocumentId(ctx) {
+    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+  };
+
+  const findByDocumentId = async (ctx) => {
     const { documentId } = ctx.params;
-    //TODO regenerate the document ?
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.findOne({
+    const entity = await analyseService.findOne({
       where: {
         documentId: documentId
       }
     });
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
-  },
-  async count(ctx) {
-    if (ctx.query._q) {
-      return await strapi.plugins['cms-analyzer'].services.analyse.countSearch(ctx.query);
-    }
-    return await strapi.plugins['cms-analyzer'].services.analyse.count(ctx.query);
-  },
-  async create(ctx) {
-    let entity;
-    if (ctx.is('multipart')) {
-      const { data, files } = parseMultipartData(ctx);
-      entity = strapi.plugins['cms-analyzer'].services.analyse.create(data, { files });
-    } else {
-      entity = strapi.plugins['cms-analyzer'].services.analyse.create(ctx.request.body);
-    }
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
-  },
-  async update(ctx) {
-    const { id } = ctx.params;
+    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+  };
 
+  const count = async (ctx) => {
+    if (ctx.query._q) {
+      ctx.send(analyseService.countSearch(ctx.query));
+    }
+    ctx.send(analyseService.count(ctx.query));
+  };
+
+  const create = async (ctx) => {
     let entity;
     if (ctx.is('multipart')) {
       const { data, files } = parseMultipartData(ctx);
-      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({
+      entity = analyseService.create(data, { files });
+    } else {
+      entity = analyseService.create(ctx.request.body);
+    }
+    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+  };
+
+  const update = async (ctx) => {
+    const { id } = ctx.params;
+    let entity;
+    if (ctx.is('multipart')) {
+      const { data, files } = parseMultipartData(ctx);
+      entity = await analyseService.update({
         where: {
           id: id
         }
@@ -68,27 +70,39 @@ module.exports = {
         files,
       });
     } else {
-      entity = await strapi.plugins['cms-analyzer'].services.analyse.update({
+      entity = await analyseService.update({
         where: {
           id: id
         }
       }, ctx.request.body);
     }
+    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+  };
 
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
-  },
-  async delete(ctx) {
+  const deleteOne = async (ctx) => {
     const { id } = ctx.params;
 
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.delete({
+    const entity = await analyseService.delete({
       where: {
         id: id
       }
     });
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.analyse });
-  },
-  async deleteAll(ctx) {
-    const entity = await strapi.plugins['cms-analyzer'].services.analyse.deleteAll();
-    return { "success": true };
-  },
-};
+    ctx.send({ "success": true });
+  };
+
+  const deleteAll = async (ctx) => {
+    await analyseService.deleteAll();
+    ctx.send({ "success": true });
+  };
+
+  return {
+    findMany,
+    findOne,
+    findByDocumentId,
+    count,
+    create,
+    update,
+    deleteOne,
+    deleteAll
+  }
+}

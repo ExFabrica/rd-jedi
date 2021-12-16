@@ -1,40 +1,32 @@
 'use strict';
 const _ = require('lodash');
-/**
- * cms-analyzer.js controller
- *
- * @description: A set of functions called "actions" of the `cms-analyzer` plugin.
- */
 
-module.exports = {
+module.exports = ({ strapi }) => {
+  const analyserService = strapi.plugins["cms-analyzer"].services.cmsAnalyzer;
 
-  /**
-   * Default action.
-   *
-   * @return {Object}
-   */
-
-  getContentTypes: async (ctx) => {
+  const getContentTypes = async (ctx) => {
     let contentTypes = {};
     try {
-      contentTypes = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContentTypes();
+      contentTypes = await analyserService.getContentTypes();
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(contentTypes);
-  },
-  getContents: async (ctx) => {
+  };
+
+  const getContents = async (ctx) => {
     let contents = {};
     try {
-      contents = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getContents();
+      contents = await analyserService.getContents();
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(contents);
-  },
-  getDocuments: async (ctx) => {
+  };
+
+  const getDocuments = async (ctx) => {
     const { api } = ctx.query;
     delete ctx.query['api'];
     let documents = {};
@@ -45,52 +37,67 @@ module.exports = {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(documents);
-  },
-  runConsolidation: async (ctx) => {
+  }
+
+  const runConsolidation = async (ctx) => {
     // remove url property from context
     const { url } = ctx.query;
     delete ctx.query['url'];
     let result = {};
     try {
-      result = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').runConsolidationProcess(url);
+      result = await analyserService.runConsolidationProcess(url);
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(result);
-  },
-  runRealTimeRulesAnalyze: async (ctx) => {
+  };
+
+  const runRealTimeRulesAnalyze= async (ctx) => {
     let result;
     // remove url property from context
     const { body } = ctx.request;
     try {
-      result = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').runRealTimeRulesAnalyze(body);
+      result = await analyserService.runRealTimeRulesAnalyze(body);
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(result);
-  },
-  getSettings: async (ctx) => {
+  };
+
+  const getSettings = async (ctx) => {
     let config = {};
     try {
-      config = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getSettings();
+      config = await analyserService.getSettings();
+      ctx.send(config);
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
-    ctx.send(config);
-  },
-  setSettings: async (ctx) => {
+  }
+
+  const setSettings = async (ctx)  => {
     let config = {};
     const { body } = ctx.request;
     try {
-      await strapi.service('plugin::cms-analyzer.cmsAnalyzer').setSettings(body);
-      config = await strapi.service('plugin::cms-analyzer.cmsAnalyzer').getSettings();
+      await analyserService.setSettings(body);
+      config = await this.getSettings();
     }
     catch (ex) {
       ctx.send({ "status": 500, message: ex });
     }
     ctx.send(config);
+  }
+
+  return {
+    getContentTypes,
+    getContents,
+    getDocuments,
+    runConsolidation,
+    runRealTimeRulesAnalyze,
+    //TODO -> create a new service settings.
+    getSettings,
+    setSettings
   }
 };

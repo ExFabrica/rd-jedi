@@ -1,78 +1,92 @@
 
+'use strict';
 const { parseMultipartData, sanitizeEntity } = require('@strapi/utils')
 
-module.exports = {
-  /**
- * Retrieve records.
- *
- * @return {Array}
- */
-  async find(ctx) {
+module.exports = ({ strapi }) => {
+
+  const matchService = strapi.plugins["cms-analyzer"].services.match;
+  const matchContentType = strapi.plugins['cms-analyzer'].contentTypes.match;
+
+  const findMany = async (ctx) => {
     let entities;
     if (ctx.query._q) {
-      entities = await strapi.plugins['cms-analyzer'].services.match.search(ctx.query);
+      entities = await matchService.search(ctx.query);
     } else {
-      entities = await strapi.plugins['cms-analyzer'].services.match.find(ctx.query);
+      entities = await matchService.findMany(ctx.query);
     }
 
-    return entities.map(entity => sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match }));
-  },
-  async findOne(ctx) {
+    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
+  };
+
+  const findOne = async (ctx) => {
     const { id } = ctx.params;
+    const entity = await matchService.findOne({ id });
+    ctx.send(sanitizeEntity(entity, { model: matchContentType }));
+  };
 
-    const entity = await strapi.plugins['cms-analyzer'].services.match.findOne({ id });
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match });
-  },
-  async findByUid(ctx) {
+  const findByUid = async (ctx) => {
     const { slug } = ctx.params;
-    console.log("uid", slug);
-
-    const entities = await strapi.plugins['cms-analyzer'].services.match.find({
+    const entities = await matchService.findMany({
       where: {
         apiName: { $eq: slug }
       }
     });
-    return entities.map(entity => sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match }));
-  },
-  async count(ctx) {
+    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
+  };
+
+  const count = async (ctx) => {
     if (ctx.query._q) {
-      return await strapi.plugins['cms-analyzer'].services.match.countSearch(ctx.query);
+      ctx.send(matchService.countSearch(ctx.query));
     }
-    return await strapi.plugins['cms-analyzer'].services.match.count(ctx.query);
-  },
-  async create(ctx) {
+    ctx.send(matchService.count(ctx.query));
+  };
+
+  const create = async (ctx) => {
     let entity;
     if (ctx.is('multipart')) {
       const { data, files } = parseMultipartData(ctx);
-      entity = strapi.plugins['cms-analyzer'].services.match.create(data, { files });
+      entity = matchService.create(data, { files });
     } else {
-      entity = strapi.plugins['cms-analyzer'].services.match.create(ctx.request.body);
+      entity = matchService.create(ctx.request.body);
     }
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match });
-  },
-  async update(ctx) {
+    ctx.send(sanitizeEntity(entity, { model: matchContentType }));
+  };
+
+  const update = async (ctx) => {
     const { id } = ctx.params;
 
     let entity;
     if (ctx.is('multipart')) {
       const { data, files } = parseMultipartData(ctx);
-      entity = await strapi.plugins['cms-analyzer'].services.match.update({ id }, data, {
+      entity = await matchService.update({ id }, data, {
         files,
       });
     } else {
-      entity = await strapi.plugins['cms-analyzer'].services.match.update({ id }, ctx.request.body);
+      entity = await matchService.update({ id }, ctx.request.body);
     }
 
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match });
-  },
-  async delete(ctx) {
-    const { id } = ctx.params;
+    ctx.send(sanitizeEntity(entity, { model: matchContentType }));
+  };
 
-    const entity = await strapi.plugins['cms-analyzer'].services.match.delete({ id });
-    return sanitizeEntity(entity, { model: strapi.plugins['cms-analyzer'].contentTypes.match });
-  },
-  async deleteAll(ctx) {
-    const entity = await strapi.plugins['cms-analyzer'].services.match.deleteAll();
-    return { "success": true };
-  },
-};
+  const deleteOne = async (ctx) => {
+    const { id } = ctx.params;
+    await matchService.delete({ id });
+    ctx.send({ "success": true });
+  }
+
+  const deleteAll = async (ctx) => {
+    await matchService.deleteAll();
+    ctx.send({ "success": true });
+  }
+
+  return {
+    findMany,
+    findOne,
+    findByUid,
+    count,
+    create,
+    update,
+    deleteOne,
+    deleteAll
+  }
+}
