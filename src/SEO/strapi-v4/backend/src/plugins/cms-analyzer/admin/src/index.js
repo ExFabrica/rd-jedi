@@ -61,7 +61,7 @@ export default {
 
   bootstrap(app) { 
     // Inject component in Admin
-    app.injectContentManagerComponent('editView', 'informations', {
+    /*app.injectContentManagerComponent('editView', 'informations', {
       name: 'hal-9000',
       Component: StrapiZoneMarker,
     });
@@ -74,7 +74,7 @@ export default {
     app.injectContentManagerComponent('listView', 'deleteModalAdditionalInfos', {
       name: 'hal-9000-modal',
       Component: StrapiZoneMarker,
-    });
+    });*/
 
     app.injectContentManagerComponent('editView', 'right-links', {
       name: 'hal-9000-links',

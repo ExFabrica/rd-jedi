@@ -17,7 +17,7 @@ export const StrapiListZoneItem = () => {
   useEffect(() => {
     _uiContentAnalyzer.getMatches().then(result => {
       const slugs = _.groupBy(result, "apiName");
-      if(slugs)
+      if (slugs)
         setIsVisible(Object.getOwnPropertyNames(slugs).includes(slug));
     });
   }, []);
@@ -28,12 +28,16 @@ export const StrapiListZoneItem = () => {
 
   return (
     isVisible ?
-    <>
-      {/*inject the html refresher*/}
-      {ReactDOM.createPortal(<StrapiUIRefresher />, document.getElementById("app"))}
-      {/*inject the assisant panel into page*/}
-      {ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))}
-      {/*TODO Add permission
+      <>
+        {/*inject the html refresher*/}
+        {
+          ReactDOM.createPortal(<StrapiUIRefresher />, document.getElementById("app"))
+        }
+        {/*inject the assisant panel into page*/}
+        {
+          //ReactDOM.createPortal(<StrapiAnalyzerPanel show={showPanel} />, document.getElementById("app"))
+        }
+        {/*TODO Add permission
       <LinkButton
         onClick={() => {
           togglePanel();
@@ -46,6 +50,6 @@ export const StrapiListZoneItem = () => {
       >
         {"Analyzer tips"}
       </LinkButton>*/}
-    </> : <></>
+      </> : <></>
   );
 };
