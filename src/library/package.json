@@ -16,7 +16,8 @@
     "start:images": "nodemon src/image-comparison/index.ts",
     "build": "rimraf ./dist && tsc",
     "start": "yarn run dist && node dist/index.js",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "clean": "del %appdata%\\npm-cache & del node_modules/ & del yarn.lock & yarn cache clean --force & yarn install"
   },
   "dependencies": {
     "@types/node": "^16.9.6",

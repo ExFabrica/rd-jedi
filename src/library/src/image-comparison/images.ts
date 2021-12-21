@@ -1,5 +1,7 @@
 import { compare }  from 'resemblejs'
+//import resemble  from 'nodejs-resemble'
 import fs from "mz/fs";
+//import { sharp } from "sharp";
 
 export default async function startImageAnalysis(): Promise<any> {
     const frontPath = "./src/image-comparison/front";
@@ -22,9 +24,17 @@ export default async function startImageAnalysis(): Promise<any> {
                     ignoreColors: true
                 };
 
+                //1. resemblejs
                 compare(file1, file2, options, function (err, data) {
                     if (err) {
-                        console.log("An error!");
+                        console.log(err);
+                        //const file1_redim = sharp(file1).resize({width: 300, height: 200}).toBuffer()
+                        //const file2_redim = sharp(file2).resize({width: 300, height: 200}).toBuffer()
+
+                        //2. Node-resemble
+                        // const diff = resemble(file1).compareTo(file2).ignoreColors().onComplete(function(data){
+                        //     console.log("Front : " + frontFile + " Cms: " + cmsFile  + " match: " + data.misMatchPercentage);
+                        // });
                     } else {
                         console.log("Front : " + frontFile + " Cms: " + cmsFile  + " match: " + data.misMatchPercentage);
                     }
