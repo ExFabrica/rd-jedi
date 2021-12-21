@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@strapi/utils": "4.0.0-next.0",
-    "exfabrica-cms-engine-analyzer": "^0.3.9"
+    "exfabrica-cms-engine-analyzer": "^0.4.1"
   },
-  "devDependencies": { },
+  "devDependencies": {},
   "author": {
     "name": "Exfabrica.io",
     "email": "gregory.taudin@exfabrica.io",

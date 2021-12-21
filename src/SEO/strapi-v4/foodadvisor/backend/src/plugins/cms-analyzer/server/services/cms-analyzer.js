@@ -228,15 +228,7 @@ module.exports = ({ strapi }) => {
     }
     const setFields = (page, document, uid, tag, attributeKey, docfieldValue, text, results, componentName, dynamicZoneName) => {
         if (docfieldValue && text) {
-            let comparaison = false;
-            if (text.length > 30)
-                comparaison = docfieldValue.length > text.length ?
-                    _.startsWith(docfieldValue.toLowerCase(), text.toLowerCase())
-                    : _.startsWith(text.toLowerCase(), docfieldValue.toLowerCase());
-            else
-                comparaison = (docfieldValue.toLowerCase() === text.toLowerCase());
-
-            if (comparaison) {
+            if (docfieldValue.toLowerCase() === text.toLowerCase()) {
                 const item = _.find(results, { key: `${uid}_${page.url}` });
                 if (!item)
                     results.push(

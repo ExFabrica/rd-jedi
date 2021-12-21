@@ -543,10 +543,10 @@ escape-string-regexp@^4.0.0:
   resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha1-FLqDpdNz49MR5a/KKc9b+tllvzQ=
 
-exfabrica-cms-engine-analyzer@^0.3.9:
-  version "0.3.9"
-  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.3.9.tgz#227f6e835f5e392f1c4da0933727b23cbf402ab9"
-  integrity sha1-In9ug19eOS8cTaCTNyeyPL9AKrk=
+exfabrica-cms-engine-analyzer@^0.4.1:
+  version "0.4.1"
+  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/exfabrica-cms-engine-analyzer/-/exfabrica-cms-engine-analyzer-0.4.1.tgz#b4860721a890bd20d59d8c7eba8c385c471ef80f"
+  integrity sha1-tIYHIaiQvSDVnYx+uow4XEce+A8=
   dependencies:
     "@types/node" "^16.9.6"
     "@types/puppeteer" "^5.4.4"
