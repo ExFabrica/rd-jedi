@@ -82,14 +82,14 @@ const explorer = async function* (urls: string[]) {
     //Retrieve the base url from the given string
     let baseURL;
     baseURL = retriveBaseUrl(url);
-    if (exploredURL.has(baseURL)) {
+    if (exploredURL.has(baseURL))
       continue;
-    }
+
     toExploreURL.add(baseURL);
 
     while (toExploreURL.size > 0) {
-      const toExploreIterator = toExploreURL[Symbol.iterator]();
 
+      const toExploreIterator = toExploreURL[Symbol.iterator]();
       //Get the first item from the Set 'toExploreURL'
       const currentUrl = toExploreIterator.next().value;
       //Puppeteer navigate to the given URL
@@ -102,11 +102,26 @@ const explorer = async function* (urls: string[]) {
       //Add each link to toExplore Set, unicity is maintained by Set object
       for (const pptrElement of linksFound) {
         const link = await pptrElement.getProperty('href').then(r => r._remoteObject.value);
-        if (link != currentUrl
-          && !exploredURL.has(link)//add only unexplored links
-          && !toExploreURL.has(link)//avoid setting a value already existing
-          && link.startsWith(baseURL) && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
-          toExploreURL.add(link);
+        if (!link.includes("?")) {
+          if (link != currentUrl
+            && !exploredURL.has(link)//add only unexplored links
+            && !toExploreURL.has(link)//avoid setting a value already existing
+            && link.startsWith(baseURL) && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+            toExploreURL.add(link);
+          }
+        } else {
+          //Get the url without queryString
+          const linkWithoutQueryString = link.split("?")[0];
+          const filteredExploredURL = Array.from(exploredURL).map(item => item.includes("?") ? item.split("?")[0] : item);
+          const filteredToExploreURL = Array.from(toExploreURL).map(item => item.includes("?") ? item.split("?")[0] : item);
+          if (!filteredExploredURL.includes(linkWithoutQueryString) 
+            && !filteredToExploreURL.includes(linkWithoutQueryString) 
+            && link != currentUrl
+            && !exploredURL.has(link)//add only unexplored links
+            && !toExploreURL.has(link)//avoid setting a value already existing
+            && link.startsWith(baseURL) && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+            toExploreURL.add(link);
+          }
         }
       }
 
@@ -156,7 +171,7 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
       const selectedFeatures = [];
       //Setting Analyzers to run
       if (features.includes('SEO')) {
-        const seoAnalyzer = new SeoAnalyzer(SEORules, "");
+        const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
         selectedFeatures.push(seoAnalyzer.run(pptrPage));
       }
 

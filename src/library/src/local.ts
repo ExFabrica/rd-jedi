@@ -6,7 +6,7 @@ terminator(["http://localhost:3000"], ['SEO']).then((results) => {
     console.debug("error on main side", err);
 });
 
-runSEORealTimeRulesAnalyse([
+/*runSEORealTimeRulesAnalyse([
     {
         tag: "TITLE",
         value: "blob of year!",
@@ -46,4 +46,4 @@ runSEORealTimeRulesAnalyse([
     console.log("RT Results:", results);
 }, err => {
     console.log("RT analyses error", err);
-})
+})*/

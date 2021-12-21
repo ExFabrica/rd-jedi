@@ -34,7 +34,7 @@ export const rules: IRule[] = [
         canonicals.length,
         1,
         `There should be 1 and only 1 canonical tag, currently there are ${canonicals.length}`,
-        IUserTarget.developer, 
+        IUserTarget.developer,
         "Canonical Tag"
       ));
       if (canonicals[0]) {
@@ -210,95 +210,99 @@ export const rules: IRule[] = [
       ));
 
       if (metas[0]) {
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          90,
-          assert.ok,
-          metas[0] && metas[0].content,
-          'Meta description content="" should not be missing.',
-          IUserTarget.developer,
-          "META"
-        ));
 
-        tester.compareTest(Helper.getComparaisonTestParameters(
-          90,
-          assert.notStrictEqual,
-          metas[0].content.length,
-          0,
-          'Meta description should not be empty',
-          IUserTarget.both,
-          "META"
-        ));
+        if (!metas[0].content) {
+          tester.BooleanTest(Helper.getBooleanTestParameters(
+            90,
+            assert.ok,
+            false,
+            'Meta description content="" should not be missing.',
+            IUserTarget.developer,
+            "META"
+          ));
+        }
+        else {
+          tester.compareTest(Helper.getComparaisonTestParameters(
+            90,
+            assert.notStrictEqual,
+            metas[0].content.length,
+            0,
+            'Meta description should not be empty',
+            IUserTarget.both,
+            "META"
+          ));
 
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          100,
-          assert.ok,
-          !metas[0].content.includes('undefined'),
-          `Meta description includes "undefined"`,
-          IUserTarget.developer,
-          "META",
-          metas[0].content
-        ));
+          tester.BooleanTest(Helper.getBooleanTestParameters(
+            100,
+            assert.ok,
+            !metas[0].content.includes('undefined'),
+            `Meta description includes "undefined"`,
+            IUserTarget.developer,
+            "META",
+            metas[0].content
+          ));
 
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          100,
-          assert.ok,
-          !metas[0].content.includes('null'),
-          `Meta description includes "null"`,
-          IUserTarget.developer,
-          "META",
-          metas[0].content
-        ));
-
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          20,
-          assert.ok,
-          metas[0].content.length > 10,
-          `This meta description is shorter than the recommended minimum limit of 10. (${metas[0].content})`,
-          IUserTarget.contentManager,
-          "META",
-          metas[0].content
-        ));
-
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          30,
-          assert.ok,
-          metas[0].content.length < 120,
-          `This meta description is longer than the recommended limit of 120. ${metas[0].content.length} (${metas[0].content})`,
-          IUserTarget.contentManager,
-          "META",
-          metas[0].content
-        ));
-
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          40,
-          assert.ok,
-          metas[0].content.length < 300,
-          'Investigate this meta description. Something could be wrong as it is over 300 chars.',
-          IUserTarget.contentManager,
-          "META",
-          metas[0].content
-        ));
-
-        if (payload.result.title[0]) {
-          const titleArr = Helper.cleanString(payload.result.title[0].innerText)
-            .split(' ')
-            .filter((i) => [':', '|', '-'].indexOf(i) === -1);
-
-          const compareArr = Helper.cleanString(metas[0].content)
-            .split(' ')
-            .filter((i) => [':', '|', '-'].indexOf(i) === -1);
-
-          const matches = titleArr.filter((t) => compareArr.indexOf(t) !== -1);
+          tester.BooleanTest(Helper.getBooleanTestParameters(
+            100,
+            assert.ok,
+            !metas[0].content.includes('null'),
+            `Meta description includes "null"`,
+            IUserTarget.developer,
+            "META",
+            metas[0].content
+          ));
 
           tester.BooleanLint(Helper.getBooleanTestParameters(
-            70,
+            20,
             assert.ok,
-            matches.length >= 1,
-            'Meta description should include at least 1 of the words in the title tag.',
+            metas[0].content.length > 10,
+            `This meta description is shorter than the recommended minimum limit of 10. (${metas[0].content})`,
             IUserTarget.contentManager,
             "META",
             metas[0].content
           ));
+
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            30,
+            assert.ok,
+            metas[0].content.length < 120,
+            `This meta description is longer than the recommended limit of 120. ${metas[0].content.length} (${metas[0].content})`,
+            IUserTarget.contentManager,
+            "META",
+            metas[0].content
+          ));
+
+          tester.BooleanTest(Helper.getBooleanTestParameters(
+            40,
+            assert.ok,
+            metas[0].content.length < 300,
+            'Investigate this meta description. Something could be wrong as it is over 300 chars.',
+            IUserTarget.contentManager,
+            "META",
+            metas[0].content
+          ));
+
+          if (payload.result.title[0]) {
+            const titleArr = Helper.cleanString(payload.result.title[0].innerText)
+              .split(' ')
+              .filter((i) => [':', '|', '-'].indexOf(i) === -1);
+
+            const compareArr = Helper.cleanString(metas[0].content)
+              .split(' ')
+              .filter((i) => [':', '|', '-'].indexOf(i) === -1);
+
+            const matches = titleArr.filter((t) => compareArr.indexOf(t) !== -1);
+
+            tester.BooleanLint(Helper.getBooleanTestParameters(
+              70,
+              assert.ok,
+              matches.length >= 1,
+              'Meta description should include at least 1 of the words in the title tag.',
+              IUserTarget.contentManager,
+              "META",
+              metas[0].content
+            ));
+          }
         }
       }
     },

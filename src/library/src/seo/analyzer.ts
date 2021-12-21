@@ -4,7 +4,6 @@ import puppeteer from 'puppeteer';
 import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
 import { IRule, IRuleResultMessage } from '../common/models/rule.interfaces';
 import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tester.interfaces';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
@@ -68,27 +67,45 @@ export class SeoAnalyzer {
         return out;
       });
     });
-    return tags;
+    return tags && tags.length ? tags : [];
   };
 
   private async getSEOTags(page: puppeteer.Page): Promise<ITags> {
+
+    const html = await this.getAttributes(page, 'html');
+    const title = await this.getAttributes(page, 'title');
+    const meta = await this.getAttributes(page, 'meta');
+    const ldjson = await this.getAttributes(page, 'script[type="application/ld+json"]');
+    const h1s = await this.getAttributes(page, 'h1');
+    const h2s = await this.getAttributes(page, 'h2');
+    const h3s = await this.getAttributes(page, 'h3');
+    const h4s = await this.getAttributes(page, 'h4');
+    const h5s = await this.getAttributes(page, 'h5');
+    const h6s = await this.getAttributes(page, 'h6');
+    const canonical = await this.getAttributes(page, '[rel="canonical"]');
+    const imgs = await this.getAttributes(page, 'img');
+    const aTags = await this.getAttributes(page, 'a');
+    const linkTags = await this.getAttributes(page, 'link');
+    const ps = await this.getAttributes(page, 'p');
+    const body = await this.getAttributes(page, "body");
+
     return {
-      html: await this.getAttributes(page, 'html'),
-      title: await this.getAttributes(page, 'title'),
-      meta: await this.getAttributes(page, 'meta'),
-      ldjson: await this.getAttributes(page, 'script[type="application/ld+json"]'),
-      h1s: await this.getAttributes(page, 'h1'),
-      h2s: await this.getAttributes(page, 'h2'),
-      h3s: await this.getAttributes(page, 'h3'),
-      h4s: await this.getAttributes(page, 'h4'),
-      h5s: await this.getAttributes(page, 'h5'),
-      h6s: await this.getAttributes(page, 'h6'),
-      canonical: await this.getAttributes(page, '[rel="canonical"]'),
-      imgs: await this.getAttributes(page, 'img'),
-      aTags: await this.getAttributes(page, 'a'),
-      linkTags: await this.getAttributes(page, 'link'),
-      ps: await this.getAttributes(page, 'p'),
-      body: await this.getAttributes(page, "body")
+      html,
+      title,
+      meta,
+      ldjson,
+      h1s,
+      h2s,
+      h3s,
+      h4s,
+      h5s,
+      h6s,
+      canonical,
+      imgs,
+      aTags,
+      linkTags,
+      ps,
+      body
     };
   }
 
