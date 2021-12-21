@@ -30,7 +30,7 @@ export async function getServerSideProps(context) {
     : "";
   const res = await fetch(
     getStrapiURL(
-      `/articles?filters[slug]=${context.params.slug}&locale=${locale}${preview}&populate=localizations,image,author.picture,blocks.articles.image,blocks.faq,blocks.header`
+      `/articles?filters[slug]=${context.params.slug}&locale=${locale}${preview}&populate=seo&populate=localizations,image,author.picture,blocks.articles.image,blocks.faq,blocks.header`
     )
   );
   const json = await res.json();

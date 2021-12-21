@@ -1,0 +1,15 @@
+{
+    "plugin.name":"Analyzer",
+    "plugin.homepage.title":"Analyze results",
+    "plugin.homepage.subtitle":"with CMS analyzer",
+    "plugin.editor.title":"Editeur",
+    "plugin.settings.title":"Settings",
+    "plugin.settings.subtitle":"Settings sous titre",
+    "plugin.settings.panel.title":"Titre Panneau",
+    "plugin.settings.panel.setting1.label":"Setting 1",
+    "plugin.settings.panel.setting1.placeholder":"Setting 1 Placeholder",
+    "plugin.settings.panel.setting2.label":"Setting 2",
+    "plugin.settings.panel.setting3.label":"Setting 3",
+    "plugin.settings.button.save.label":"Sauver les paramètres",
+    "plugin.settings.button.save.message":"Paramètres sauvegardés."
+}
