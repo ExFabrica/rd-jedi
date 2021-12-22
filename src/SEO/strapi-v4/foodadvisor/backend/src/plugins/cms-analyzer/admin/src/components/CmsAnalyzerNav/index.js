@@ -1,9 +1,7 @@
 import React from 'react';
-import Apps from '@strapi/icons/Apps';
-import Plus from '@strapi/icons/Plus';
-import Key from '@strapi/icons/Key';
-import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
-import Information from '@strapi/icons/Information';
+import SeoIcon from '@strapi/icons/Book';
+import MediaIcon from '@strapi/icons/Landscape';
+import GreenIcon from '@strapi/icons/Earth';
 import { MemoryRouter } from 'react-router-dom';
 import {
   SubNav,
@@ -23,16 +21,17 @@ const AnalyzerNav = () => {
     const links = [{
       id: 1,
       label: 'SEO',
-      icon: <ExclamationMarkCircle />,
+      icon: <SeoIcon />,
       to: `/plugins/${pluginId}/seo`
     }, {
       id: 2,
       label: 'Media',
+      icon: <MediaIcon/>,
       to: `/plugins/${pluginId}/media`
     }, {
       id: 3,
       label: 'Green CMS',
-      icon: <Apps />,
+      icon: <GreenIcon />,
       to: `/plugins/${pluginId}/green`,
       active: true
     },
@@ -45,11 +44,9 @@ const AnalyzerNav = () => {
       <SubNav ariaLabel="Builder sub nav">
         <SubNavHeader label="CMS Analyzer"/>
         <SubNavSections>
-          {/* <SubNavSection label="Collection Type" collapsable badgeLabel={links.length.toString()}> */}
-            {links.map(link => <SubNavLink to={link.to} active={link.active} key={link.id}>
-                {link.label}
-              </SubNavLink>)}
-          {/* </SubNavSection> */}
+          {links.map(link => <SubNavLink to={link.to} active={link.active} key={link.id} icon={link.icon} >
+              {link.label}
+            </SubNavLink>)}
         </SubNavSections>
       </SubNav>
     </Box>

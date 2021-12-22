@@ -23,7 +23,7 @@ const App = () => {
     <Box background="neutral100">
       <Switch>
          <Route path={`/plugins/${pluginId}`} component={HomePage} exact />
-         <Route path={`/plugins/${pluginId}/seo`} component={HomePage} exact />
+         {/* <Route path={`/plugins/${pluginId}/seo`} component={SeoPage} exact /> */}
          <Route path={`/plugins/${pluginId}/media`} component={MediaPage} exact />
          <Route path={`/plugins/${pluginId}/green`} component={GreenPage} exact />
          <Route component={NotFound} />
