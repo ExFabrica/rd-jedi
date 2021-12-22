@@ -7,6 +7,7 @@ import pluginPermissions from './permissions';
 import { StrapiZoneMarker } from './components/injected/strapi-zone-marker';
 import { StrapiListZoneItem } from './components/injected/strapi-list-zone-item';
 const name = pluginPkg.strapi.name;
+const media_page_name='Media Analyzer';
 
 export default {
   register(app) {
@@ -45,10 +46,26 @@ export default {
             defaultMessage: 'Settings',
           },
           id: 'settings',
-          to: `/settings/${pluginId}`,
+          to: `/settings/${pluginId}/seo`,
           Component: async () => {
             const component = await import(
-                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings'
+                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/seo'
+            );
+
+            return component;
+          },
+          //permissions: pluginPermissions.settings,
+        },
+        { // Media Anaylzer
+          intlLabel: {
+            id: "Media-analyzer-settings",
+            defaultMessage: 'Media analyzer settings',
+          },
+          id: 'settings-media',
+          to: `/settings/${pluginId}/media`,
+          Component: async () => {
+            const component = await import(
+                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/media'
             );
 
             return component;

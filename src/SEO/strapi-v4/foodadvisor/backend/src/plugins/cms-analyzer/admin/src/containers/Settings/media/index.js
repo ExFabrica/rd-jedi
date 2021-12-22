@@ -19,7 +19,7 @@ import {
 } from '@strapi/helper-plugin';
 import { ToggleInput } from '@strapi/design-system/ToggleInput';
 
-const SettingsPage = () => {
+const SettingsMediaPage = () => {
   const { formatMessage } = useIntl();
   const isMounted = useRef(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +55,6 @@ const SettingsPage = () => {
   //</CheckPermissions>
 
   return (
-    <>
       <Main labelledBy="title" aria-busy={isLoading}>
         <HeaderLayout
           id="title"
@@ -81,56 +80,33 @@ const SettingsPage = () => {
                 paddingRight={7}
               >
                 <Stack size={3}>
-                  <H2>
-                    {formatMessage({
-                      id: getTrad("plugin.settings.panel.title")
-                    })}
-                  </H2>
-                  <Grid gap={6}>
-                    <GridItem col={6} s={12}>
-                      <TextInput
-                        label="Front-end URL to analyze"
-                        name="siteURI"
-                        placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
-                        onChange={({ target: { value } }) => {
-                          setSettings((prevState) => {
-                            return { ...prevState, frontUrl: value };
-                          });
-                        }}
-                        value={settings && settings.frontUrl ? settings.frontUrl : ""}
-                        hint={'The URL of the frontend you want to analyze'}
-                      />
-                    </GridItem>
-                    <GridItem col={6} s={12}>
-                      <ToggleInput
+                <H2>Media Analyzer</H2>
+                  <ToggleInput
                         aria-label="crawling"
                         data-testid="crawling"
                         checked={settings && settings.hasOwnProperty("enabled") ? settings.enabled : false}
-                        hint={'Enable or disable the analyze of this frontend'}
+                        hint={'Enable or disable the analyze of media\'s library'}
                         label={'Enabled?'}
                         name="siteEnabled"
                         offLabel={formatMessage({
                           id: 'app.components.ToggleCheckbox.off-label',
-                          defaultMessage: 'Off',
+                          defaultMessage: 'Disabled',
                         })}
                         onLabel={formatMessage({
                           id: 'app.components.ToggleCheckbox.on-label',
-                          defaultMessage: 'On',
+                          defaultMessage: 'Enabled',
                         })}
                         onChange={e => {
                           setSettings({ ...settings, enabled: e.target.checked });
                         }}
                       />
-                    </GridItem>
-                  </Grid>
                 </Stack>
               </Box>
             </form>
           </ContentLayout>
         }
       </Main>
-    </>
   );
 };
 
-export default SettingsPage;
+export default SettingsMediaPage;

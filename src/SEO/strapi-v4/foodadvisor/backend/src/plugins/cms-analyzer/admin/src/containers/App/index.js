@@ -8,17 +8,22 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { NotFound } from '@strapi/helper-plugin';
+import { Box } from '@strapi/design-system/Box';
+import { Layout } from '@strapi/design-system/Layout';
+
 import pluginId from '../../pluginId';
 import HomePage from '../HomePage';
-
+import AnalyzerNav from "../../components/CmsAnalyzerNav"
 const App = () => {
   return (
-    <div>
+    <Layout sideNav={<AnalyzerNav/>}>
+    <Box background="neutral100">
       <Switch>
-        <Route path={`/plugins/${pluginId}`} component={HomePage} exact />
-        <Route component={NotFound} />
-      </Switch>
-    </div>
+         <Route path={`/plugins/${pluginId}`} component={HomePage} exact />
+         <Route component={NotFound} />
+       </Switch>
+    </Box>
+    </Layout>
   );
 };
 
