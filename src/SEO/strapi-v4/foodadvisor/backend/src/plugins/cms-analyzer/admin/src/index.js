@@ -4,8 +4,8 @@ import pluginId from './pluginId';
 import Initializer from './components/Initializer';
 import PluginIcon from './components/PluginIcon';
 import pluginPermissions from './permissions';
-import { StrapiZoneMarker } from './components/injected/strapi-zone-marker';
 import { StrapiListZoneItem } from './components/injected/strapi-list-zone-item';
+
 const name = pluginPkg.strapi.name;
 const media_page_name='Media Analyzer';
 
