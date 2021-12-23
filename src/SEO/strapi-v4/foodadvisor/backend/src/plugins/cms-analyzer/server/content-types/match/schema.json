@@ -36,6 +36,9 @@
     },
     "dynamicZoneName": {
       "type": "string"
+    },
+    "status": {
+      "type": "string"
     }
   }
 }

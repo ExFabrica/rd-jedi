@@ -24,7 +24,8 @@ module.exports = ({ strapi }) => {
     const { slug } = ctx.params;
     const entities = await matchService.findMany({
       where: {
-        apiName: { $eq: slug }
+        apiName: { $eq: slug },
+        status: { $eq: "active" }
       }
     });
     ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));

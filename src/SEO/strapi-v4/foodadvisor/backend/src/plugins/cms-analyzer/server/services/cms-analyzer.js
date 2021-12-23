@@ -149,15 +149,18 @@ module.exports = ({ strapi }) => {
             let results = [];
             await clear();
 
-            // Get documents and attributes sorted by apiName
-            const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
             // Get pages from analyzer
             const pages = await getAnalyzedPages(url);
 
+            /************ FIRST PASS: Single Type *****************/
+            // Get documents and attributes sorted by apiName
+            const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
+            const strapiSingleDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "singleType");
+            const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
             // Iterate on pages and documents to match data
             for (const page of pages) {
                 for (const tag of page.tags) {
-                    for (const documentByContentType of strapiDocumentsByContentType) {
+                    for (const documentByContentType of strapiSingleDocumentsByContentType) {
                         for (const document of documentByContentType.documents) {
                             for (const attribute of documentByContentType.contentType.attributes) {
                                 results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
@@ -166,13 +169,35 @@ module.exports = ({ strapi }) => {
                     }
                 }
             }
+            results = filterResultsByFieldsCount(results);
             //Put founded data in plugin collection
             await pushResultsInCollection(results);
             //Work on result to extract relations ships between front tags and Strapi fields
             await pushMatchesInCollection(results);
-            //Check the qualtiy of analyses
-            await finalCheck();
 
+            /************ SECOND PASS: Collection Type *****************/
+            results = [];
+            const analyses = await analyseService().findMany();
+            const groupedMatchesByApiName = _.groupBy(analyses, "frontUrl");
+            _.remove(pages, (item) => {
+                return Object.keys(groupedMatchesByApiName).includes(item.url);
+            });
+            for (const page of pages) {
+                for (const tag of page.tags) {
+                    for (const documentByContentType of strapiCollectionDocumentsByContentType) {
+                        for (const document of documentByContentType.documents) {
+                            for (const attribute of documentByContentType.contentType.attributes) {
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                            }
+                        }
+                    }
+                }
+            }
+            results = filterResultsByFieldsCount(results);
+            //Put founded data in plugin collection
+            await pushResultsInCollection(results);
+            //Work on result to extract relations ships between front tags and Strapi fields
+            await pushMatchesInCollection(results);
         }
         catch (ex) {
             console.debug("Error", ex);
@@ -237,17 +262,17 @@ module.exports = ({ strapi }) => {
                             apiName: uid,
                             frontUrl: page.url,
                             documentId: document.id,
-                            documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }],
+                            documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }],
                             seoAnalyse: page.seoAnalyse,
                             screenshot: page.screenshot,
                             tags: page.tags
                         });
                 else {
                     let field = componentName ?
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName }) :
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag });
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }) :
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, status: "active" });
                     if (!field) {
-                        item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName });
+                        item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" });
                     }
                 }
             }
@@ -304,6 +329,19 @@ module.exports = ({ strapi }) => {
         }
         return results;
     };
+    const filterResultsByFieldsCount = (results) => {
+        const finalResults = _.groupBy(results, "frontUrl");
+        let newResults = [];
+        if (finalResults) {
+            for (const result in finalResults) {
+                //get the occurence with the bigger document fieldsets.
+                newResults.push(finalResults[result].reduce((prev, curr) => {
+                    return prev.documentFields.length > curr.documentFields.length ? prev : curr;
+                }));
+            }
+        }
+        return newResults;
+    }
     const pushResultsInCollection = async (results) => {
         for (const result of results) {
             await analyseService().create({
@@ -318,8 +356,36 @@ module.exports = ({ strapi }) => {
             });
         }
     };
+    const handleMatchErrors = (results) => {
+        const finalResults = _.groupBy(results, "apiName");
+        for (const result in finalResults) {
+            let findedTitle = false;
+            for (const resultArray of finalResults[result]) {
+                const activeItems = resultArray.documentFields.filter(item => {
+                    return item.tagName === "TITLE" || item.tagName === "META (description)"
+                });
+                if (activeItems && activeItems.length > 0) {
+                    findedTitle = true;
+                    const titleItems = activeItems.filter(item => item.tagName === "TITLE");
+                    if (titleItems && titleItems.length > 1)
+                        console.log("Error, mutiple title tags and fields found.", activeItems.filter(item => item.tagName === "TITLE"));
+                    for (const field of activeItems) {
+                        resultArray.documentFields.forEach(item => {
+                            if (item.tagName !== "TITLE" && item.tagName !== "META (description)"
+                                && (item.value === field.value || item.fieldName === field.fieldName)) {
+                                item.status = "inactive";
+                            }
+                        });
+                    }
+                }
+            }
+            if(!findedTitle)
+                console.log(`Error, No title tag found in ${result}`)
+        }
+    };
     const pushMatchesInCollection = async (results) => {
         let fields = [];
+        handleMatchErrors(results);
         for (const result of results)
             fields = _.concat(fields, result.documentFields);
         fields = _.uniqBy(fields, v => [v.componentName, v.tagName, v.apiName, v.fieldName].join());
@@ -330,7 +396,8 @@ module.exports = ({ strapi }) => {
                 componentName: field.componentName,
                 tagName: field.tagName,
                 fieldName: field.fieldName,
-                dynamicZoneName: field.dynamicZoneName
+                dynamicZoneName: field.dynamicZoneName,
+                status: field.status
             });
         }
     };
@@ -341,21 +408,66 @@ module.exports = ({ strapi }) => {
     const runRealTimeRulesAnalyze = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
     };
-    const finalCheck = async () => {
-        const analyses = await analyseService().findMany();
+    /*const finalCheck = async () => {
+        //const analyses = await analyseService().findMany();
         const matches = await matchService().findMany();
-        for (const analyse of analyses) {
-            const filteredMatches = matches.filter(item => item.apiName === analyse.apiName);
-            const populate = await getPopulateObjectForUID(analyse.apiName);
-            const contentTypeDocuments = await strapi.query(analyse.apiName).findMany({
+        const groupedMatchesByApiName = _.groupBy(matches, "apiName");
+        for (const apiName in groupedMatchesByApiName) {
+            const groupedMatchesByFieldName = _.groupBy(groupedMatchesByApiName[apiName], "fieldName");
+            const populate = await getPopulateObjectForUID(apiName);
+            const contentTypeDocuments = await strapi.query(apiName).findMany({
                 populate: populate
             });
-            for (const filteredMatch of filteredMatches) {
+            for (const fieldName in groupedMatchesByFieldName) {
+                if (groupedMatchesByFieldName[fieldName].length > 1) {
+                    console.log("fieldName => ", fieldName, groupedMatchesByFieldName[fieldName]);
+                    for (const doc of contentTypeDocuments) {
+                        for (const match of groupedMatchesByFieldName[fieldName]) {
+                            if (match.dynamicZoneName) {
+                                if (match.dynamicZoneName.includes("|")) {
+                                    const dynamicZoneNames = match.dynamicZoneName.split("|");
+                                    const component = doc[dynamicZoneNames[0]].filter(item => item.__component === dynamicZoneNames[1]);
+                                    if (component && component.length > 0) {
+                                        const value = component[0][match.componentName][match.fieldName];
+                                        const name = `${dynamicZoneNames[0]}.${dynamicZoneNames[1]}.${match.componentName}.${match.fieldName}`;
+                                        console.log(`DYN COMP COMP ${name} ====>`, value);
+                                    }
+                                    else {
+                                        console.log(`DYN COMP err ===> ${match.dynamicZoneName}`);
+                                    }
+                                }
+                                else {
+                                    const component = doc[match.dynamicZoneName].filter(item => item.__component === match.componentName);
+                                    if (component && component.length > 0) {
+                                        const value = component[0][match.fieldName];
+                                        const name = `${match.dynamicZoneName}.${match.componentName}.${match.fieldName}`;
+                                        console.log(`DYN COMP ${name} ====>`, value);
+                                    }
+                                    else {
+                                        console.log(`DYN COMP err ===> ${match.dynamicZoneName}`);
+                                    }
+                                }
+                            }
+                            else {
+                                if (match.componentName) {
+                                    const value = doc[match.componentName][match.fieldName];
+                                    const name = `${match.componentName}.${match.fieldName}`;
+                                    console.log(`COMP + FIELD ${name} ====>`, value);
+                                }
+                                else {
+                                    const value = doc[match.fieldName];
+                                    const name = `${match.fieldName}`;
+                                    console.log(`FIELD ${name} ====>`, value);
+                                }
+                            }
 
+                        }
+                    }
+                }
             }
         }
-    };
-    return {        
+    };*/
+    return {
         getContentTypes,
         getComponentsToPopulate,
         getPopulateObjectForUID,
@@ -369,6 +481,6 @@ module.exports = ({ strapi }) => {
         pushMatchesInCollection,
         clear,
         runRealTimeRulesAnalyze,
-        finalCheck
+        //finalCheck
     };
 }
