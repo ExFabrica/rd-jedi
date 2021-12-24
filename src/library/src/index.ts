@@ -1,14 +1,23 @@
+//Analyzers
 import { SeoAnalyzer } from "./seo/analyzer";
+import { ImagesAnalyzer } from "./images/analyzer";
+//Analyzer results interfaces
 import { IPageResult as SEOPageResult } from "./seo/models/interfaces";
+import { IPageResult as ImagesPageResult } from "./images/models/interfaces";
+//Analyzer rules
 import { rules as SEORules } from "./seo/rules/rules";
+import { rules as ImagesRules } from "./images/rules/rules";
 import { RTRules } from "./seo/rules/real-time.rules";
-import puppeteer from "puppeteer";
 import { IRuleResultMessage } from "./common/models/rule.interfaces";
+//Tooling
+import puppeteer from "puppeteer";
 
 type SeoPreview = Omit<SEOPageResult, "type">
+type ImagesPreview = Omit<ImagesPageResult, "type">
 interface ComputedResults {
   Sitemap: string[];
   SEO?: SeoPreview[];
+  Images?: ImagesPreview[];
 }
 
 /**
@@ -43,16 +52,25 @@ const isValidUrl = (url: string) => {
   return isValid;
 }
 
-const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, analysis: PromiseSettledResult<SEOPageResult>[], features: string[]) => {
+const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, analysis: PromiseSettledResult<SEOPageResult|ImagesPageResult>[], features: string[]) => {
   results.Sitemap.push(pptrPage.url());
   for (const analyseResult of analysis) {
     if (features.includes('SEO')) {
       if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "SEO") {
         //Remove analysis type to avoid redoundancy information 
-        const { result, pageInfo } = analyseResult?.value;
+        const { result, pageInfo } = (analyseResult?.value as unknown as SeoPreview);
         results.SEO.push({ result, pageInfo });
       } else if (analyseResult.status == "rejected") {
         console.error("SEO Analysis failed : ", analyseResult?.reason);
+      }
+    }
+    if (features.includes('Images')) {
+      if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "Images") {
+        //Remove analysis type to avoid redoundancy information 
+        const { result } = (analyseResult?.value as unknown as ImagesPreview);
+        results.Images.push({ result });
+      } else if (analyseResult.status == "rejected") {
+        console.error("Images Analysis failed : ", analyseResult?.reason);
       }
     }
   }
@@ -138,10 +156,11 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
   console.log('Terminator: Sarah Connor ?');
   console.log('Provided URLs => ', siteUrls);
   console.log("Active features ", features);
+  console.log("= = = = = = = = = = = = = = =")
 
   //Init
   const urls = new Set(siteUrls);//Deduplicate urls
-  const results = { Sitemap: [], SEO: [] } as ComputedResults;
+  const results = { Sitemap: [], SEO: [], Images: [] } as ComputedResults;
 
   //Guard clauses for
   if (urls.size > 0 && [...urls].every(isValidUrl)) {
@@ -159,9 +178,13 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
         const seoAnalyzer = new SeoAnalyzer(SEORules, "");
         selectedFeatures.push(seoAnalyzer.run(pptrPage));
       }
+      if(features.includes('Images')) {
+        const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
+        selectedFeatures.push(imagesAnalyzer.run(pptrPage));
+      }
 
       const analysis = await Promise.allSettled(selectedFeatures);
-      console.log("analysis results => ", analysis.map(x => x.status));
+      console.log("Analysis results => ", analysis.map(x => x.status));
 
       //Store analysis result for this page by feature
       categorizedResult(results, pptrPage, analysis, features);
