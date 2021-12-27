@@ -3,8 +3,8 @@ module.exports = {
     routes: [
       {
         method: 'GET',
-        path: '/medias',
-        handler: 'media.findMany',
+        path: '/medias/consolidation',
+        handler: 'media.runConsolidation',
         config: { policies: [] }
       }
     ]

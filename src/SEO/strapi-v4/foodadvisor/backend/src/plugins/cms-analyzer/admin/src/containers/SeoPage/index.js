@@ -7,9 +7,9 @@ import React, { memo, useEffect, useState } from 'react';
 //I18n
 import { useIntl } from 'react-intl';
 import getTrad from '../../utils/getTrad';
-//Middlewares
-import settingsMiddleware from '../../middlewares/settings/ui-settings';
-import contentAnalyzerMiddleware from '../../middlewares/analyzer/ui-contentAnalyzer';
+//API Wrapper
+import settingsAPI from '../../api/settings/settings-api-wrapper';
+import contentAnalyzerAPI from '../../api/seo/seo-api-wrapper';
 //Some components
 import {
   CheckPagePermissions,
@@ -37,14 +37,14 @@ const SeoPage = (props) => {
 
   useEffect(() => {
     try {
-      contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
+      contentAnalyzerAPI.getAnalyses().then((analyses) => {
         console.log("Retrieved analyses:", analyses);
         setResults(analyses);
         initToggleState(analyses);
       }, (err) => {
         console.log(err);
       });
-      settingsMiddleware.get().then(settings => {
+      settingsAPI.get().then(settings => {
         setSettings(settings);
       });
     }
@@ -67,10 +67,10 @@ const SeoPage = (props) => {
     console.log("handleSubmit Click");
     setIsLoading(true);
     try {
-      contentAnalyzerMiddleware.runConsolidation(settings.frontUrl).then((result) => {
+      contentAnalyzerAPI.runConsolidation(settings.frontUrl).then((result) => {
         console.log("runConsolidation result ", result);
         if (result.success) {
-          contentAnalyzerMiddleware.getAnalyses().then((analyses) => {
+          contentAnalyzerAPI.getAnalyses().then((analyses) => {
             console.log("runConsolidation getAnalyses analyses ", analyses);
             setResults(analyses);
             setIsLoading(false);

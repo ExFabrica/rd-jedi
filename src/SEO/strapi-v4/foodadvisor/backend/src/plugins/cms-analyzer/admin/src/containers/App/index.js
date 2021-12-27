@@ -16,7 +16,7 @@ import HomePage from '../HomePage';
 import SeoPage from '../SeoPage';
 import MediaPage from '../MediaPage';
 import GreenPage from '../GreenPage';
-import AnalyzerNav from "../../components/CmsAnalyzerNav"
+import AnalyzerNav from "../../components/Layout/CmsAnalyzerNav"
 
 const App = () => {
   return (

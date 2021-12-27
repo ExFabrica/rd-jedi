@@ -6,8 +6,8 @@ import { StrapiUIRefresher } from './strapi-ui-refresher'
 import Globe from '@strapi/icons/Globe';
 import { LinkButton } from '@strapi/design-system/LinkButton';
 import { useCMEditViewDataManager, request } from '@strapi/helper-plugin';
-//Middleware
-const _uiContentAnalyzer = require("../../middlewares/analyzer/ui-contentAnalyzer").default;
+//API Wrapper
+const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;
 
 export const StrapiListZoneItem = () => {
   const [showPanel, setShowPanel] = useState(false);
@@ -15,7 +15,7 @@ export const StrapiListZoneItem = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    _uiContentAnalyzer.getMatches().then(result => {
+    contentAnalyzerAPI.getMatches().then(result => {
       const slugs = _.groupBy(result, "apiName");
       if (slugs)
         setIsVisible(Object.getOwnPropertyNames(slugs).includes(slug));

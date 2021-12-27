@@ -9,7 +9,7 @@ import { Badge } from '@strapi/design-system/Badge';
 import { Typography } from '@strapi/design-system/Typography';
 //Box
 import { Box } from '@strapi/design-system/Box';
-const _uiContentAnalyzer = require("../../middlewares/analyzer/ui-contentAnalyzer").default;
+const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;
 
 export const StrapiUIRefresher = () => {
     const context = useCMEditViewDataManager();
@@ -32,7 +32,7 @@ export const StrapiUIRefresher = () => {
     }, [nodeElementsCollectionCount, modifiedData]);
 
     useEffect(() => {
-        _uiContentAnalyzer.getMatchesByUID(context.slug).then(result => {
+        contentAnalyzerAPI.getMatchesByUID(context.slug).then(result => {
             if (result) {
                 setStructureFields(result);
                 countAllTags();
@@ -115,7 +115,7 @@ export const StrapiUIRefresher = () => {
                 return { tag: item.tagName, value: item.value, titleValue: title, name: item.name };
             });
             //console.debug("Payload", payload);
-            const results = await _uiContentAnalyzer.getRealTimeRulesAnalyze(payload);
+            const results = await contentAnalyzerAPI.getRealTimeRulesAnalyze(payload);
             if (results) {
                 results.forEach(item => item["id"] = uuidv4());
                 //console.log('SeoAnalyses', results);

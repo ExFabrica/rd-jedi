@@ -1,9 +1,15 @@
-"use strict";
+'use strict';
+const analyzer = require('exfabrica-cms-engine-analyzer');
+const _ = require('lodash');
 
-/**
- * restaurant service.
- */
-
-const { createCoreService } = require("@strapi/strapi").factories;
-
-module.exports = createCoreService("plugin::cms-analyzer.media");
+module.exports = ({ strapi }) => {
+    const runConsolidation = async (url) => {
+        const rs = await analyzer.terminator([url], ['Images']);
+        for (const data of rs.Images) {
+            console.log("image", data.result.images);
+        }
+    }
+    return {
+        runConsolidation
+    }
+}

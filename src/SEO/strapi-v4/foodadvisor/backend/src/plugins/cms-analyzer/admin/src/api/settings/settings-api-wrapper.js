@@ -1,6 +1,6 @@
 import { request } from '@strapi/helper-plugin';
 
-const settingsMiddleware = {
+const settingsAPI = {
     get: async () => {
         const data = await request(`/cms-analyzer/settings`, {
             method: 'GET'
@@ -14,4 +14,4 @@ const settingsMiddleware = {
         });
     }
 }
-export default settingsMiddleware;
+export default settingsAPI;

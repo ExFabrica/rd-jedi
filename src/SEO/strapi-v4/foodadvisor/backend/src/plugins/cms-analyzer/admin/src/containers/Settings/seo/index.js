@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import getTrad from '../../../utils/getTrad';
-import SettingsMiddleware from '../../../middlewares/settings/ui-settings';
+import SettingsAPI from '../../../api/settings/settings-api-wrapper';
 import { Stack } from '@strapi/design-system/Stack';
 import { Main } from '@strapi/design-system/Main';
 import { ContentLayout } from '@strapi/design-system/Layout';
@@ -28,7 +28,7 @@ const SettingsPage = () => {
 
   //mount
   useEffect(() => {
-    SettingsMiddleware.get().then((data) => {
+    SettingsAPI.get().then((data) => {
       setSettings(data);
       console.log('data', data);
       setIsLoading(false);
@@ -41,7 +41,7 @@ const SettingsPage = () => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    const data = await SettingsMiddleware.set(settings);
+    const data = await SettingsAPI.set(settings);
     setSettings(data);
     setIsLoading(false);
     toggleNotification({

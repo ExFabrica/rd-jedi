@@ -1,6 +1,6 @@
 import { request } from '@strapi/helper-plugin';
 
-const contentAnalyzerMiddleware = {
+const contentAnalyzerAPI = {
     get: async (url) => {
         try {
             return request(`/cms-analyzer/analyzer?url=${url}`, {
@@ -33,7 +33,7 @@ const contentAnalyzerMiddleware = {
     },
     runConsolidation: async (url) => {
         try {
-            return request(`/cms-analyzer/consolidation?url=${url}`, {
+            return request(`/cms-analyzer/seo/consolidation?url=${url}`, {
                 method: 'GET'
             });
         }
@@ -94,4 +94,4 @@ const contentAnalyzerMiddleware = {
     }
 }
 
-export default contentAnalyzerMiddleware;
+export default contentAnalyzerAPI;

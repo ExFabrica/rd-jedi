@@ -8,7 +8,7 @@ import {
   SubNavSections,
   SubNavLink,
 } from '@strapi/design-system/SubNav';
-import pluginId from '../../pluginId';
+import pluginId from '../../../pluginId';
 
 const AnalyzerNav = () => {
   const links = [{

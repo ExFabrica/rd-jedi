@@ -1,6 +1,6 @@
 import { terminator, runSEORealTimeRulesAnalyse } from "./index";
 
-terminator(["https://demo-front.kasty.io/"], ['SEO', 'Images']).then((results) => {
+terminator(["http://localhost:3000"], ['SEO', 'Images']).then((results) => {
     console.debug("success", results);
 }, (err) => {
     console.debug("error on main side", err);

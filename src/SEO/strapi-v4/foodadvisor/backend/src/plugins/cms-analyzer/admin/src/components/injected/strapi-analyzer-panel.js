@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import { useCMEditViewDataManager, request } from '@strapi/helper-plugin';
+import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
 //Layout
 import { Box } from '@strapi/design-system/Box';
-import { Flex } from '@strapi/design-system/Flex';
-import { Stack } from '@strapi/design-system/Stack';
 
-//Middleware
-const _uiContentAnalyzer = require("../../middlewares/analyzer/ui-contentAnalyzer").default;
+//API Wrapper
+const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;
 
 const ComponentStyleDiv = styled.div`
   position:fixed;
@@ -31,7 +29,7 @@ export const StrapiAnalyzerPanel = ({ show }) => {
     if (context && context.modifiedData)
         useEffect(() => {
             if (context.modifiedData.id) {
-                _uiContentAnalyzer.getAnalysesByDocumentId(context.modifiedData.id)
+                contentAnalyzerAPI.getAnalysesByDocumentId(context.modifiedData.id)
                     .then(result => {
                         if (result) {
                             setFrontUrl(result.frontUrl);

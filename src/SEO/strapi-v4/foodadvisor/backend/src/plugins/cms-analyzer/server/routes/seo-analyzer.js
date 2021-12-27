@@ -4,7 +4,7 @@ module.exports = {
     routes: [
       {
         method: 'GET',
-        path: '/consolidation',
+        path: '/seo/consolidation',
         handler: 'seo-analyzer.runConsolidation',
         config: { policies: [] }
       },
