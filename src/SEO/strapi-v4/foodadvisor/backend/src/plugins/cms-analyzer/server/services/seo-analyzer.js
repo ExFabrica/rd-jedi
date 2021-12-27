@@ -5,46 +5,6 @@ const _ = require('lodash');
 module.exports = ({ strapi }) => {
     const analyseService = () => strapi.plugins["cms-analyzer"].services.analyse;
     const matchService = () => strapi.plugins["cms-analyzer"].services.match;
-
-    const getPluginStore = () => {
-        return strapi.store({
-            environment: '',
-            type: 'plugin',
-            name: 'cms-analyzer',
-        });
-    };
-    const createDefaultConfig = async () => {
-        const pluginStore = getPluginStore();
-        const value = {
-            frontUrl: '',
-            enabled: true,
-        }
-        await pluginStore.set({ key: 'settings', value });
-        return pluginStore.get({ key: 'settings' });
-    };
-    const createConfigFromData = async (data) => {
-        //mapping
-        const value = {
-            frontUrl: data.frontUrl,
-            enabled: data.enabled,
-        }
-
-        const pluginStore = getPluginStore();
-        await pluginStore.set({ key: 'settings', value });
-        return pluginStore.get({ key: 'settings' });
-    };
-    //SETTINGS
-    const getSettings = async () => {
-        const pluginStore = getPluginStore();
-        let config = await pluginStore.get({ key: 'settings' });
-        if (!config) {
-            config = await createDefaultConfig();
-        }
-        return config;
-    };
-    const setSettings = async (data) => {
-        return createConfigFromData(data);
-    };
     const getContentTypes = async () => {
         let contentTypes = [];
         Object.values(strapi.contentTypes).map(contentType => {
@@ -89,6 +49,91 @@ module.exports = ({ strapi }) => {
         }
         return populate;
     };
+    const getStructure = (item, contentType, type, componentName, zoneName, parentComponentName) => {
+        for (const [attributeKey, attributeValue] of Object.entries(contentType.attributes)) {
+            switch (attributeValue.type) {
+                case "text":
+                case "string":
+                case "richtext":
+                case "number":
+                    switch (type) {
+                        case "component":
+                            item.attributes.push({ key: attributeKey, value: attributeValue, type: "text", container: "component", componentName: componentName });
+                            break;
+                        case "componentInZone":
+                            item.attributes.push({ key: attributeKey, value: attributeValue, type: "text", container: "componentInZone", zone: zoneName, componentName: componentName });
+                            break;
+                        case "nestedComponentInComponentInZone":
+                            item.attributes.push({ key: attributeKey, value: attributeValue, type: "text", container: "nestedComponentInComponentInZone", zone: `${zoneName}|${parentComponentName}`, componentName: componentName });
+                            break;
+                        case "default":
+                            item.attributes.push({ key: attributeKey, value: attributeValue, type: "text", container: "default" });
+                            break;
+                    }
+                case "component":
+                    switch (type) {
+                        case "default":
+                            const component = strapi.components[attributeValue.component];
+                            if (component)
+                                getStructure(item, component, "component", attributeKey);
+                            break;
+                        case "componentInZone":
+                            const zoneComponentInZone = strapi.components[attributeValue.component];
+                            if (zoneComponentInZone)
+                                getStructure(item, zoneComponentInZone, "nestedComponentInComponentInZone", attributeKey, zoneName, componentName);
+                            break;
+                    }
+                    break;
+                case "enumeration":
+                    switch (type) {
+                        case "component":
+                            for (const enu of attributeValue.enum)
+                                item.attributes.push({ key: attributeKey, value: enu, type: "enumeration", container: "component", componentName: componentName });
+                            break;
+                        case "componentInZone":
+                            for (const enu of attributeValue.enum)
+                                item.attributes.push({ key: attributeKey, value: enu, type: "enumeration", container: "componentInZone", zone: zoneName, componentName: componentName });
+                            break;
+                        case "nestedComponentInComponentInZone":
+                            for (const enu of attributeValue.enum)
+                                item.attributes.push({ key: attributeKey, value: enu, type: "enumeration", container: "nestedComponentInComponentInZone", zone: `${zoneName}|${parentComponentName}`, componentName: componentName });
+                            break;
+                        case "default":
+                            for (const enu of attributeValue.enum)
+                                item.attributes.push({ key: attributeKey, value: enu, type: "enumeration", container: "default" });
+                            break;
+                    }
+                    break;
+                case "dynamiczone":
+                    if (type === "default") {
+                        for (const componentName of attributeValue.components) {
+                            const component = strapi.components[componentName];
+                            getStructure(item, component, "componentInZone", componentName, attributeKey);
+                        }
+                    }
+                    break;
+                case "media":
+                    switch (type) {
+                        case "component":
+                            item.medias.push({ key: attributeKey, value: attributeValue, container: "component", componentName: componentName });
+                            break;
+                        case "componentInZone":
+                            item.medias.push({ key: attributeKey, value: attributeValue, container: "componentInZone", zone: zoneName, componentName: componentName });
+                            break;
+                        case "nestedComponentInComponentInZone":
+                            item.medias.push({ key: attributeKey, value: attributeValue, container: "nestedComponentInComponentInZone", zone: `${zoneName}|${parentComponentName}`, componentName: componentName });
+                            break;
+                        case "default":
+                            item.medias.push({ key: attributeKey, value: attributeValue, container: "default" });
+                            break;
+                    }
+                    break;
+                default:
+                    //console.log("unknown", value);
+                    break;
+            }
+        }
+    }
     const getContents = async () => {
         let potentialFields = [];
         let contentTypes = await getContentTypes();
@@ -97,49 +142,10 @@ module.exports = ({ strapi }) => {
             let item = {
                 uid: contentType.uid,
                 kind: contentType.kind,
-                attributes: []
+                attributes: [],
+                medias: []
             }
-            for (const [key, value] of Object.entries(contentType.attributes)) {
-                switch (value.type) {
-                    case "text":
-                    case "string":
-                    case "richtext":
-                    case "number":
-                        item.attributes.push({ key, value, type: "text" });
-                        break;
-                    case "component":
-                        const component = strapi.components[value.component];
-                        for (const [keyC, valueC] of Object.entries(component.attributes)) {
-                            if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
-                                item.attributes.push({ key: keyC, value: valueC, type: "component", componentName: key });
-                        }
-                        break;
-                    case "enumeration":
-                        for (const enu of value.enum)
-                            item.attributes.push({ key: key, value: enu, type: "enumeration" });
-                        break;
-                    case "dynamiczone":
-                        for (const componentName of value.components) {
-                            const component = strapi.components[componentName];
-                            for (const [keyC, valueC] of Object.entries(component.attributes)) {
-                                if (valueC.type === "text" || valueC.type === "string" || valueC.type === "richtext" || valueC.type === "number")
-                                    item.attributes.push({ key: keyC, value: valueC, type: "componentInZone", zone: key, componentName: componentName });
-                                else if (valueC.type === "component") {
-                                    console.log("valueC", valueC);
-                                    const subComponent = strapi.components[valueC.component];
-                                    for (const [keyD, valueD] of Object.entries(subComponent.attributes)) {
-                                        if (valueD.type === "text" || valueD.type === "string" || valueD.type === "richtext" || valueD.type === "number")
-                                            item.attributes.push({ key: keyD, value: valueD, type: "nestedComponentIncomponentInZone", zone: `${key}|${componentName}`, componentName: keyC });
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                        console.log("unknown", value);
-                        break;
-                }
-            }
+            getStructure(item, contentType, "default");
             potentialFields.push(item);
         }
         return potentialFields.filter(content => content.attributes.length > 0);
@@ -282,9 +288,8 @@ module.exports = ({ strapi }) => {
         const attributeKey = attribute.key;
         let docfieldValue = "";
         const text = tag.tag.includes("META") ? tag.content : tag.innerText;
-        switch (attribute.type) {
-            case "enumeration":
-            case "text":
+        switch (attribute.container) {
+            case "default":
                 docfieldValue = document[attributeKey];
                 if (docfieldValue)
                     setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
@@ -304,7 +309,7 @@ module.exports = ({ strapi }) => {
                     }
                 }
                 break;
-            case "nestedComponentIncomponentInZone":
+            case "nestedComponentInComponentInZone":
                 const componentsName = attribute.zone.split("|");
                 const zone = componentsName[0];
                 const nestedCompoent = componentsName[1];
@@ -379,7 +384,7 @@ module.exports = ({ strapi }) => {
                     }
                 }
             }
-            if(!findedTitle)
+            if (!findedTitle)
                 console.log(`Error, No title tag found in ${result}`)
         }
     };

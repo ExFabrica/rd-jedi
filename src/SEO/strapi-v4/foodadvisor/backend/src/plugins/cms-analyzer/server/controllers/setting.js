@@ -6,11 +6,10 @@ module.exports = ({ strapi }) => {
   const getSettings = async (ctx) => {
     let config = {};
     try {
-      config = await settingService.getSettings();
-      ctx.send(config);
+      return settingService.getSettings();
     }
-    catch (ex) {
-      ctx.send({ "status": 500, message: ex });
+    catch (err) {
+      ctx.throw(500, err);
     }
   }
   const setSettings = async (ctx)  => {
@@ -18,12 +17,11 @@ module.exports = ({ strapi }) => {
     const { body } = ctx.request;
     try {
       await settingService.setSettings(body);
-      config = await this.getSettings();
+      return this.getSettings();
     }
-    catch (ex) {
-      ctx.send({ "status": 500, message: ex });
+    catch (err) {
+      ctx.throw(500, err);
     }
-    ctx.send(config);
   }
   return {
     getSettings,

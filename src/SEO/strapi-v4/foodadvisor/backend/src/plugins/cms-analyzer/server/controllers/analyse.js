@@ -2,7 +2,9 @@
 'use strict';
 const { parseMultipartData, sanitizeEntity } = require('@strapi/utils');
 
-module.exports = ({ strapi }) => {
+const { createCoreController } = require("@strapi/strapi").factories;
+
+module.exports = createCoreController("plugin::cms-analyzer.analyse", ({ strapi }) => {
   const analyseService = strapi.plugins["cms-analyzer"].services.analyse;
   const analyseContentType = strapi.plugins['cms-analyzer'].contentTypes.analyse;
   const findMany = async (ctx) => {
@@ -95,4 +97,4 @@ module.exports = ({ strapi }) => {
     deleteOne,
     deleteAll
   };
-}
+});

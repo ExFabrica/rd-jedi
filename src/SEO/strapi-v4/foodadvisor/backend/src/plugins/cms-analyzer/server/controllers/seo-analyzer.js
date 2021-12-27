@@ -2,30 +2,27 @@
 const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
-  const analyserService = strapi.plugins["cms-analyzer"].services.cmsAnalyzer;
+  const analyserService = strapi.plugins["cms-analyzer"].services.seoAnalyzer;
   const runConsolidation = async (ctx) => {
     // remove url property from context
     const { url } = ctx.query;
     delete ctx.query['url'];
     let result = {};
     try {
-      result = await analyserService.runConsolidationProcess(url);
+      return analyserService.runConsolidationProcess(url);
     }
-    catch (ex) {
-      ctx.send({ "status": 500, message: ex });
+    catch (err) {
+      ctx.throw(500, err);
     }
-    ctx.send(result);
   };
   const runRealTimeRulesAnalyze= async (ctx) => {
-    let result;
     const { body } = ctx.request;
     try {
-      result = await analyserService.runRealTimeRulesAnalyze(body);
+      return analyserService.runRealTimeRulesAnalyze(body);
     }
-    catch (ex) {
-      ctx.send({ "status": 500, message: ex });
+    catch (err) {
+      ctx.throw(500, err);
     }
-    ctx.send(result);
   };
   return {
     runConsolidation,

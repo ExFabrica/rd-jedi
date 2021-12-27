@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms-analyser-medias",
+  "info": {
+    "singularName": "media",
+    "pluralName": "medias",
+    "collectionName": "cms-analyser-medias",
+    "displayName": "CmsAnalyzerMedias",
+    "description": "Cms Analyzer Medias"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": true
+    },
+    "content-type-builder": {
+      "visible": true
+    }
+  },
+  "attributes": {
+    "frontUrl": {
+      "type": "string"
+    },
+    "mediaUrl": {
+      "type": "string"
+    },
+    "data" : {
+      "type": "json"
+    },
+    "status": {
+      "type": "string"
+    }
+  }
+}

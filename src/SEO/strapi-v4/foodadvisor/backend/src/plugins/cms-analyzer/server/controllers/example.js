@@ -5,9 +5,11 @@ module.exports = ({ strapi }) => {
     const exampleService = strapi.plugins["cms-analyzer"].services.example;
     const findMany = async (ctx) => {
         try {
-            ctx.send(await exampleService.findMany());
+            return exampleService.findMany();
         }
-        catch (err) { cxt.send({ error: err }); }
+        catch (err) {
+            cxt.throw(500, err);
+        }
     };
     return {
         findMany

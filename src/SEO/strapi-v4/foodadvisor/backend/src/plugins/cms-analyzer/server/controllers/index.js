@@ -1,17 +1,19 @@
 "use strict"
 
 const match = require("./match");
-const cmsAnalyzer = require("./cms-analyzer");
+const seoAnalyzer = require("./seo-analyzer");
 const analyse = require("./analyse");
 const setting = require("./setting");
 const example = require("./example");
 const mediaAnalyzerCtrl = require("./media-analyzer");
+const media = require("./media");
 
 module.exports = {
   analyse,
-  "cms-analyzer": cmsAnalyzer,
+  "seo-analyzer":seoAnalyzer,
   match,
   setting,
   example,
   "media-analyzer":mediaAnalyzerCtrl,
+  media
 };

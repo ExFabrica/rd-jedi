@@ -1,7 +1,11 @@
 'use strict';
 
 module.exports = {
-  'admin-api': require('./admin-api'),
-  'content-api': require('./content-api'),
-  'media-api': require('./media-api'),
+  'analyse': require('./analyse'),
+  'match': require('./match'),
+  'seo-analyzer': require('./seo-analyzer'),
+  'media-analyzer': require('./media-analyzer'),
+  'media': require('./media'),
+  'external': require('./external'),
+  'setting' : require('./setting'),
 };

@@ -1,5 +1,5 @@
 import delve from "dlv";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import Layout from "../../components/layout";
 import NoResults from "../../components/no-results";
@@ -45,6 +45,61 @@ const Restaurants = ({
   );
 
   const lastPage = Math.ceil(data.count / perPage) || 1;
+
+  const listAllEventListeners = () => {
+    const allElements = Array.prototype.slice.call(document.querySelectorAll('*'));
+    allElements.push(document);
+    allElements.push(window);
+
+    const types = [];
+
+    for (let ev in window) {
+      if (/^on/.test(ev)) types[types.length] = ev;
+    }
+
+    let elements = [];
+    for (let i = 0; i < allElements.length; i++) {
+      const currentElement = allElements[i];
+
+      // Events defined in attributes
+      for (let j = 0; j < types.length; j++) {
+
+        if (typeof currentElement[types[j]] === 'function') {
+          elements.push({
+            "node": currentElement,
+            "type": types[j],
+            "func": currentElement[types[j]].toString(),
+          });
+        }
+      }
+
+      // Events defined with addEventListener
+      if (typeof currentElement._getEventListeners === 'function') {
+        evts = currentElement._getEventListeners();
+        if (Object.keys(evts).length > 0) {
+          for (let evt of Object.keys(evts)) {
+            for (k = 0; k < evts[evt].length; k++) {
+              elements.push({
+                "node": currentElement,
+                "type": evt,
+                "func": evts[evt][k].listener.toString()
+              });
+            }
+          }
+        }
+      }
+    }
+
+    console.log(elements.sort());
+    return elements.sort();
+
+  };
+
+  useEffect(() => {
+    console.log("here MODAFOKA");
+    listAllEventListeners();
+  }, []);
+
 
   return (
     <Layout
@@ -118,9 +173,8 @@ const Restaurants = ({
               <div className="flex items-center">
                 <button
                   type="button"
-                  className={`${
-                    pageNumber <= 1 ? "cursor-not-allowed opacity-50" : ""
-                  } w-full p-4 border text-base rounded-l-xl text-gray-600 bg-white hover:bg-gray-100 focus:outline-none`}
+                  className={`${pageNumber <= 1 ? "cursor-not-allowed opacity-50" : ""
+                    } w-full p-4 border text-base rounded-l-xl text-gray-600 bg-white hover:bg-gray-100 focus:outline-none`}
                   onClick={() => setPageNumber(pageNumber - 1)}
                   disabled={pageNumber <= 1}
                 >
@@ -129,11 +183,10 @@ const Restaurants = ({
 
                 <button
                   type="button"
-                  className={`${
-                    pageNumber >= lastPage
+                  className={`${pageNumber >= lastPage
                       ? "cursor-not-allowed opacity-50"
                       : ""
-                  } w-full p-4 border-t border-b border-r text-base rounded-r-xl text-gray-600 bg-white hover:bg-gray-100 focus:outline-none`}
+                    } w-full p-4 border-t border-b border-r text-base rounded-r-xl text-gray-600 bg-white hover:bg-gray-100 focus:outline-none`}
                   onClick={() => setPageNumber(pageNumber + 1)}
                   disabled={pageNumber >= lastPage}
                 >
