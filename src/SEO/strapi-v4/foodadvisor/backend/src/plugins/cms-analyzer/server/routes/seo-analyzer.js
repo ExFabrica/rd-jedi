@@ -4,13 +4,13 @@ module.exports = {
     routes: [
       {
         method: 'GET',
-        path: '/seo/consolidation',
+        path: '/seo-analyzer/run',
         handler: 'seo-analyzer.runConsolidation',
         config: { policies: [] }
       },
       {
         method: 'POST',
-        path: '/runRealTimeRulesAnalyze',
+        path: '/seo-analyzer/runRT',
         handler: 'seo-analyzer.runRealTimeRulesAnalyze',
         config: { policies: [] }
       }

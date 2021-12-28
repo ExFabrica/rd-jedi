@@ -1,7 +1,7 @@
 import { request } from '@strapi/helper-plugin';
 
 const contentAnalyzerAPI = {
-    get: async (url) => {
+    /*get: async (url) => {
         try {
             return request(`/cms-analyzer/analyzer?url=${url}`, {
                 method: 'GET'
@@ -30,10 +30,10 @@ const contentAnalyzerAPI = {
         catch (ex) {
             console.log("Error: ", ex);
         }
-    },
-    runConsolidation: async (url) => {
+    },*/
+    run: async (url) => {
         try {
-            return request(`/cms-analyzer/seo/consolidation?url=${url}`, {
+            return request(`/cms-analyzer/seo-analyzer/run?url=${url}`, {
                 method: 'GET'
             });
         }
@@ -81,9 +81,9 @@ const contentAnalyzerAPI = {
             console.log("Error: ", ex);
         }
     },
-    getRealTimeRulesAnalyze: async (payload) => {
+    runRT: async (payload) => {
         try {
-            return await request("/cms-analyzer/runRealTimeRulesAnalyze", {
+            return await request("/cms-analyzer/seo-analyzer/runRT", {
                 method: 'POST',
                 body:payload
             });

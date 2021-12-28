@@ -64,14 +64,13 @@ const SeoPage = (props) => {
   }
 
   const handleSubmit = () => {
-    console.log("handleSubmit Click");
     setIsLoading(true);
     try {
-      contentAnalyzerAPI.runConsolidation(settings.frontUrl).then((result) => {
-        console.log("runConsolidation result ", result);
+      contentAnalyzerAPI.run(settings.frontUrl).then((result) => {
+        console.log("run result ", result);
         if (result.success) {
           contentAnalyzerAPI.getAnalyses().then((analyses) => {
-            console.log("runConsolidation getAnalyses analyses ", analyses);
+            console.log("run getAnalyses analyses ", analyses);
             setResults(analyses);
             setIsLoading(false);
           });

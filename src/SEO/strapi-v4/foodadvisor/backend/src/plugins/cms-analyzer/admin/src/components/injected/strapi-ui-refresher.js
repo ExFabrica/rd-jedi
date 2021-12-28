@@ -115,7 +115,7 @@ export const StrapiUIRefresher = () => {
                 return { tag: item.tagName, value: item.value, titleValue: title, name: item.name };
             });
             //console.debug("Payload", payload);
-            const results = await contentAnalyzerAPI.getRealTimeRulesAnalyze(payload);
+            const results = await contentAnalyzerAPI.runRT(payload);
             if (results) {
                 results.forEach(item => item["id"] = uuidv4());
                 //console.log('SeoAnalyses', results);

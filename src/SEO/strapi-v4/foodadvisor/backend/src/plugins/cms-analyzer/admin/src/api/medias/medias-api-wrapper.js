@@ -1,9 +1,9 @@
 import { request } from '@strapi/helper-plugin';
 
 const mediaAPIWrapper = {
-    runConsolidation: async (url) => {
+    run: async (url) => {
         try {
-            return request(`/cms-analyzer/medias/consolidation?url=${url}`, {
+            return request(`/cms-analyzer/medias-analyzer/run?url=${url}`, {
                 method: 'GET'
             });
         }

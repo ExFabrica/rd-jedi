@@ -10,7 +10,7 @@ import { Main } from '@strapi/design-system/Main';
 import { Button } from '@strapi/design-system/Button';
 import Plus from '@strapi/icons/Plus';
 //API Wrapper
-import settingsAPIWreapper from '../../api/settings/settings-api-wrapper';
+import settingsAPIWrapper from '../../api/settings/settings-api-wrapper';
 import mediasAPIWrapper from '../../api/medias/medias-api-wrapper';
 
 const MediaPage = (props) => {
@@ -21,7 +21,7 @@ const MediaPage = (props) => {
 
   useEffect(() => {
     try {
-      settingsAPIWreapper.get().then(settings => {
+      settingsAPIWrapper.get().then(settings => {
         setSettings(settings);
       });
     }
@@ -31,10 +31,9 @@ const MediaPage = (props) => {
   }, []);
 
   const handleSubmit = () => {
-    console.log("handleSubmit Click");
     setIsLoading(true);
     try {
-      mediasAPIWrapper.runConsolidation(settings.frontUrl).then((result) => {
+      mediasAPIWrapper.run(settings.frontUrl).then((result) => {
         console.log("runConsolidation result ", result);
       }, (err) => {
         console.log(err);
@@ -44,7 +43,6 @@ const MediaPage = (props) => {
     }
   }
 
-  
   return <Main labelledBy="title" aria-busy={isLoading}>
     <HeaderLayout
       id="title"

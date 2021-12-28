@@ -1,10 +1,16 @@
 module.exports = {
-  type: 'content-api',
+  type: 'admin',
   routes: [
     {
       method: 'GET',
-      path: '/images',
+      path: '/medias-analyzer',
       handler: 'media-analyzer.getImages',
+      config: { policies: [] }
+    },
+    {
+      method: 'GET',
+      path: '/medias-analyzer/run',
+      handler: 'media-analyzer.run',
       config: { policies: [] }
     }
   ]
