@@ -150,7 +150,7 @@ module.exports = ({ strapi }) => {
         }
         return potentialFields.filter(content => content.attributes.length > 0);
     };
-    const runConsolidationProcess = async (url) => {
+    const run = async (url) => {
         try {
             let results = [];
             await clear();
@@ -410,7 +410,7 @@ module.exports = ({ strapi }) => {
         await analyseService().deleteAll();
         await matchService().deleteAll();
     };
-    const runRealTimeRulesAnalyze = async (payload) => {
+    const runRT = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
     };
     /*const finalCheck = async () => {
@@ -473,19 +473,7 @@ module.exports = ({ strapi }) => {
         }
     };*/
     return {
-        getContentTypes,
-        getComponentsToPopulate,
-        getPopulateObjectForUID,
-        getContents,
-        runConsolidationProcess,
-        getStrapiDocumentsByContentType,
-        getAnalyzedPages,
-        setFields,
-        getAttributeComparaison,
-        pushResultsInCollection,
-        pushMatchesInCollection,
-        clear,
-        runRealTimeRulesAnalyze,
-        //finalCheck
+        run,
+        runRT,
     };
 }

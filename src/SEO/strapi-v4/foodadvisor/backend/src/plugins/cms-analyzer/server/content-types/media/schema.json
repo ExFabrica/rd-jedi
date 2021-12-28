@@ -28,8 +28,17 @@
     "mediaUrl": {
       "type": "string"
     },
+    "height" : {
+      "type": "integer"
+    },
+    "width" : {
+      "type": "integer"
+    },
+    "alt" : {
+      "type" : "string"
+    },
     "data" : {
-      "type": "json"
+      "type" : "json"
     },
     "status": {
       "type": "string"

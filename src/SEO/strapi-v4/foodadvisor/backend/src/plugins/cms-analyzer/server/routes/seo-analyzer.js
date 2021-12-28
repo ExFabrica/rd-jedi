@@ -5,13 +5,13 @@ module.exports = {
       {
         method: 'GET',
         path: '/seo-analyzer/run',
-        handler: 'seo-analyzer.runConsolidation',
+        handler: 'seo-analyzer.run',
         config: { policies: [] }
       },
       {
         method: 'POST',
         path: '/seo-analyzer/runRT',
-        handler: 'seo-analyzer.runRealTimeRulesAnalyze',
+        handler: 'seo-analyzer.runRT',
         config: { policies: [] }
       }
     ]

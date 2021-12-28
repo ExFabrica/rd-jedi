@@ -42,8 +42,12 @@ module.exports = ({ strapi }) => {
             data,
             { isDraft: isDraft(existingEntry, analyseContentType) }
         );
-
-        const entry = await query.update(params, { data: validData });
+        const entry = await query.update({
+            "data": { ...validData },
+            "where": {
+                id: existingEntry.id
+            }
+        });
         if (files) {
             // automatically uploads the files based on the entry and the model
             await strapi.entityService.uploadFiles(entry, files, {

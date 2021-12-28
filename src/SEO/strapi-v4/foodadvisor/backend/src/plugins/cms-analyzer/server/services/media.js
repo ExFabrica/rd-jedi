@@ -1,9 +1,10 @@
 'use strict';
 const _ = require('lodash');
+const { isDraft } = require('@strapi/utils').contentTypes;
 
 module.exports = ({ strapi }) => {
     const query = strapi.query('plugin::cms-analyzer.media');
-    const analyseContentType = strapi.plugins['cms-analyzer'].contentTypes.media;
+    const mediaContentType = strapi.plugins['cms-analyzer'].contentTypes.media;
     const findMany = async (params, populate) => {
         return query.findMany(params, populate);
     };
@@ -15,12 +16,12 @@ module.exports = ({ strapi }) => {
     }
     const create = async (data, { files } = {}) => {
         const validData = await strapi.entityValidator.validateEntityCreation(
-            analyseContentType,
+            mediaContentType,
             data,
-            { isDraft: isDraft(data, analyseContentType) }
+            { isDraft: isDraft(data, mediaContentType) }
         );
 
-        const entry = await query.create({ data: validData });
+        const entry = await query.create({ "data": validData });
 
         if (files) {
             // automatically uploads the files based on the entry and the model
@@ -37,12 +38,16 @@ module.exports = ({ strapi }) => {
         const existingEntry = await query.findOne(params);
 
         const validData = await strapi.entityValidator.validateEntityUpdate(
-            analyseContentType,
+            mediaContentType,
             data,
-            { isDraft: isDraft(existingEntry, analyseContentType) }
+            { isDraft: isDraft(existingEntry, mediaContentType) }
         );
-
-        const entry = await query.update(params, { data: validData });
+        const entry = await query.update({
+            "data": { ...validData },
+            "where": {
+                id: existingEntry.id
+            }
+        });
         if (files) {
             // automatically uploads the files based on the entry and the model
             await strapi.entityService.uploadFiles(entry, files, {
