@@ -75,7 +75,7 @@ module.exports = ({ strapi }) => {
         return query.search(params);
     };
     const countSearch = async (params) => {
-        return await query.countSearch(params);
+        return query.countSearch(params);
     };
     return {
         findMany,
@@ -84,7 +84,7 @@ module.exports = ({ strapi }) => {
         create,
         update,
         async delete(params) {
-            return await query.delete(params);
+            return query.delete(params);
         },
         deleteAll,
         search,

@@ -4,42 +4,36 @@ module.exports = {
     {
       method: 'GET',
       path: '/medias',
-      handler: 'match.findMany',
+      handler: 'media.findMany',
       config: { policies: [] }
     },
     {
       method: 'GET',
       path: '/medias/:slug',
-      handler: 'match.findOne',
-      config: { policies: [] }
-    },
-    {
-      method: 'GET',
-      path: '/medias/uid/:slug',
-      handler: 'match.findByUid',
+      handler: 'media.findOne',
       config: { policies: [] }
     },
     {
       method: 'POST',
       path: '/medias',
-      handler: 'match.create',
+      handler: 'media.create',
       config: { policies: [] }
     },
     {
       method: 'PUT',
       path: '/medias/:id',
-      handler: 'match.update',
+      handler: 'media.update',
       config: { policies: [] }
     },
     {
       method: 'DELETE',
       path: '/medias/:id',
-      handler: 'match.deleteOne',
+      handler: 'media.deleteOne',
       config: { policies: [] }
     },
     {
       method: 'DELETE',
-      path: '/medias',
+      path: '/media',
       handler: 'match.deleteAll',
       config: { policies: [] }
     }

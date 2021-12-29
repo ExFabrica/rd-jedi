@@ -129,7 +129,7 @@ module.exports = ({ strapi }) => {
                     }
                     break;
                 default:
-                    //console.log("unknown", value);
+                    console.log("unknown", attributeKey, attributeValue);
                     break;
             }
         }
@@ -156,13 +156,12 @@ module.exports = ({ strapi }) => {
             await clear();
 
             // Get pages from analyzer
-            const pages = await getAnalyzedPages(url);
-
-            /************ FIRST PASS: Single Type *****************/
-            // Get documents and attributes sorted by apiName
+            const pages = await getAnalyzedPages(url, ["SEO"]);
+            // Get documents and attributes sorted by apiNameges(url);
             const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
+            
+            /************ FIRST PASS: Single Type *****************/
             const strapiSingleDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "singleType");
-            const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
             // Iterate on pages and documents to match data
             for (const page of pages) {
                 for (const tag of page.tags) {
@@ -175,14 +174,19 @@ module.exports = ({ strapi }) => {
                     }
                 }
             }
-            results = filterResultsByFieldsCount(results);
+            //Get the occurence with the bigger document fieldsets.
+            results = filterAnalysesByFieldsCount(results);
             //Put founded data in plugin collection
-            await pushResultsInCollection(results);
+            await pushAnalyseInStrapiCollection(results);
+            //Detect and fix some errors
+            FixMatchesErrors(results);
             //Work on result to extract relations ships between front tags and Strapi fields
-            await pushMatchesInCollection(results);
+            await pushMatchesInStrapiCollection(results);
 
             /************ SECOND PASS: Collection Type *****************/
             results = [];
+            const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
+            //Remove single type from analyzed page.
             const analyses = await analyseService().findMany();
             const groupedMatchesByApiName = _.groupBy(analyses, "frontUrl");
             _.remove(pages, (item) => {
@@ -199,11 +203,14 @@ module.exports = ({ strapi }) => {
                     }
                 }
             }
-            results = filterResultsByFieldsCount(results);
+            //Get the occurence with the bigger document fieldsets.
+            results = filterAnalysesByFieldsCount(results);
             //Put founded data in plugin collection
-            await pushResultsInCollection(results);
+            await pushAnalyseInStrapiCollection(results);
+            //Detect and fix some errors
+            FixMatchesErrors(results);
             //Work on result to extract relations ships between front tags and Strapi fields
-            await pushMatchesInCollection(results);
+            await pushMatchesInStrapiCollection(results);
         }
         catch (ex) {
             console.debug("Error", ex);
@@ -334,12 +341,11 @@ module.exports = ({ strapi }) => {
         }
         return results;
     };
-    const filterResultsByFieldsCount = (results) => {
+    const filterAnalysesByFieldsCount = (results) => {
         const finalResults = _.groupBy(results, "frontUrl");
         let newResults = [];
         if (finalResults) {
             for (const result in finalResults) {
-                //get the occurence with the bigger document fieldsets.
                 newResults.push(finalResults[result].reduce((prev, curr) => {
                     return prev.documentFields.length > curr.documentFields.length ? prev : curr;
                 }));
@@ -347,7 +353,7 @@ module.exports = ({ strapi }) => {
         }
         return newResults;
     }
-    const pushResultsInCollection = async (results) => {
+    const pushAnalyseInStrapiCollection = async (results) => {
         for (const result of results) {
             await analyseService().create({
                 key: result.key,
@@ -361,36 +367,41 @@ module.exports = ({ strapi }) => {
             });
         }
     };
-    const handleMatchErrors = (results) => {
+    const FixMatchesErrors = (results) => {
         const finalResults = _.groupBy(results, "apiName");
         for (const result in finalResults) {
-            let findedTitle = false;
-            for (const resultArray of finalResults[result]) {
-                const activeItems = resultArray.documentFields.filter(item => {
-                    return item.tagName === "TITLE" || item.tagName === "META (description)"
-                });
-                if (activeItems && activeItems.length > 0) {
-                    findedTitle = true;
-                    const titleItems = activeItems.filter(item => item.tagName === "TITLE");
-                    if (titleItems && titleItems.length > 1)
-                        console.log("Error, mutiple title tags and fields found.", activeItems.filter(item => item.tagName === "TITLE"));
-                    for (const field of activeItems) {
-                        resultArray.documentFields.forEach(item => {
-                            if (item.tagName !== "TITLE" && item.tagName !== "META (description)"
-                                && (item.value === field.value || item.fieldName === field.fieldName)) {
-                                item.status = "inactive";
-                            }
-                        });
+            const treeFields = finalResults[result].map(item => item.documentFields);
+            const flattenFields = _.flatten(treeFields);
+            let generatedKeys = [];
+            flattenFields.forEach(item => {
+                if (!item.dynamicZoneName)
+                    generatedKeys.push({ key: `${item.tagName}|${item.fieldName}|${item.componentName}`, items: item });
+            });
+            const treeKeys = _.groupBy(generatedKeys, "key");
+            if (finalResults[result].length) {
+                for (const key in treeKeys) {
+                    if (treeKeys[key].length < finalResults[result].length / 2) {
+                        const explodedKey = key.split("|");
+                        const tagName = explodedKey[0];
+                        const fieldName = explodedKey[1];
+                        const componentName = explodedKey[2];
+                        for (const analyse of finalResults[result]) {
+                            analyse.documentFields.forEach(item => {
+                                const compare = componentName === "undefined"
+                                    ? item.tagName === tagName && item.fieldName === fieldName
+                                    : item.tagName === tagName && item.fieldName === fieldName && item.componentName === componentName;
+                                if (compare) {
+                                    item.status = "error";
+                                }
+                            });
+                        }
                     }
                 }
             }
-            if (!findedTitle)
-                console.log(`Error, No title tag found in ${result}`)
         }
     };
-    const pushMatchesInCollection = async (results) => {
+    const pushMatchesInStrapiCollection = async (results) => {
         let fields = [];
-        handleMatchErrors(results);
         for (const result of results)
             fields = _.concat(fields, result.documentFields);
         fields = _.uniqBy(fields, v => [v.componentName, v.tagName, v.apiName, v.fieldName].join());
@@ -413,65 +424,6 @@ module.exports = ({ strapi }) => {
     const runRT = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
     };
-    /*const finalCheck = async () => {
-        //const analyses = await analyseService().findMany();
-        const matches = await matchService().findMany();
-        const groupedMatchesByApiName = _.groupBy(matches, "apiName");
-        for (const apiName in groupedMatchesByApiName) {
-            const groupedMatchesByFieldName = _.groupBy(groupedMatchesByApiName[apiName], "fieldName");
-            const populate = await getPopulateObjectForUID(apiName);
-            const contentTypeDocuments = await strapi.query(apiName).findMany({
-                populate: populate
-            });
-            for (const fieldName in groupedMatchesByFieldName) {
-                if (groupedMatchesByFieldName[fieldName].length > 1) {
-                    console.log("fieldName => ", fieldName, groupedMatchesByFieldName[fieldName]);
-                    for (const doc of contentTypeDocuments) {
-                        for (const match of groupedMatchesByFieldName[fieldName]) {
-                            if (match.dynamicZoneName) {
-                                if (match.dynamicZoneName.includes("|")) {
-                                    const dynamicZoneNames = match.dynamicZoneName.split("|");
-                                    const component = doc[dynamicZoneNames[0]].filter(item => item.__component === dynamicZoneNames[1]);
-                                    if (component && component.length > 0) {
-                                        const value = component[0][match.componentName][match.fieldName];
-                                        const name = `${dynamicZoneNames[0]}.${dynamicZoneNames[1]}.${match.componentName}.${match.fieldName}`;
-                                        console.log(`DYN COMP COMP ${name} ====>`, value);
-                                    }
-                                    else {
-                                        console.log(`DYN COMP err ===> ${match.dynamicZoneName}`);
-                                    }
-                                }
-                                else {
-                                    const component = doc[match.dynamicZoneName].filter(item => item.__component === match.componentName);
-                                    if (component && component.length > 0) {
-                                        const value = component[0][match.fieldName];
-                                        const name = `${match.dynamicZoneName}.${match.componentName}.${match.fieldName}`;
-                                        console.log(`DYN COMP ${name} ====>`, value);
-                                    }
-                                    else {
-                                        console.log(`DYN COMP err ===> ${match.dynamicZoneName}`);
-                                    }
-                                }
-                            }
-                            else {
-                                if (match.componentName) {
-                                    const value = doc[match.componentName][match.fieldName];
-                                    const name = `${match.componentName}.${match.fieldName}`;
-                                    console.log(`COMP + FIELD ${name} ====>`, value);
-                                }
-                                else {
-                                    const value = doc[match.fieldName];
-                                    const name = `${match.fieldName}`;
-                                    console.log(`FIELD ${name} ====>`, value);
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-    };*/
     return {
         run,
         runRT,
