@@ -21,6 +21,12 @@ module.exports = {
             config: { policies: [] }
         },
         {
+            method: 'GET',
+            path: '/analyses/sorted/rank',
+            handler: 'analyse.findManyWithDefaultSorting',
+            config: { policies: [] }
+        },
+        {
             method: 'POST',
             path: '/analyses',
             handler: 'analyse.create',

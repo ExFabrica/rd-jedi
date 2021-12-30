@@ -37,7 +37,7 @@ const SeoPage = (props) => {
 
   useEffect(() => {
     try {
-      contentAnalyzerAPI.getAnalyses().then((analyses) => {
+      contentAnalyzerAPI.getSortedAnalyses().then((analyses) => {
         console.log("Retrieved analyses:", analyses);
         setResults(analyses);
         initToggleState(analyses);

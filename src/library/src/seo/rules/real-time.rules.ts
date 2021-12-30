@@ -53,13 +53,13 @@ export const RTRules: IRule[] = [
                     60,
                     assert.ok,
                     value.length < 200,
-                    `Something could be wrong this title tag is over 200 chars. : ${value}`,
+                    `Something could be wrong this title tag is over 200 chars. Currently: ${value.length}`,
                     IUserTarget.contentManager,
                     "TITLE",
                     value
                 ));
 
-                const compareArr = Helper.cleanString(value)
+                /*const compareArr = Helper.cleanString(value)
                     .split(' ')
                     .filter((i) => [':', '|', '-'].indexOf(i) === -1);
 
@@ -75,7 +75,7 @@ export const RTRules: IRule[] = [
                     IUserTarget.contentManager,
                     "TITLE",
                     value
-                ));
+                ));*/
             }
         },
     },
@@ -101,44 +101,46 @@ export const RTRules: IRule[] = [
                 "META",
             ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                20,
-                assert.ok,
-                value.length > 10,
-                `This meta description is shorter than the recommended minimum limit of 10. (${value})`,
-                IUserTarget.contentManager,
-                "META",
-                value
-            ));
+            if (value) {
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    20,
+                    assert.ok,
+                    value.length > 10,
+                    `This meta description is shorter than the recommended minimum limit of 10.`,
+                    IUserTarget.contentManager,
+                    "META",
+                    value
+                ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                30,
-                assert.ok,
-                value.length < 120,
-                `This meta description is longer than the recommended limit of 120. ${value.length} (${value})`,
-                IUserTarget.contentManager,
-                "META",
-                value
-            ));
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    30,
+                    assert.ok,
+                    value.length < 120,
+                    `This meta description is longer than the recommended limit of 120.`,
+                    IUserTarget.contentManager,
+                    "META",
+                    value
+                ));
 
-            tester.BooleanTest(Helper.getBooleanTestParameters(
-                40,
-                assert.ok,
-                value.length < 300,
-                'Investigate this meta description. Something could be wrong as it is over 300 chars.',
-                IUserTarget.contentManager,
-                "META",
-                value
-            ));
+                tester.BooleanTest(Helper.getBooleanTestParameters(
+                    40,
+                    assert.ok,
+                    value.length < 300,
+                    `Investigate this meta description. Something could be wrong as it is over 300 chars. Currently: ${value}`,
+                    IUserTarget.contentManager,
+                    "META",
+                    value
+                ));
+            }
 
-            if (titleValue) {
+            /*if (titleValue) {
                 const titleArr = Helper.cleanString(titleValue)
                     .split(' ')
-                    .filter((i) => [':', '|', '-'].indexOf(i) === -1);
+                    .filter((i) => [':', '|', '-', ','].indexOf(i) === -1);
                 if (titleArr) {
                     const compareArr = Helper.cleanString(value)
                         .split(' ')
-                        .filter((i) => [':', '|', '-'].indexOf(i) === -1);
+                        .filter((i) => [':', '|', '-', ','].indexOf(i) === -1);
 
                     const matches = titleArr.filter((t) => compareArr.indexOf(t) !== -1);
 
@@ -152,7 +154,7 @@ export const RTRules: IRule[] = [
                         value
                     ));
                 }
-            }
+            }*/
         },
     },
     {
@@ -177,27 +179,29 @@ export const RTRules: IRule[] = [
                 "H1"
             ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                30,
-                assert.ok,
-                value.length < 70,
-                `H1 tag is longer than the recommended limit of 70. (${value})`,
-                IUserTarget.contentManager,
-                "H1",
-                value
-            ));
+            if (value) {
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    30,
+                    assert.ok,
+                    value.length < 70,
+                    `H1 tag is longer than the recommended limit of 70. Currently: ${value}`,
+                    IUserTarget.contentManager,
+                    "H1",
+                    value
+                ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                30,
-                assert.ok,
-                value.length > 10,
-                `H1 tag is shorter than the recommended limit of 10. (${value})`,
-                IUserTarget.contentManager,
-                "H1",
-                value
-            ));
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    30,
+                    assert.ok,
+                    value.length > 10,
+                    `H1 tag is shorter than the recommended limit of 10.`,
+                    IUserTarget.contentManager,
+                    "H1",
+                    value
+                ));
+            }
 
-            const titleArr = Helper.cleanString(titleValue)
+            /*const titleArr = Helper.cleanString(titleValue)
                 .split(' ')
                 .filter((i) => [':', '|', '-'].indexOf(i) === -1);
 
@@ -218,7 +222,7 @@ export const RTRules: IRule[] = [
                     "H1",
                     value
                 ));
-            }
+            }*/
         },
     },
     {
@@ -243,27 +247,29 @@ export const RTRules: IRule[] = [
                 "H2",
             ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                20,
-                assert.ok,
-                value.length < 100,
-                `H2 tag is longer than the recommended limit of 100. (${value})`,
-                IUserTarget.contentManager,
-                "H2",
-                value
-            ));
+            if (value) {
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    20,
+                    assert.ok,
+                    value.length < 100,
+                    `H2 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    IUserTarget.contentManager,
+                    "H2",
+                    value
+                ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                30,
-                assert.ok,
-                value.length > 7,
-                `H2 tag is shorter than the recommended limit of 7. (${value})`,
-                IUserTarget.contentManager,
-                "H2",
-                value
-            ));
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    30,
+                    assert.ok,
+                    value.length > 7,
+                    `H2 tag is shorter than the recommended limit of 7.`,
+                    IUserTarget.contentManager,
+                    "H2",
+                    value
+                ));
+            }
 
-            const titleArr = Helper.cleanString(titleValue)
+            /*const titleArr = Helper.cleanString(titleValue)
                 .split(' ')
                 .filter((i) => [':', '|', '-'].indexOf(i) === -1);
 
@@ -284,7 +290,7 @@ export const RTRules: IRule[] = [
                     "H2",
                     value
                 ));
-            }
+            }*/
         },
     },
     {
@@ -306,26 +312,27 @@ export const RTRules: IRule[] = [
                 IUserTarget.both,
                 "H3",
             ));
+            if (value) {
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    20,
+                    assert.ok,
+                    value.length < 100,
+                    `h3 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    IUserTarget.contentManager,
+                    "H3",
+                    value
+                ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                20,
-                assert.ok,
-                value.length < 100,
-                `h3 tag is longer than the recommended limit of 100. (${value})`,
-                IUserTarget.contentManager,
-                "H3",
-                value
-            ));
-
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                20,
-                assert.ok,
-                value.length > 7,
-                `h3 tag is shorter than the recommended limit of 7. (${value})`,
-                IUserTarget.contentManager,
-                "H3",
-                value
-            ));
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    20,
+                    assert.ok,
+                    value.length > 7,
+                    `h3 tag is shorter than the recommended limit of 7.`,
+                    IUserTarget.contentManager,
+                    "H3",
+                    value
+                ));
+            }
         },
     },
     {
@@ -349,25 +356,27 @@ export const RTRules: IRule[] = [
                 "H4",
             ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                10,
-                assert.ok,
-                value.length < 100,
-                `h4 tag is longer than the recommended limit of 100. (${value})`,
-                IUserTarget.contentManager,
-                "H4",
-                value
-            ));
+            if (value) {
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    10,
+                    assert.ok,
+                    value.length < 100,
+                    `h4 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    IUserTarget.contentManager,
+                    "H4",
+                    value
+                ));
 
-            tester.BooleanLint(Helper.getBooleanTestParameters(
-                10,
-                assert.ok,
-                value.length > 7,
-                `h4 tag is shorter than the recommended limit of 7. (${value})`,
-                IUserTarget.contentManager,
-                "H4",
-                value
-            ));
+                tester.BooleanLint(Helper.getBooleanTestParameters(
+                    10,
+                    assert.ok,
+                    value.length > 7,
+                    `h4 tag is shorter than the recommended limit of 7.`,
+                    IUserTarget.contentManager,
+                    "H4",
+                    value
+                ));
+            }
         },
     }
 ]

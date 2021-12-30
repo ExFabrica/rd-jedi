@@ -61,6 +61,16 @@ const contentAnalyzerAPI = {
             console.log("Error: ", ex);
         }
     },
+    getSortedAnalyses: async () => {
+        try {
+            return request("/cms-analyzer/analyses/sorted/rank", {
+                method: 'GET'
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
+    },
     getMatchesByUID: async (uid) => {
         try {
             return request(`/cms-analyzer/matches/uid/${uid}`, {

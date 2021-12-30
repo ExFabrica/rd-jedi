@@ -45,6 +45,9 @@
     },
     "screenshot": {
       "type": "string"
+    },
+    "depth": {
+      "type": "integer"
     }
   }
 }

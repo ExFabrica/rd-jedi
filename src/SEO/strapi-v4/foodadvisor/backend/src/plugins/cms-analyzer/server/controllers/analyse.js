@@ -34,6 +34,12 @@ module.exports = ({ strapi }) => {
     });
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
+  const findManyWithDefaultSorting = async (ctx) => {
+    const entities = await analyseService.findMany({
+      orderBy: ['depth', 'frontUrl'],
+    });
+    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+  };
   const count = async (ctx) => {
     if (ctx.query._q) {
       ctx.send(analyseService.countSearch(ctx.query));
@@ -73,8 +79,7 @@ module.exports = ({ strapi }) => {
   };
   const deleteOne = async (ctx) => {
     const { id } = ctx.params;
-
-    const entity = await analyseService.delete({
+    await analyseService.delete({
       where: {
         id: id
       }
@@ -89,10 +94,11 @@ module.exports = ({ strapi }) => {
     findMany,
     findOne,
     findByDocumentId,
+    findManyWithDefaultSorting,
     count,
     create,
     update,
     deleteOne,
-    deleteAll
+    deleteAll,
   };
 }

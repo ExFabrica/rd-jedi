@@ -106,7 +106,7 @@ export const rules: IRule[] = [
             "TITLE"
           ));
 
-        tester.BooleanTest(Helper.getBooleanTestParameters(
+        /*tester.BooleanTest(Helper.getBooleanTestParameters(
           100,
           assert.ok,
           !titles[0].innerText.includes('undefined'),
@@ -124,13 +124,13 @@ export const rules: IRule[] = [
           IUserTarget.developer,
           "TITLE",
           titles[0].innerText
-        ));
+        ));*/
 
         tester.BooleanLint(Helper.getBooleanTestParameters(
           30,
           assert.ok,
           titles[0].innerText.length > 10,
-          'This title tag is shorter than the recommended minimum limit of 10.',
+          "This title tag is shorter than the recommended minimum limit of 10.",
           IUserTarget.contentManager,
           "TITLE",
           titles[0].innerText
@@ -141,7 +141,7 @@ export const rules: IRule[] = [
             30,
             assert.ok,
             titles[0].innerText.length < 70,
-            'This title tag is longer than the recommended limit of 70.',
+            "This title tag is longer than the recommended limit of 70.",
             IUserTarget.contentManager,
             "TITLE",
             titles[0].innerText
@@ -151,14 +151,14 @@ export const rules: IRule[] = [
           60,
           assert.ok,
           titles[0].innerText.length < 200,
-          `Something could be wrong this title tag is over 200 chars. : ${titles[0].innerText}`,
+          `Something could be wrong this title tag is over 200 chars. Currently: ${titles[0].innerText.length}`,
           IUserTarget.contentManager,
           "TITLE",
           titles[0].innerText
         ));
 
         //TODO localize this part.
-        const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
+        /*const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
         stopWords.forEach((sw) => {
           tester.BooleanLint(Helper.getBooleanTestParameters(
             20,
@@ -169,13 +169,13 @@ export const rules: IRule[] = [
             "TITLE",
             titles[0].innerText
           ));
-        });
+        });*/
       }
     },
   },
   {
     name: 'Meta description',
-    description: `Validate that a meta description exists, isn't too long, isn't too short, and uses at least a few keywords from the title.`,
+    description: "Validate that a meta description exists, isn't too long, isn't too short, and uses at least a few keywords from the title.",
     success: false,
     errors: [],
     warnings: [],
@@ -210,7 +210,6 @@ export const rules: IRule[] = [
       ));
 
       if (metas[0]) {
-
         if (!metas[0].content) {
           tester.BooleanTest(Helper.getBooleanTestParameters(
             90,
@@ -232,31 +231,11 @@ export const rules: IRule[] = [
             "META"
           ));
 
-          tester.BooleanTest(Helper.getBooleanTestParameters(
-            100,
-            assert.ok,
-            !metas[0].content.includes('undefined'),
-            `Meta description includes "undefined"`,
-            IUserTarget.developer,
-            "META",
-            metas[0].content
-          ));
-
-          tester.BooleanTest(Helper.getBooleanTestParameters(
-            100,
-            assert.ok,
-            !metas[0].content.includes('null'),
-            `Meta description includes "null"`,
-            IUserTarget.developer,
-            "META",
-            metas[0].content
-          ));
-
           tester.BooleanLint(Helper.getBooleanTestParameters(
             20,
             assert.ok,
             metas[0].content.length > 10,
-            `This meta description is shorter than the recommended minimum limit of 10. (${metas[0].content})`,
+            "This meta description is shorter than the recommended minimum limit of 10.",
             IUserTarget.contentManager,
             "META",
             metas[0].content
@@ -266,7 +245,7 @@ export const rules: IRule[] = [
             30,
             assert.ok,
             metas[0].content.length < 120,
-            `This meta description is longer than the recommended limit of 120. ${metas[0].content.length} (${metas[0].content})`,
+            `This meta description is longer than the recommended limit of 120. Currently: ${metas[0].content.length}`,
             IUserTarget.contentManager,
             "META",
             metas[0].content
@@ -276,13 +255,13 @@ export const rules: IRule[] = [
             40,
             assert.ok,
             metas[0].content.length < 300,
-            'Investigate this meta description. Something could be wrong as it is over 300 chars.',
+            `Investigate this meta description. Something could be wrong as it is over 300 chars. Currently: ${metas[0].content.length}`,
             IUserTarget.contentManager,
             "META",
             metas[0].content
           ));
 
-          if (payload.result.title[0]) {
+          /*if (payload.result.title[0]) {
             const titleArr = Helper.cleanString(payload.result.title[0].innerText)
               .split(' ')
               .filter((i) => [':', '|', '-'].indexOf(i) === -1);
@@ -302,7 +281,7 @@ export const rules: IRule[] = [
               "META",
               metas[0].content
             ));
-          }
+          }*/
         }
       }
     },
@@ -337,7 +316,7 @@ export const rules: IRule[] = [
       },
     },
     validator: async (payload, tester) => {
-      const { h1s, h2s, h3s, h4s, h5s, h6s, title, html } = payload.result;
+      const { h1s, h2s, h3s, h4s, h5s, h6s } = payload.result;
 
       tester.BooleanTest(Helper.getBooleanTestParameters(
         90,
@@ -349,12 +328,12 @@ export const rules: IRule[] = [
         h1s[0] ? h1s[0].innerText : ""
       ));
 
-      let titleArr;
+      /*let titleArr;
       if (title[0]) {
         titleArr = Helper.cleanString(title[0].innerText)
           .split(' ')
           .filter((i) => [':', '|', '-'].indexOf(i) === -1);
-      }
+      }*/
 
       if (h1s[0]) {
         tester.compareTest(Helper.getComparaisonTestParameters(
@@ -362,32 +341,34 @@ export const rules: IRule[] = [
           assert.notStrictEqual,
           h1s[0].innerText.length,
           0,
-          'H1 tags should not be empty',
+          "H1 tags should not be empty",
           IUserTarget.both,
           "H1",
         ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          30,
-          assert.ok,
-          h1s[0].innerText.length < 70,
-          `H1 tag is longer than the recommended limit of 70. (${h1s[0].innerText})`,
-          IUserTarget.contentManager,
-          "H1",
-          h1s[0].innerText
-        ));
+        if (h1s[0].innerText) {
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            30,
+            assert.ok,
+            h1s[0].innerText.length < 70,
+            `H1 tag is longer than the recommended limit of 70. Currently: ${h1s[0].innerText.length}`,
+            IUserTarget.contentManager,
+            "H1",
+            h1s[0].innerText
+          ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          30,
-          assert.ok,
-          h1s[0].innerText.length > 10,
-          `H1 tag is shorter than the recommended limit of 10. (${h1s[0].innerText})`,
-          IUserTarget.contentManager,
-          "H1",
-          h1s[0].innerText
-        ));
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            30,
+            assert.ok,
+            h1s[0].innerText.length > 10,
+            "H1 tag is shorter than the recommended limit of 10.",
+            IUserTarget.contentManager,
+            "H1",
+            h1s[0].innerText
+          ));
+        }
 
-        if (titleArr) {
+        /*if (titleArr) {
           const compareArr = Helper.cleanString(h1s[0].innerText)
             .split(' ')
             .filter((i) => [':', '|', '-'].indexOf(i) === -1);
@@ -404,7 +385,7 @@ export const rules: IRule[] = [
             "H1",
             h1s[0].innerText
           ));
-        }
+        }*/
       }
 
       let usesKeywords = false;
@@ -419,27 +400,29 @@ export const rules: IRule[] = [
           "H2",
         ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          20,
-          assert.ok,
-          h2.innerText.length < 100,
-          `H2 tag is longer than the recommended limit of 100. (${h2.innerText})`,
-          IUserTarget.contentManager,
-          "H2",
-          h2.innerText
-        ));
+        if (h2.innerText) {
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            20,
+            assert.ok,
+            h2.innerText.length < 100,
+            `H2 tag is longer than the recommended limit of 100. Currently: ${h2.innerText.length}`,
+            IUserTarget.contentManager,
+            "H2",
+            h2.innerText
+          ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          30,
-          assert.ok,
-          h2.innerText.length > 7,
-          `H2 tag is shorter than the recommended limit of 7. (${h2.innerText})`,
-          IUserTarget.contentManager,
-          "H2",
-          h2.innerText
-        ));
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            30,
+            assert.ok,
+            h2.innerText.length > 7,
+            "H2 tag is shorter than the recommended limit of 7.",
+            IUserTarget.contentManager,
+            "H2",
+            h2.innerText
+          ));
+        }
 
-        const compareArr = Helper.cleanString(h2.innerText.toLowerCase())
+        /*const compareArr = Helper.cleanString(h2.innerText.toLowerCase())
           .split(' ')
           .filter((i) => [':', '|', '-'].indexOf(i) === -1);
 
@@ -448,10 +431,10 @@ export const rules: IRule[] = [
           if (matches.length > 0) {
             usesKeywords = true;
           }
-        }
+        }*/
       });
 
-      if (h2s.length > 0 && title[0]) {
+      /*if (h2s.length > 0 && title[0]) {
         tester.BooleanLint(Helper.getBooleanTestParameters(
           70,
           assert.ok,
@@ -460,11 +443,10 @@ export const rules: IRule[] = [
           IUserTarget.contentManager,
           "H2",
         ));
-      }
+      }*/
 
       usesKeywords = false;
       h3s.forEach((h3) => {
-
         tester.compareTest(Helper.getComparaisonTestParameters(
           70,
           assert.notStrictEqual,
@@ -475,25 +457,27 @@ export const rules: IRule[] = [
           "H3",
         ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          20,
-          assert.ok,
-          h3.innerText.length < 100,
-          `h3 tag is longer than the recommended limit of 100. (${h3.innerText})`,
-          IUserTarget.contentManager,
-          "H3",
-          h3.innerText
-        ));
+        if (h3.innerText) {
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            20,
+            assert.ok,
+            h3.innerText.length < 100,
+            `H3 tag is longer than the recommended limit of 100. Currently: ${h3.innerText.length}`,
+            IUserTarget.contentManager,
+            "H3",
+            h3.innerText
+          ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          20,
-          assert.ok,
-          h3.innerText.length > 7,
-          `h3 tag is shorter than the recommended limit of 7. (${h3.innerText})`,
-          IUserTarget.contentManager,
-          "H3",
-          h3.innerText
-        ));
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            20,
+            assert.ok,
+            h3.innerText.length > 7,
+            "h3 tag is shorter than the recommended limit of 7.",
+            IUserTarget.contentManager,
+            "H3",
+            h3.innerText
+          ));
+        }
 
         // const arr = h3.innerText
         //   .toLowerCase()
@@ -526,25 +510,27 @@ export const rules: IRule[] = [
           "H4",
         ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          10,
-          assert.ok,
-          h4.innerText.length < 100,
-          `h4 tag is longer than the recommended limit of 100. (${h4.innerText})`,
-          IUserTarget.contentManager,
-          "H4",
-          h4.innerText
-        ));
+        if (h4.innerText) {
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            10,
+            assert.ok,
+            h4.innerText.length < 100,
+            `H4 tag is longer than the recommended limit of 100. Currently: ${h4.innerText.length}`,
+            IUserTarget.contentManager,
+            "H4",
+            h4.innerText
+          ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          10,
-          assert.ok,
-          h4.innerText.length > 7,
-          `h4 tag is shorter than the recommended limit of 7. (${h4.innerText})`,
-          IUserTarget.contentManager,
-          "H4",
-          h4.innerText
-        ));
+          tester.BooleanLint(Helper.getBooleanTestParameters(
+            10,
+            assert.ok,
+            h4.innerText.length > 7,
+            "h4 tag is shorter than the recommended limit of 7.",
+            IUserTarget.contentManager,
+            "H4",
+            h4.innerText
+          ));
+        }
       });
 
       // check that we aren't overloading the htags or misusing their priority.
@@ -683,8 +669,8 @@ export const rules: IRule[] = [
         }
       });
     },
-  }
-  /*{
+  },
+  {
     name: 'Internal Links are well formed',
     description: 'Checks that all internal links are lowercase and have a trailing slash',
     testData: {
@@ -692,24 +678,24 @@ export const rules: IRule[] = [
       response: {
 
         ok: true,
-        url: 'https://nicholasreese.com/',
+        url: 'https://exfabrica.io',
       },
 
       result: {
         aTags: [
           {
             tag: 'a',
-            innerHTML: '← Home',
-            innerText: '← Home',
+            innerHTML: 'Home',
+            innerText: 'Home',
             href: '/',
-            class: 'svelte-bvr7j8',
+            class: 'class2',
           },
           {
             tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
+            innerHTML: 'Test.js',
+            innerText: 'Test.js',
+            href: 'https://plop.com/tech/js/',
+            class: 'class1',
           },
         ],
       },
@@ -726,50 +712,40 @@ export const rules: IRule[] = [
         .filter((l) => !l.href.includes('mailto') && l.href.length > 0);
       if (payload.preferences.internalLinksLowerCase) {
         internal.forEach((l) => {
-          tester.lint(
+          tester.BooleanTest(Helper.getBooleanTestParameters(
             80,
             assert.ok,
             l.href === l.href.toLowerCase(),
             `Internal links should be lowercase: [${l.innerText}](${l.href}) is not.`,
-          );
+            IUserTarget.developer,
+            "href",
+          ));
         });
       }
 
       if (payload.preferences.internalLinksTrailingSlash) {
         internal.forEach((l) => {
-          tester.lint(
+          tester.BooleanTest(Helper.getBooleanTestParameters(
             80,
             assert.ok,
             l.href.endsWith('/'),
             `Internal links should include a trailing slash: [${l.innerText}](${l.href}) does not.`,
-          );
+            IUserTarget.developer,
+            "href",
+          ));
         });
       }
 
       internal.forEach((l) => {
-        tester.test(
+        tester.BooleanTest(Helper.getBooleanTestParameters(
           100,
           assert.ok,
           l.ref !== 'nofollow',
-          `Internal nofollow links are bad news. [${l.innerText}](${l.href})`,
-        );
+          `Internal nofollow links are forbidden for a better SEO. [${l.innerText}](${l.href})`,
+          IUserTarget.developer,
+          "href",
+        ));
       });
-
-      internal
-        .filter((l) => l.href.includes('http'))
-        .forEach((l) => {
-          tester.test(
-            assert.ok,
-            l.href.includes('https'),
-            `Internal links should use https: [${l.innerText}](${l.href}) does not.`,
-          );
-          tester.test(
-            100,
-            assert.ok,
-            !l.href.includes('.html'),
-            `Internal links should not link to .html documents: [${l.innerText}](${l.href}) does.`,
-          );
-        });
     },
   },
   {
@@ -779,52 +755,24 @@ export const rules: IRule[] = [
       preferences: defaultPreferences,
       response: {
         ok: true,
-        url: 'https://nicholasreese.com/',
+        url: 'https://exfabrica.io/',
       },
 
       result: {
         aTags: [
           {
             tag: 'a',
-            innerHTML: '← Home',
-            innerText: '← Home',
+            innerHTML: 'Home',
+            innerText: 'Home',
             href: '/',
-            class: 'svelte-bvr7j8',
+            class: 'class2',
           },
           {
             tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
-          },
-          {
-            tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
-          },
-          {
-            tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
-          },
-          {
-            tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
-          },
-          {
-            tag: 'a',
-            innerHTML: 'Elder.js',
-            innerText: 'Elder.js',
-            href: 'https://elderguide.com/tech/elderjs/',
-            class: 'svelte-1tkpvyy',
+            innerHTML: 'Test.js',
+            innerText: 'Test.js',
+            href: 'https://plop.com/tech/js/',
+            class: 'class1',
           },
         ],
       },
@@ -833,8 +781,14 @@ export const rules: IRule[] = [
       const external = payload.result.aTags.filter(
         (l) => l.href && !l.href.includes(payload.response.host) && l.href.includes('http'),
       );
-
-      tester.lint(assert.ok, external.length < 50, `Heads up, this page has more than 50 outbound links.`);
+      tester.BooleanTest(Helper.getBooleanTestParameters(
+        100,
+        assert.ok,
+        external.length < 50,
+        `This page has more than 50 outbound links.`,
+        IUserTarget.developer,
+        "href",
+      ));
     },
-  }*/
+  }
 ];

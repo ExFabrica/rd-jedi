@@ -159,7 +159,7 @@ module.exports = ({ strapi }) => {
             const pages = await getAnalyzedPages(url, ["SEO"]);
             // Get documents and attributes sorted by apiNameges(url);
             const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
-            
+
             /************ FIRST PASS: Single Type *****************/
             const strapiSingleDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "singleType");
             // Iterate on pages and documents to match data
@@ -241,7 +241,7 @@ module.exports = ({ strapi }) => {
         const rs = await analyzer.terminator([url], ['SEO']);
         let pages = [];
         for (const seo of rs.SEO) {
-            let page = { uid: seo.result.uid, url: seo.pageInfo.url, tags: [], seoAnalyse: seo.result.results, screenshot: seo.pageInfo.screenshot };
+            let page = { uid: seo.result.uid, url: seo.pageInfo.url, tags: [], seoAnalyse: seo.result.results, screenshot: seo.pageInfo.screenshot, depth: seo.pageInfo.depth };
             let stringTags = [];
             const tags = seo.result.tags;
             if (tags) {
@@ -278,7 +278,8 @@ module.exports = ({ strapi }) => {
                             documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }],
                             seoAnalyse: page.seoAnalyse,
                             screenshot: page.screenshot,
-                            tags: page.tags
+                            tags: page.tags,
+                            depth: page.depth,
                         });
                 else {
                     let field = componentName ?
@@ -363,6 +364,7 @@ module.exports = ({ strapi }) => {
                 seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),
                 documentFields: JSON.stringify(result.documentFields ? result.documentFields : {}),
                 screenshot: result.screenshot,
+                depth: result.depth,
                 tags: JSON.stringify(result.tags ? result.tags : {}),
             });
         }

@@ -46,7 +46,7 @@ export const AnalyseAccordion = (props) => {
     return <Accordion key={props.id} expanded={props.toggleState[props.id]} toggle={() => props.onToggle(props.id)} id={props.id}>
         <AccordionToggle startIcon={<Globe aria-hidden={true} />} action={<Stack horizontal size={0}>
             <IconButton noBorder onClick={() => setEditTitleModalVisible(prev => !prev)} label="Edit" icon={<Pencil />} />
-        </Stack>} title={props.value.frontUrl} togglePosition="left" />
+        </Stack>} title={`Rank: ${props.value.depth} - Url: ${props.value.frontUrl}`} togglePosition="left" />
         <AccordionContent>
             <Box padding={3}>
                 <Box padding={4} background="neutral0">

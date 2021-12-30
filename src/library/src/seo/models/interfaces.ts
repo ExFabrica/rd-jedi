@@ -34,6 +34,7 @@ export interface IPageInfo {
     url: string,
     //html: string;
     screenshot: string;
+    depth?: number;
 };
 
 export interface IPageResult {

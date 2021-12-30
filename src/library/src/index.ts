@@ -12,8 +12,8 @@ import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
 
-type SeoPreview = Omit<SEOPageResult, "type">
-type ImagesPreview = Omit<ImagesPageResult, "type">
+type SeoPreview = Omit<SEOPageResult, "type">;
+type ImagesPreview = Omit<ImagesPageResult, "type">;
 interface ComputedResults {
   Sitemap: string[];
   SEO?: SeoPreview[];
@@ -52,13 +52,15 @@ const isValidUrl = (url: string) => {
   return isValid;
 }
 
-const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, analysis: PromiseSettledResult<SEOPageResult|ImagesPageResult>[], features: string[]) => {
+const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, analysis: PromiseSettledResult<SEOPageResult | ImagesPageResult>[], features: string[]) => {
   results.Sitemap.push(pptrPage.url());
   for (const analyseResult of analysis) {
     if (features.includes('SEO')) {
       if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "SEO") {
         //Remove analysis type to avoid redoundancy information 
         const { result, pageInfo } = (analyseResult?.value as unknown as SeoPreview);
+        //Set page depth
+        pageInfo.depth = depth.filter(item => item.url == pageInfo.url)[0].depth;
         results.SEO.push({ result, pageInfo });
       } else if (analyseResult.status == "rejected") {
         console.error("SEO Analysis failed : ", analyseResult?.reason);
@@ -75,7 +77,7 @@ const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, a
     }
   }
 }
-
+let depth: any[] = [];
 /**
    * Explore a list of URL, navigate throught the links found on the pages
    * Each time it navigate to a new page, it yield the DOM for analysis
@@ -104,6 +106,7 @@ const explorer = async function* (urls: string[]) {
       continue;
 
     toExploreURL.add(baseURL);
+    depth.push({ url: baseURL, parentUrl: "", depth: 1 });
 
     while (toExploreURL.size > 0) {
 
@@ -124,7 +127,8 @@ const explorer = async function* (urls: string[]) {
           if (link != currentUrl
             && !exploredURL.has(link)//add only unexplored links
             && !toExploreURL.has(link)//avoid setting a value already existing
-            && link.startsWith(baseURL) && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+            && link.startsWith(baseURL)
+            && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
             toExploreURL.add(link);
           }
         } else {
@@ -132,13 +136,20 @@ const explorer = async function* (urls: string[]) {
           const linkWithoutQueryString = link.split("?")[0];
           const filteredExploredURL = Array.from(exploredURL).map(item => item.includes("?") ? item.split("?")[0] : item);
           const filteredToExploreURL = Array.from(toExploreURL).map(item => item.includes("?") ? item.split("?")[0] : item);
-          if (!filteredExploredURL.includes(linkWithoutQueryString) 
-            && !filteredToExploreURL.includes(linkWithoutQueryString) 
+          if (!filteredExploredURL.includes(linkWithoutQueryString)
+            && !filteredToExploreURL.includes(linkWithoutQueryString)
             && link != currentUrl
             && !exploredURL.has(link)//add only unexplored links
             && !toExploreURL.has(link)//avoid setting a value already existing
-            && link.startsWith(baseURL) && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+            && link.startsWith(baseURL)
+            && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
             toExploreURL.add(link);
+          }
+          //calculate the depth
+          const parents = depth.filter(item => item.url === currentUrl);
+          if (parents && parents.length > 0) {
+            const parent = parents[0];
+            depth.push({ url: link, parentUrl: currentUrl, depth: parent.depth + 1 });
           }
         }
       }
@@ -193,7 +204,7 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
         const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
         selectedFeatures.push(seoAnalyzer.run(pptrPage));
       }
-      if(features.includes('Images')) {
+      if (features.includes('Images')) {
         const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
         selectedFeatures.push(imagesAnalyzer.run(pptrPage));
       }
@@ -207,7 +218,7 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
 
     //Post process; Consolidate analysis ?
 
-    console.log('Terminator : I’ll be back.')
+    console.log('Terminator : I’ll be back.');
     return Promise.resolve(results);
   }
   else {
