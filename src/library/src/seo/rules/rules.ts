@@ -106,70 +106,72 @@ export const rules: IRule[] = [
             "TITLE"
           ));
 
-        /*tester.BooleanTest(Helper.getBooleanTestParameters(
-          100,
-          assert.ok,
-          !titles[0].innerText.includes('undefined'),
-          `Title tag includes "undefined"`,
-          IUserTarget.developer,
-          "TITLE",
-          titles[0].innerText,
-        ));
-
-        tester.BooleanTest(Helper.getBooleanTestParameters(
-          100,
-          assert.ok,
-          !titles[0].innerText.includes('null'),
-          `Title tag includes "null"`,
-          IUserTarget.developer,
-          "TITLE",
-          titles[0].innerText
-        ));*/
-
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          30,
-          assert.ok,
-          titles[0].innerText.length > 10,
-          "This title tag is shorter than the recommended minimum limit of 10.",
-          IUserTarget.contentManager,
-          "TITLE",
-          titles[0].innerText
-        ));
-
-        tester.BooleanLint(
-          Helper.getBooleanTestParameters(
+        if (titles[0].innerText) {
+          tester.BooleanLint(Helper.getBooleanTestParameters(
             30,
             assert.ok,
-            titles[0].innerText.length < 70,
-            "This title tag is longer than the recommended limit of 70.",
+            titles[0].innerText.length > 10,
+            "This title tag is shorter than the recommended minimum limit of 10.",
             IUserTarget.contentManager,
             "TITLE",
             titles[0].innerText
           ));
 
-        tester.BooleanLint(Helper.getBooleanTestParameters(
-          60,
-          assert.ok,
-          titles[0].innerText.length < 200,
-          `Something could be wrong this title tag is over 200 chars. Currently: ${titles[0].innerText.length}`,
-          IUserTarget.contentManager,
-          "TITLE",
-          titles[0].innerText
-        ));
+          tester.BooleanLint(
+            Helper.getBooleanTestParameters(
+              30,
+              assert.ok,
+              titles[0].innerText.length < 70,
+              "This title tag is longer than the recommended limit of 70.",
+              IUserTarget.contentManager,
+              "TITLE",
+              titles[0].innerText
+            ));
 
-        //TODO localize this part.
-        /*const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
-        stopWords.forEach((sw) => {
           tester.BooleanLint(Helper.getBooleanTestParameters(
-            20,
+            60,
             assert.ok,
-            titles[0].innerText.toLowerCase().indexOf(` ${sw} `),
-            `Title tag includes stopword ${sw}`,
+            titles[0].innerText.length < 200,
+            `Something could be wrong this title tag is over 200 chars. Currently: ${titles[0].innerText.length}`,
             IUserTarget.contentManager,
             "TITLE",
             titles[0].innerText
           ));
-        });*/
+
+          /*tester.BooleanTest(Helper.getBooleanTestParameters(
+            100,
+            assert.ok,
+            !titles[0].innerText.includes('undefined'),
+            `Title tag includes "undefined"`,
+            IUserTarget.developer,
+            "TITLE",
+            titles[0].innerText,
+          ));
+  
+          tester.BooleanTest(Helper.getBooleanTestParameters(
+            100,
+            assert.ok,
+            !titles[0].innerText.includes('null'),
+            `Title tag includes "null"`,
+            IUserTarget.developer,
+            "TITLE",
+            titles[0].innerText
+          ));*/
+
+          //TODO localize this part.
+          /*const stopWords = ['a', 'and', 'but', 'so', 'on', 'or', 'the', 'was', 'with'];
+          stopWords.forEach((sw) => {
+            tester.BooleanLint(Helper.getBooleanTestParameters(
+              20,
+              assert.ok,
+              titles[0].innerText.toLowerCase().indexOf(` ${sw} `),
+              `Title tag includes stopword ${sw}`,
+              IUserTarget.contentManager,
+              "TITLE",
+              titles[0].innerText
+            ));
+          });*/
+        }
       }
     },
   },
@@ -231,35 +233,37 @@ export const rules: IRule[] = [
             "META"
           ));
 
-          tester.BooleanLint(Helper.getBooleanTestParameters(
-            20,
-            assert.ok,
-            metas[0].content.length > 10,
-            "This meta description is shorter than the recommended minimum limit of 10.",
-            IUserTarget.contentManager,
-            "META",
-            metas[0].content
-          ));
+          if (metas[0].content) {
+            tester.BooleanLint(Helper.getBooleanTestParameters(
+              20,
+              assert.ok,
+              metas[0].content.length > 10,
+              "This meta description is shorter than the recommended minimum limit of 10.",
+              IUserTarget.contentManager,
+              "META",
+              metas[0].content
+            ));
 
-          tester.BooleanLint(Helper.getBooleanTestParameters(
-            30,
-            assert.ok,
-            metas[0].content.length < 120,
-            `This meta description is longer than the recommended limit of 120. Currently: ${metas[0].content.length}`,
-            IUserTarget.contentManager,
-            "META",
-            metas[0].content
-          ));
+            tester.BooleanLint(Helper.getBooleanTestParameters(
+              30,
+              assert.ok,
+              metas[0].content.length < 120,
+              `This meta description is longer than the recommended limit of 120. Currently: ${metas[0].content.length}`,
+              IUserTarget.contentManager,
+              "META",
+              metas[0].content
+            ));
 
-          tester.BooleanTest(Helper.getBooleanTestParameters(
-            40,
-            assert.ok,
-            metas[0].content.length < 300,
-            `Investigate this meta description. Something could be wrong as it is over 300 chars. Currently: ${metas[0].content.length}`,
-            IUserTarget.contentManager,
-            "META",
-            metas[0].content
-          ));
+            tester.BooleanTest(Helper.getBooleanTestParameters(
+              40,
+              assert.ok,
+              metas[0].content.length < 300,
+              `Investigate this meta description. Something could be wrong as it is over 300 chars. Currently: ${metas[0].content.length}`,
+              IUserTarget.contentManager,
+              "META",
+              metas[0].content
+            ));
+          }
 
           /*if (payload.result.title[0]) {
             const titleArr = Helper.cleanString(payload.result.title[0].innerText)
@@ -346,7 +350,7 @@ export const rules: IRule[] = [
           "H1",
         ));
 
-        if (h1s[0].innerText) {
+        if (h1s[0].innerText.length) {
           tester.BooleanLint(Helper.getBooleanTestParameters(
             30,
             assert.ok,

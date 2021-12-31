@@ -51,9 +51,9 @@ const contentAnalyzerAPI = {
             console.log("Error: ", ex);
         }
     },
-    getAnalysesByDocumentId: async (documentId) => {
+    getAnalysesByDocumentId: async (apiName, documentId) => {
         try {
-            return request(`/cms-analyzer/analyses/documents/${documentId}`, {
+            return request(`/cms-analyzer/analyses/api/${apiName}/documents/${documentId}`, {
                 method: 'GET'
             });
         }

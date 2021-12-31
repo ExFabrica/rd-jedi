@@ -25,10 +25,11 @@ module.exports = ({ strapi }) => {
     });
     ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
   };
-  const findByDocumentId = async (ctx) => {
-    const { documentId } = ctx.params;
+  const findByApiNameAndDocumentId = async (ctx) => {
+    const { apiName, documentId } = ctx.params;
     const entity = await analyseService.findOne({
       where: {
+        apiName: apiName,
         documentId: documentId
       }
     });
@@ -93,7 +94,7 @@ module.exports = ({ strapi }) => {
   return {
     findMany,
     findOne,
-    findByDocumentId,
+    findByApiNameAndDocumentId,
     findManyWithDefaultSorting,
     count,
     create,

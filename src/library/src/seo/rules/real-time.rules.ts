@@ -184,7 +184,7 @@ export const RTRules: IRule[] = [
                     30,
                     assert.ok,
                     value.length < 70,
-                    `H1 tag is longer than the recommended limit of 70. Currently: ${value}`,
+                    `H1 tag is longer than the recommended limit of 70.`,
                     IUserTarget.contentManager,
                     "H1",
                     value
@@ -252,7 +252,7 @@ export const RTRules: IRule[] = [
                     20,
                     assert.ok,
                     value.length < 100,
-                    `H2 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    `H2 tag is longer than the recommended limit of 100.`,
                     IUserTarget.contentManager,
                     "H2",
                     value
@@ -317,7 +317,7 @@ export const RTRules: IRule[] = [
                     20,
                     assert.ok,
                     value.length < 100,
-                    `h3 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    `h3 tag is longer than the recommended limit of 100.`,
                     IUserTarget.contentManager,
                     "H3",
                     value
@@ -361,7 +361,7 @@ export const RTRules: IRule[] = [
                     10,
                     assert.ok,
                     value.length < 100,
-                    `h4 tag is longer than the recommended limit of 100. Currently: ${value}`,
+                    `h4 tag is longer than the recommended limit of 100.`,
                     IUserTarget.contentManager,
                     "H4",
                     value

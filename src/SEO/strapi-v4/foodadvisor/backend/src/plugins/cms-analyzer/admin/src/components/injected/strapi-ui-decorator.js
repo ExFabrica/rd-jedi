@@ -9,29 +9,56 @@ import { Badge } from '@strapi/design-system/Badge';
 import { Typography } from '@strapi/design-system/Typography';
 //Box
 import { Box } from '@strapi/design-system/Box';
+
 const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;
 
-export const StrapiUIRefresher = () => {
+export const StrapiUIDecorator = () => {
     const context = useCMEditViewDataManager();
     const { modifiedData } = context;
     const [nodeElementsCollectionCount, setNodeElementsCollectionCount] = useState(0);
     const [structureFields, setStructureFields] = useState([]);
     const [seoAnalyses, setSeoAnalyses] = useState([]);
+    const [staticSeoAnalyses, setStaticSeoAnalyses] = useState([]);
     const [structure, setStructure] = useState([]);
+    const pluginMainDivId = "plugin.cmsAnalyzer.main.container";
+    const pluginInputRulesDivId = "plugin.cmsAnalyzer-input-rules-content";
+    const pluginMainRulesDivId = "plugin.cmsAnalyzer-main-rules-content";
+
+    useEffect(() => {
+        const containers = document.querySelectorAll(`[id='${pluginMainDivId}']`);
+        if (containers && containers.length > 0)
+            containers[0].remove();
+        let mainDiv = document.querySelector('#main-content > div:nth-child(2)');
+        const analyseDiv = document.querySelector(`[id='${pluginMainRulesDivId}']`);
+        let div = document.createElement("div");
+        div.id = pluginMainDivId;
+        div.innerHTML = analyseDiv.innerHTML;
+        mainDiv.prepend(div);
+    }, [staticSeoAnalyses]);
 
     useEffect(() => {
         getAnalyses(structure);
     }, [structure]);
 
     useEffect(() => {
-        HtmlLookup();
+        clearAllAnalyzerPanels();
+        htmlLookup();
     }, [seoAnalyses]);
 
     useEffect(() => {
-        setStructure(HtmlLookup());
+        setStructure(htmlLookup());
     }, [nodeElementsCollectionCount, modifiedData]);
 
     useEffect(() => {
+        contentAnalyzerAPI.getAnalysesByDocumentId(context.slug, context.initialData.id).then((staticAnalyse) => {
+            if (staticAnalyse && staticAnalyse.seoAnalyse) {
+                const analyses = JSON.parse(staticAnalyse.seoAnalyse);
+                if (analyses && analyses.length > 0) {
+                    const contentManagerAnalyses = analyses.filter(item => ((item.target === 0 || item.target === 2) && item.level === "errors"));
+                    setStaticSeoAnalyses(contentManagerAnalyses);
+                }
+            }
+        });
         contentAnalyzerAPI.getMatchesByUID(context.slug).then(result => {
             if (result) {
                 setStructureFields(result);
@@ -51,8 +78,7 @@ export const StrapiUIRefresher = () => {
     const countAllTags = () => {
         const count = document.querySelectorAll('*').length;
         setNodeElementsCollectionCount(count);
-    }
-
+    };
     const updateInputLabel = (tagName, parent) => {
         const label = parent.querySelector("label");
         if (!label.innerText.includes(`(${tagName})`)) {
@@ -61,30 +87,29 @@ export const StrapiUIRefresher = () => {
             else
                 label.innerText = `${label.innerText} or (${tagName})`;
         }
-    }
-
-    const removeAnalyzerPanels = (name) => {
-        const containers = document.querySelectorAll(`[id$='${name}_analyzer']`);
+    };
+    const clearAllAnalyzerPanels = () => {
+        const containers = document.querySelectorAll(`[id$='_analyzer']`);
         if (containers && containers.length > 0)
             containers.forEach(container => {
                 container.remove();
             });
-    }
-
+    };
     const createRuleDisplayPanel = (inputItem, parent) => {
         if (inputItem) {
-            removeAnalyzerPanels(inputItem.name);
             const filteredAnalyses = seoAnalyses.filter(item => item.payload.name === inputItem.name);
             if (filteredAnalyses && filteredAnalyses.length > 0) {
                 let index = 0;
                 for (const filteredAnalyse of filteredAnalyses) {
                     const analyseDiv = document.querySelector(`[id='${filteredAnalyse.id}']`);
-                    const analyserDiv = document.querySelector(`[id='${index}.${filteredAnalyse.payload.name}_analyzer']`);
+                    const analyserDiv = document.querySelector(`[id='${filteredAnalyse.payload.name}.${index}_analyzer']`);
                     if (!analyserDiv) {
                         let div = document.createElement("div");
-                        div.id = `${index}.${filteredAnalyse.payload.name}_analyzer`;
+                        div.id = `${filteredAnalyse.payload.name}.${index}_analyzer`;
                         div.innerHTML = analyseDiv.innerHTML;
                         parent.appendChild(div);
+                        if (inputItem.value === "RBAC")
+                            console.log('parent', div, parent);
                     }
                     else
                         analyserDiv.innerHTML = analyseDiv.innerHTML;
@@ -92,8 +117,7 @@ export const StrapiUIRefresher = () => {
                 }
             }
         }
-    }
-
+    };
     const createAnalyzerPanel = (inputItem, tagName) => {
         const inputItemHtmlControl = document.querySelector(`[id='${inputItem.id}']`);
         if (inputItemHtmlControl) {
@@ -103,8 +127,7 @@ export const StrapiUIRefresher = () => {
                 updateInputLabel(tagName, parent);
             }
         }
-    }
-
+    };
     const getAnalyses = async (structure) => {
         if (structure && structure.length > 0) {
             let title = "";
@@ -120,12 +143,13 @@ export const StrapiUIRefresher = () => {
                 results.forEach(item => item["id"] = uuidv4());
                 //console.log('SeoAnalyses', results);
                 setSeoAnalyses(results);
+                if (results && results.length === 0)
+                    clearAllAnalyzerPanels();
             }
         }
-    }
-
+    };
     //TODO refactor this big method.
-    const HtmlLookup = () => {
+    const htmlLookup = () => {
         let structure = [];
         for (const structureField of structureFields) {
             if (structureField.componentName) {
@@ -199,20 +223,52 @@ export const StrapiUIRefresher = () => {
             }
         }
         return structure;
-    }
-
+    };
     return <>
-        <div id="analyzer-rules-content" style={{ display: "none" }}>
+        <div id={pluginInputRulesDivId} style={{ display: "none" }}>
             {seoAnalyses && seoAnalyses.length > 0 ?
                 seoAnalyses.map(item => {
                     return item.level === "warnings"
                         ? <Box key={item.id} id={item.id}>
-                            <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="3" paddingRight="3">Low</Badge>
-                            &nbsp;<Typography textColor="danger500" marginLeft="10" variant="pi">{item.message}</Typography>
+                            <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
+                            &nbsp;<Badge backgroundColor="danger200" textColor="neutral0" paddingLeft={3} paddingRight={3}>Low</Badge>
+                            &nbsp;<Typography textColor="neutral600" marginLeft={10} variant="pi">{item.message}</Typography>
                         </Box>
                         : <Box key={item.id} id={item.id}>
-                            <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="3" paddingRight="3">High</Badge>
-                            &nbsp;<Typography textColor="danger700" marginLeft="10" variant="pi">{item.message}</Typography>
+                            <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
+                            &nbsp;<Badge backgroundColor="danger700" textColor="neutral0" paddingLeft={3} paddingRight={3}>High</Badge>
+                            &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
+                        </Box>
+                }) : <></>
+            }
+        </div>
+
+        <div id={pluginMainRulesDivId} style={{ display: "none" }}>
+            {staticSeoAnalyses && staticSeoAnalyses.length > 0 ?
+                staticSeoAnalyses.map((item) => {
+                    return item.level === "warnings"
+                        ? <Box key={item.id} id={item.id}>
+                            <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft={3} paddingRight={3}>Low</Badge>
+                            &nbsp;<Typography textColor="danger500" marginLeft={10} variant="pi">{item.message}</Typography>
+                        </Box>
+                        :
+                        <Box key={item.id} id={item.id} paddingBottom={2}>
+                            <Box
+                                hasRadius
+                                background="danger100"
+                                shadow="tableShadow"
+                                paddingLeft={6}
+                                paddingRight={6}
+                                paddingTop={6}
+                                paddingBottom={6}
+                                borderColor="danger600">
+                                <Typography textColor="danger700" marginLeft={10} variant="delta">CMS-Analyzer - Errors</Typography>
+                                <Box paddingTop={3}>
+                                    <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
+                                    &nbsp;<Badge backgroundColor="danger700" textColor="neutral0" paddingLeft={3} paddingRight={3}>High</Badge>
+                                    &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
+                                </Box>
+                            </Box>
                         </Box>
                 }) : <></>
             }

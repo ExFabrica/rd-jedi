@@ -16,8 +16,8 @@ module.exports = {
         },
         {
             method: 'GET',
-            path: '/analyses/documents/:documentId',
-            handler: 'analyse.findByDocumentId',
+            path: '/analyses/api/:apiName/documents/:documentId',
+            handler: 'analyse.findByApiNameAndDocumentId',
             config: { policies: [] }
         },
         {
