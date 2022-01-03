@@ -126,7 +126,7 @@ export class SeoAnalyzer {
             params.assert(params.value1, params.value2);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         },
         BooleanTest: (params: ITesterBooleanParams) => {
@@ -134,7 +134,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         },
         BooleanLint: (params: ITesterBooleanParams) => {
@@ -142,7 +142,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         }
       },
@@ -158,7 +158,7 @@ export class SeoAnalyzer {
             params.assert(params.value1, params.value2);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         },
         BooleanTest: (params: ITesterBooleanParams) => {
@@ -166,7 +166,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.errors.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         },
         BooleanLint: (params: ITesterBooleanParams) => {
@@ -174,7 +174,7 @@ export class SeoAnalyzer {
             params.assert(params.value);
           }
           catch (ex) {
-            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag });
+            currentRule.warnings.push({ message: params.message, priority: params.priority, content: params.content, target: params.target, tag: params.tag, global: params.global });
           }
         }
       },

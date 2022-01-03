@@ -25,15 +25,7 @@ export const StrapiUIDecorator = () => {
     const pluginMainRulesDivId = "plugin.cmsAnalyzer-main-rules-content";
 
     useEffect(() => {
-        const containers = document.querySelectorAll(`[id='${pluginMainDivId}']`);
-        if (containers && containers.length > 0)
-            containers[0].remove();
-        let mainDiv = document.querySelector('#main-content > div:nth-child(2)');
-        const analyseDiv = document.querySelector(`[id='${pluginMainRulesDivId}']`);
-        let div = document.createElement("div");
-        div.id = pluginMainDivId;
-        div.innerHTML = analyseDiv.innerHTML;
-        mainDiv.prepend(div);
+        setGlobalPanel();
     }, [staticSeoAnalyses]);
 
     useEffect(() => {
@@ -54,7 +46,7 @@ export const StrapiUIDecorator = () => {
             if (staticAnalyse && staticAnalyse.seoAnalyse) {
                 const analyses = JSON.parse(staticAnalyse.seoAnalyse);
                 if (analyses && analyses.length > 0) {
-                    const contentManagerAnalyses = analyses.filter(item => ((item.target === 0 || item.target === 2) && item.level === "errors"));
+                    const contentManagerAnalyses = analyses.filter(item => ((item.target === 0 || item.target === 2) && item.global));
                     setStaticSeoAnalyses(contentManagerAnalyses);
                 }
             }
@@ -74,10 +66,30 @@ export const StrapiUIDecorator = () => {
             clearInterval(interval);
         };
     }, []);
-
+    const setGlobalPanel = () => {
+        const analyseDiv = document.querySelector(`[id='${pluginMainRulesDivId}']`);
+        const containers = document.querySelectorAll(`[id='${pluginMainDivId}']`);
+        if (staticSeoAnalyses.length > 0) {
+            if (containers.length === 0) {
+                let mainDiv = document.querySelector('#main-content > div:nth-child(2)');
+                let div = document.createElement("div");
+                div.id = pluginMainDivId;
+                div.innerHTML = analyseDiv.innerHTML;
+                mainDiv.prepend(div);
+            }
+            else {
+                containers[0].innerHTML = analyseDiv.innerHTML;
+            }
+        } else {
+            if (containers.length > 0)
+                containers[0].innerHTML = "";
+        }
+    };
     const countAllTags = () => {
-        const count = document.querySelectorAll('*').length;
-        setNodeElementsCollectionCount(count);
+        const nodes = document.querySelectorAll("label");
+        const list = [].slice.call(nodes);
+        const innertext = list.map(function (e) { return e.innerText; }).join("\n");
+        setNodeElementsCollectionCount(innertext.length);
     };
     const updateInputLabel = (tagName, parent) => {
         const label = parent.querySelector("label");
@@ -141,8 +153,8 @@ export const StrapiUIDecorator = () => {
             const results = await contentAnalyzerAPI.runRT(payload);
             if (results) {
                 results.forEach(item => item["id"] = uuidv4());
-                //console.log('SeoAnalyses', results);
                 setSeoAnalyses(results);
+
                 if (results && results.length === 0)
                     clearAllAnalyzerPanels();
             }
@@ -244,34 +256,32 @@ export const StrapiUIDecorator = () => {
         </div>
 
         <div id={pluginMainRulesDivId} style={{ display: "none" }}>
-            {staticSeoAnalyses && staticSeoAnalyses.length > 0 ?
-                staticSeoAnalyses.map((item) => {
-                    return item.level === "warnings"
-                        ? <Box key={item.id} id={item.id}>
-                            <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft={3} paddingRight={3}>Low</Badge>
-                            &nbsp;<Typography textColor="danger500" marginLeft={10} variant="pi">{item.message}</Typography>
-                        </Box>
-                        :
-                        <Box key={item.id} id={item.id} paddingBottom={2}>
-                            <Box
-                                hasRadius
-                                background="danger100"
-                                shadow="tableShadow"
-                                paddingLeft={6}
-                                paddingRight={6}
-                                paddingTop={6}
-                                paddingBottom={6}
-                                borderColor="danger600">
-                                <Typography textColor="danger700" marginLeft={10} variant="delta">CMS-Analyzer - Errors</Typography>
-                                <Box paddingTop={3}>
-                                    <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
-                                    &nbsp;<Badge backgroundColor="danger700" textColor="neutral0" paddingLeft={3} paddingRight={3}>High</Badge>
-                                    &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                }) : <></>
-            }
+            <Box paddingBottom={4}>
+                <Box
+                    hasRadius
+                    background="danger100"
+                    shadow="tableShadow"
+                    paddingLeft={6}
+                    paddingRight={6}
+                    paddingTop={6}
+                    paddingBottom={6}
+                    borderColor="danger600">
+                    <Typography textColor="danger700" marginLeft={10} variant="delta">CMS-Analyzer - Errors</Typography>
+                    <Box paddingTop={3}>
+                        {staticSeoAnalyses && staticSeoAnalyses.length > 0 ?
+                            staticSeoAnalyses.map((item) => {
+                                return item.level === "warnings"
+                                    ? <></>
+                                    : <Box key={item.id} id={item.id} paddingTop={1} paddingBottom={1}>
+                                        <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
+                                        &nbsp;<Badge backgroundColor="danger700" textColor="neutral0" paddingLeft={3} paddingRight={3}>High</Badge>
+                                        &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
+                                    </Box>
+                            }) : <></>
+                        }
+                    </Box>
+                </Box>
+            </Box>
         </div>
     </>;
 }

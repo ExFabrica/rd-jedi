@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@strapi/utils": "4.0.0-next.0",
-    "exfabrica-cms-engine-analyzer": "^0.5.0"
+    "exfabrica-cms-engine-analyzer": "^0.5.2"
   },
   "devDependencies": {},
   "author": {
