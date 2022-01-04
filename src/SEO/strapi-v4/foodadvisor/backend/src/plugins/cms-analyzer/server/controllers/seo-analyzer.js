@@ -5,11 +5,10 @@ module.exports = ({ strapi }) => {
   const analyserService = strapi.plugins["cms-analyzer"].services.seoAnalyzer;
   const run = async (ctx) => {
     // remove url property from context
-    const { url } = ctx.query;
+    const { body } = ctx.request;
     delete ctx.query['url'];
-    let result = {};
     try {
-      return analyserService.run(url);
+      return analyserService.run(body);
     }
     catch (err) {
       ctx.throw(500, err);

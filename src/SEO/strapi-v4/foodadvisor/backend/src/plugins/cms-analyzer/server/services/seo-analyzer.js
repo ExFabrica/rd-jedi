@@ -150,74 +150,6 @@ module.exports = ({ strapi }) => {
         }
         return potentialFields.filter(content => content.attributes.length > 0);
     };
-    const run = async (url) => {
-        try {
-            let results = [];
-            await clear();
-
-            // Get pages from analyzer
-            const pages = await getAnalyzedPages(url, ["SEO"]);
-            // Get documents and attributes sorted by apiNameges(url);
-            const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
-
-            /************ FIRST PASS: Single Type *****************/
-            const strapiSingleDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "singleType");
-            // Iterate on pages and documents to match data
-            for (const page of pages) {
-                for (const tag of page.tags) {
-                    for (const documentByContentType of strapiSingleDocumentsByContentType) {
-                        for (const document of documentByContentType.documents) {
-                            for (const attribute of documentByContentType.contentType.attributes) {
-                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
-                            }
-                        }
-                    }
-                }
-            }
-            //Get the occurence with the bigger document fieldsets.
-            results = filterAnalysesByFieldsCount(results);
-            //Put founded data in plugin collection
-            await pushAnalyseInStrapiCollection(results);
-            //Detect and fix some errors
-            FixMatchesErrors(results);
-            //Work on result to extract relations ships between front tags and Strapi fields
-            await pushMatchesInStrapiCollection(results);
-
-            /************ SECOND PASS: Collection Type *****************/
-            results = [];
-            const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
-            //Remove single type from analyzed page.
-            const analyses = await analyseService().findMany();
-            const groupedMatchesByApiName = _.groupBy(analyses, "frontUrl");
-            _.remove(pages, (item) => {
-                return Object.keys(groupedMatchesByApiName).includes(item.url);
-            });
-            for (const page of pages) {
-                for (const tag of page.tags) {
-                    for (const documentByContentType of strapiCollectionDocumentsByContentType) {
-                        for (const document of documentByContentType.documents) {
-                            for (const attribute of documentByContentType.contentType.attributes) {
-                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
-                            }
-                        }
-                    }
-                }
-            }
-            //Get the occurence with the bigger document fieldsets.
-            results = filterAnalysesByFieldsCount(results);
-            //Put founded data in plugin collection
-            await pushAnalyseInStrapiCollection(results);
-            //Detect and fix some errors
-            FixMatchesErrors(results);
-            //Work on result to extract relations ships between front tags and Strapi fields
-            await pushMatchesInStrapiCollection(results);
-        }
-        catch (ex) {
-            console.debug("Error", ex);
-            return Promise.reject({ success: false, error: ex });
-        }
-        return Promise.resolve({ success: true })
-    };
     const getStrapiDocumentsByContentType = async () => {
         const contentTypes = await getContents();
         let documentsByContentType = [];
@@ -237,8 +169,8 @@ module.exports = ({ strapi }) => {
         }
         return documentsByContentType;
     };
-    const getAnalyzedPages = async (url) => {
-        const rs = await analyzer.terminator([url], ['SEO']);
+    const getAnalyzedPages = async (payload) => {
+        const rs = await analyzer.terminator(payload, ['SEO']);
         let pages = [];
         for (const seo of rs.SEO) {
             let page = { uid: seo.result.uid, url: seo.pageInfo.url, tags: [], seoAnalyse: seo.result.results, screenshot: seo.pageInfo.screenshot, depth: seo.pageInfo.depth };
@@ -425,6 +357,75 @@ module.exports = ({ strapi }) => {
     };
     const runRT = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
+    };
+    const run = async (payload) => {
+        console.log("received payload", payload);
+        try {
+            let results = [];
+            await clear();
+
+            // Get pages from analyzer
+            const pages = await getAnalyzedPages(payload, ["SEO"]);
+            // Get documents and attributes sorted by apiNameges(url);
+            const strapiDocumentsByContentType = await getStrapiDocumentsByContentType();
+
+            /************ FIRST PASS: Single Type *****************/
+            const strapiSingleDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "singleType");
+            // Iterate on pages and documents to match data
+            for (const page of pages) {
+                for (const tag of page.tags) {
+                    for (const documentByContentType of strapiSingleDocumentsByContentType) {
+                        for (const document of documentByContentType.documents) {
+                            for (const attribute of documentByContentType.contentType.attributes) {
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                            }
+                        }
+                    }
+                }
+            }
+            //Get the occurence with the bigger document fieldsets.
+            results = filterAnalysesByFieldsCount(results);
+            //Put founded data in plugin collection
+            await pushAnalyseInStrapiCollection(results);
+            //Detect and fix some errors
+            FixMatchesErrors(results);
+            //Work on result to extract relations ships between front tags and Strapi fields
+            await pushMatchesInStrapiCollection(results);
+
+            /************ SECOND PASS: Collection Type *****************/
+            results = [];
+            const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
+            //Remove single type from analyzed page.
+            const analyses = await analyseService().findMany();
+            const groupedMatchesByApiName = _.groupBy(analyses, "frontUrl");
+            _.remove(pages, (item) => {
+                return Object.keys(groupedMatchesByApiName).includes(item.url);
+            });
+            for (const page of pages) {
+                for (const tag of page.tags) {
+                    for (const documentByContentType of strapiCollectionDocumentsByContentType) {
+                        for (const document of documentByContentType.documents) {
+                            for (const attribute of documentByContentType.contentType.attributes) {
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                            }
+                        }
+                    }
+                }
+            }
+            //Get the occurence with the bigger document fieldsets.
+            results = filterAnalysesByFieldsCount(results);
+            //Put founded data in plugin collection
+            await pushAnalyseInStrapiCollection(results);
+            //Detect and fix some errors
+            FixMatchesErrors(results);
+            //Work on result to extract relations ships between front tags and Strapi fields
+            await pushMatchesInStrapiCollection(results);
+        }
+        catch (ex) {
+            console.debug("Error", ex);
+            return Promise.reject({ success: false, error: ex });
+        }
+        return Promise.resolve({ success: true })
     };
     return {
         run,

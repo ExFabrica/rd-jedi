@@ -34,6 +34,7 @@ const SeoPage = (props) => {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState();
   const [toggleState, setToggleState] = useState({});
+  const toggleNotification = useNotification();
 
   useEffect(() => {
     try {
@@ -66,20 +67,34 @@ const SeoPage = (props) => {
   const handleSubmit = () => {
     setIsLoading(true);
     try {
-      contentAnalyzerAPI.run(settings.frontUrl).then((result) => {
-        console.log("run result ", result);
-        if (result.success) {
-          contentAnalyzerAPI.getAnalyses().then((analyses) => {
-            console.log("run getAnalyses analyses ", analyses);
-            setResults(analyses);
-            setIsLoading(false);
-          });
-        }
-      }, (err) => {
-        console.log(err);
-      });
+      const payload = [
+        settings["enabled"] ? settings["frontUrl"] : "",
+        settings["enabled2"] ? settings["frontUrl2"] : "",
+        settings["enabled3"] ? settings["frontUrl3"] : ""
+      ].filter(item => item);
+
+      if (payload.length > 0)
+        contentAnalyzerAPI.run(payload).then((result) => {
+          console.log("run result ", result);
+          if (result.success) {
+            contentAnalyzerAPI.getAnalyses().then((analyses) => {
+              console.log("run getAnalyses analyses ", analyses);
+              setResults(analyses);
+              setIsLoading(false);
+            });
+          }
+        }, (err) => {
+          console.log(err);
+        });
+      else {
+        throw "No front end URL to crawl. Check in settings if an URL is set.";
+      }
     } catch (err) {
-      console.log("handleSubmit try catch err ", err);
+      setIsLoading(false);
+      toggleNotification({
+        type: 'warning',
+        message: err,
+      });
     }
   }
 

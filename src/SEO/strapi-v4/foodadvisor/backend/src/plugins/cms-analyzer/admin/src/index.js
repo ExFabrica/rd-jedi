@@ -42,8 +42,8 @@ export default {
       [
         {
           intlLabel: {
-            id: "Settings",
-            defaultMessage: 'Settings',
+            id: "Seo-analyzer-settings",
+            defaultMessage: 'SEO analyzer settings',
           },
           id: 'settings',
           to: `/settings/${pluginId}/seo`,

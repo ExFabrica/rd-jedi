@@ -24,6 +24,10 @@ module.exports = ({ strapi }) => {
         const value = {
             frontUrl: data.frontUrl,
             enabled: data.enabled,
+            frontUrl2: data.frontUrl2,
+            enabled2: data.enabled2,
+            frontUrl3: data.frontUrl3,
+            enabled3: data.enabled3,
         }
 
         const pluginStore = getPluginStore();

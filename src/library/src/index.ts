@@ -60,7 +60,9 @@ const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, a
         //Remove analysis type to avoid redoundancy information 
         const { result, pageInfo } = (analyseResult?.value as unknown as SeoPreview);
         //Set page depth
-        pageInfo.depth = depth.filter(item => item.url == pageInfo.url)[0].depth;
+        const filteredDepths = depth.filter(item => item.url == pageInfo.url);
+        if (filteredDepths && filteredDepths.length > 0)
+          pageInfo.depth = depth.filter(item => item.url == pageInfo.url)[0].depth;
         results.SEO.push({ result, pageInfo });
       } else if (analyseResult.status == "rejected") {
         console.error("SEO Analysis failed : ", analyseResult?.reason);

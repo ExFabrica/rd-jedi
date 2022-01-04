@@ -160,7 +160,6 @@ export const StrapiUIDecorator = () => {
             }
         }
     };
-    //TODO refactor this big method.
     const htmlLookup = () => {
         let structure = [];
         for (const structureField of structureFields) {

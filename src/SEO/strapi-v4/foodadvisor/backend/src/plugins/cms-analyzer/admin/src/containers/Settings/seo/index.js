@@ -42,6 +42,8 @@ const SettingsPage = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     const data = await SettingsAPI.set(settings);
+
+    console.log(data);
     setSettings(data);
     setIsLoading(false);
     toggleNotification({
@@ -119,6 +121,76 @@ const SettingsPage = () => {
                         })}
                         onChange={e => {
                           setSettings({ ...settings, enabled: e.target.checked });
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem col={6} s={12}>
+                      <TextInput
+                        label="Second Front-end URL to analyze"
+                        name="siteURI2"
+                        placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
+                        onChange={({ target: { value } }) => {
+                          setSettings((prevState) => {
+                            return { ...prevState, frontUrl2: value };
+                          });
+                        }}
+                        value={settings && settings.frontUrl2 ? settings.frontUrl2 : ""}
+                        hint={'The second URL of the frontend you want to analyze'}
+                      />
+                    </GridItem>
+                    <GridItem col={6} s={12}>
+                      <ToggleInput
+                        aria-label="crawling"
+                        data-testid="crawling"
+                        checked={settings && settings.hasOwnProperty("enabled2") ? settings.enabled2 : false}
+                        hint={'Enable or disable the analyze of the second front-end url'}
+                        label={'Enabled?'}
+                        name="siteEnabled2"
+                        offLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.off-label',
+                          defaultMessage: 'Off',
+                        })}
+                        onLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.on-label',
+                          defaultMessage: 'On',
+                        })}
+                        onChange={e => {
+                          setSettings({ ...settings, enabled2: e.target.checked });
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem col={6} s={12}>
+                      <TextInput
+                        label="Third Front-end URL to analyze"
+                        name="siteURI3"
+                        placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
+                        onChange={({ target: { value } }) => {
+                          setSettings((prevState) => {
+                            return { ...prevState, frontUrl3: value };
+                          });
+                        }}
+                        value={settings && settings.frontUrl3 ? settings.frontUrl3 : ""}
+                        hint={'The third URL of the frontend you want to analyze'}
+                      />
+                    </GridItem>
+                    <GridItem col={6} s={12}>
+                      <ToggleInput
+                        aria-label="crawling"
+                        data-testid="crawling"
+                        checked={settings && settings.hasOwnProperty("enabled3") ? settings.enabled3 : false}
+                        hint={'Enable or disable the analyze of the third front-end url'}
+                        label={'Enabled?'}
+                        name="siteEnabled3"
+                        offLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.off-label',
+                          defaultMessage: 'Off',
+                        })}
+                        onLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.on-label',
+                          defaultMessage: 'On',
+                        })}
+                        onChange={e => {
+                          setSettings({ ...settings, enabled3: e.target.checked });
                         }}
                       />
                     </GridItem>

@@ -15,7 +15,7 @@ module.exports = ({ strapi }) => {
     const { body } = ctx.request;
     try {
       await settingService.setSettings(body);
-      return this.getSettings();
+      return settingService.getSettings();
     }
     catch (err) {
       ctx.throw(500, err);

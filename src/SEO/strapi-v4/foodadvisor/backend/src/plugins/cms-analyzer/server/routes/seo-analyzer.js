@@ -3,7 +3,7 @@ module.exports = {
     type: 'admin',
     routes: [
       {
-        method: 'GET',
+        method: 'POST',
         path: '/seo-analyzer/run',
         handler: 'seo-analyzer.run',
         config: { policies: [] }
