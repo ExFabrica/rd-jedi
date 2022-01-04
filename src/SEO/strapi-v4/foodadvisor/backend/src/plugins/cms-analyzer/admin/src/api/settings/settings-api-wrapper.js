@@ -12,6 +12,11 @@ const settingsAPI = {
             method: 'POST',
             body: data
         });
+    },
+    reset: async () => {
+        return await request(`/cms-analyzer/settings`, {
+            method: 'delete'
+        });
     }
 }
 export default settingsAPI;

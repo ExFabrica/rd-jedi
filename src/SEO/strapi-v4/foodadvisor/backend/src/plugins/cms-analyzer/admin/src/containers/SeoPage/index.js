@@ -68,9 +68,9 @@ const SeoPage = (props) => {
     setIsLoading(true);
     try {
       const payload = [
-        settings["enabled"] ? settings["frontUrl"] : "",
-        settings["enabled2"] ? settings["frontUrl2"] : "",
-        settings["enabled3"] ? settings["frontUrl3"] : ""
+        settings.seo.frontEnabled ? settings.seo.frontUrl : "",
+        settings.seo.frontEnabled2 ? settings.seo.frontUrl2 : "",
+        settings.seo.frontEnabled3 ? settings.seo.frontUrl3 : ""
       ].filter(item => item);
 
       if (payload.length > 0)

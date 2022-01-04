@@ -12,6 +12,7 @@ import { Button } from '@strapi/design-system/Button';
 import Plus from '@strapi/icons/Plus';
 import { HeaderLayout } from '@strapi/design-system/Layout';
 import { Grid, GridItem } from '@strapi/design-system/Grid';
+import Cog from '@strapi/icons/Cog';
 import {
   CheckPagePermissions,
   LoadingIndicatorPage,
@@ -30,7 +31,6 @@ const SettingsPage = () => {
   useEffect(() => {
     SettingsAPI.get().then((data) => {
       setSettings(data);
-      console.log('data', data);
       setIsLoading(false);
     });
     // unmount
@@ -42,15 +42,17 @@ const SettingsPage = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     const data = await SettingsAPI.set(settings);
-
-    console.log(data);
+    console.log("settings saved", data);
     setSettings(data);
     setIsLoading(false);
     toggleNotification({
       type: 'success',
       message: { id: getTrad("plugin.settings.button.save.message") },
     });
-  }
+  };
+  const handleReset = async () => {
+    setSettings(await SettingsAPI.reset());
+  };
 
   //TODO ADD the RBAC controls
   //<CheckPermissions permissions={permissions.createRole}>
@@ -66,6 +68,11 @@ const SettingsPage = () => {
           primaryAction={
             <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}
+            </Button>
+          }
+          secondaryAction={
+            <Button variant="tertiary" onClick={handleReset} startIcon={<Cog />}>
+              {"Reset"}
             </Button>
           }
         >
@@ -89,25 +96,50 @@ const SettingsPage = () => {
                     })}
                   </H2>
                   <Grid gap={6}>
+                    <GridItem col={12} s={12}>
+                      <ToggleInput
+                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.enabled : false}
+                        hint={'Enable or disable the SEO module'}
+                        label={'Enabled?'}
+                        name="moduleEnabled"
+                        offLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.off-label',
+                          defaultMessage: 'Off',
+                        })}
+                        onLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.on-label',
+                          defaultMessage: 'On',
+                        })}
+                        onChange={e => {
+                          setSettings((prevState) => {
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, enabled: e.target.checked }
+                            }
+                          });
+                        }}
+                      />
+                    </GridItem>
                     <GridItem col={6} s={12}>
                       <TextInput
                         label="Front-end URL to analyze"
-                        name="siteURI"
+                        name="siteURL"
                         placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
                         onChange={({ target: { value } }) => {
                           setSettings((prevState) => {
-                            return { ...prevState, frontUrl: value };
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontUrl: value }
+                            }
                           });
                         }}
-                        value={settings && settings.frontUrl ? settings.frontUrl : ""}
+                        value={settings && settings.seo.frontUrl ? settings.seo.frontUrl : ""}
                         hint={'The URL of the frontend you want to analyze'}
                       />
                     </GridItem>
                     <GridItem col={6} s={12}>
                       <ToggleInput
-                        aria-label="crawling"
-                        data-testid="crawling"
-                        checked={settings && settings.hasOwnProperty("enabled") ? settings.enabled : false}
+                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.frontEnabled : false}
                         hint={'Enable or disable the analyze of this frontend'}
                         label={'Enabled?'}
                         name="siteEnabled"
@@ -120,30 +152,36 @@ const SettingsPage = () => {
                           defaultMessage: 'On',
                         })}
                         onChange={e => {
-                          setSettings({ ...settings, enabled: e.target.checked });
+                          setSettings((prevState) => {
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontEnabled: e.target.checked }
+                            }
+                          });
                         }}
                       />
                     </GridItem>
                     <GridItem col={6} s={12}>
                       <TextInput
                         label="Second Front-end URL to analyze"
-                        name="siteURI2"
+                        name="siteURL2"
                         placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
                         onChange={({ target: { value } }) => {
                           setSettings((prevState) => {
-                            return { ...prevState, frontUrl2: value };
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontUrl2: value }
+                            }
                           });
                         }}
-                        value={settings && settings.frontUrl2 ? settings.frontUrl2 : ""}
+                        value={settings && settings.seo.frontUrl2 ? settings.seo.frontUrl2 : ""}
                         hint={'The second URL of the frontend you want to analyze'}
                       />
                     </GridItem>
                     <GridItem col={6} s={12}>
                       <ToggleInput
-                        aria-label="crawling"
-                        data-testid="crawling"
-                        checked={settings && settings.hasOwnProperty("enabled2") ? settings.enabled2 : false}
-                        hint={'Enable or disable the analyze of the second front-end url'}
+                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.frontEnabled2 : false}
+                        hint={'Enable or disable the analyze of the second frontend'}
                         label={'Enabled?'}
                         name="siteEnabled2"
                         offLabel={formatMessage({
@@ -155,30 +193,36 @@ const SettingsPage = () => {
                           defaultMessage: 'On',
                         })}
                         onChange={e => {
-                          setSettings({ ...settings, enabled2: e.target.checked });
+                          setSettings((prevState) => {
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontEnabled2: e.target.checked }
+                            }
+                          });
                         }}
                       />
                     </GridItem>
                     <GridItem col={6} s={12}>
                       <TextInput
                         label="Third Front-end URL to analyze"
-                        name="siteURI3"
+                        name="siteURL3"
                         placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
                         onChange={({ target: { value } }) => {
                           setSettings((prevState) => {
-                            return { ...prevState, frontUrl3: value };
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontUrl3: value }
+                            }
                           });
                         }}
-                        value={settings && settings.frontUrl3 ? settings.frontUrl3 : ""}
-                        hint={'The third URL of the frontend you want to analyze'}
+                        value={settings && settings.seo.frontUrl3 ? settings.seo.frontUrl3 : ""}
+                        hint={'The URL of the frontend you want to analyze'}
                       />
                     </GridItem>
                     <GridItem col={6} s={12}>
                       <ToggleInput
-                        aria-label="crawling"
-                        data-testid="crawling"
-                        checked={settings && settings.hasOwnProperty("enabled3") ? settings.enabled3 : false}
-                        hint={'Enable or disable the analyze of the third front-end url'}
+                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.frontEnabled3 : false}
+                        hint={'Enable or disable the analyze of the third frontend'}
                         label={'Enabled?'}
                         name="siteEnabled3"
                         offLabel={formatMessage({
@@ -190,7 +234,12 @@ const SettingsPage = () => {
                           defaultMessage: 'On',
                         })}
                         onChange={e => {
-                          setSettings({ ...settings, enabled3: e.target.checked });
+                          setSettings((prevState) => {
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, frontEnabled3: e.target.checked }
+                            }
+                          });
                         }}
                       />
                     </GridItem>

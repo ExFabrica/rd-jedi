@@ -19,7 +19,7 @@ import {
 } from '@strapi/helper-plugin';
 import { ToggleInput } from '@strapi/design-system/ToggleInput';
 
-const SettingsMediaPage = () => {
+const SettingsGreenPage = () => {
   const { formatMessage } = useIntl();
   const isMounted = useRef(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,10 +80,10 @@ const SettingsMediaPage = () => {
                 paddingRight={7}
               >
                 <Stack size={3}>
-                <H2>Media Analyzer</H2>
+                <H2>Green CMS Analyzer</H2>
                   <ToggleInput
-                        checked={settings && settings.hasOwnProperty("medias") ? settings.medias.enabled : false}
-                        hint={'Enable or disable the analyze of media\'s library'}
+                        checked={settings && settings.hasOwnProperty("greenCms") ? settings.greenCms.enabled : false}
+                        hint={'Enable or disable the green analyze'}
                         label={'Enabled?'}
                         name="siteEnabled"
                         offLabel={formatMessage({
@@ -98,7 +98,7 @@ const SettingsMediaPage = () => {
                           setSettings((prevState) => {
                             return {
                               ...prevState,
-                              medias: { ...prevState.medias, enabled: e.target.checked }
+                              greenCms: { ...prevState.greenCms, enabled: e.target.checked }
                             }
                           });
                         }}
@@ -112,4 +112,4 @@ const SettingsMediaPage = () => {
   );
 };
 
-export default SettingsMediaPage;
+export default SettingsGreenPage;

@@ -72,6 +72,22 @@ export default {
           },
           //permissions: pluginPermissions.settings,
         },
+        { // Green Anaylzer
+          intlLabel: {
+            id: "Green-analyzer-settings",
+            defaultMessage: 'Green analyzer settings',
+          },
+          id: 'settings-green',
+          to: `/settings/${pluginId}/green`,
+          Component: async () => {
+            const component = await import(
+                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/green'
+            );
+
+            return component;
+          },
+          //permissions: pluginPermissions.settings,
+        }
       ]
     );
   },

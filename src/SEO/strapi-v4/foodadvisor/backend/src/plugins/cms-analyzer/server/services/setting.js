@@ -1,5 +1,4 @@
 'use strict';
-const analyzer = require('exfabrica-cms-engine-analyzer');
 const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
@@ -13,28 +12,31 @@ module.exports = ({ strapi }) => {
     const createDefaultConfig = async () => {
         const pluginStore = getPluginStore();
         const value = {
-            frontUrl: '',
-            enabled: true,
-        }
+            seo: {
+                enabled: false,
+                frontUrl: "",
+                frontEnabled: false,
+                frontUrl2: "",
+                frontEnabled2: false,
+                frontUrl3: "",
+                frontEnabled3: false,
+            }, 
+            medias: {
+                enabled: false,
+            },
+            greenCms: {
+                enabled: false,
+            }
+        };
         await pluginStore.set({ key: 'settings', value });
         return pluginStore.get({ key: 'settings' });
     };
-    const createConfigFromData = async (data) => {
-        //mapping
-        const value = {
-            frontUrl: data.frontUrl,
-            enabled: data.enabled,
-            frontUrl2: data.frontUrl2,
-            enabled2: data.enabled2,
-            frontUrl3: data.frontUrl3,
-            enabled3: data.enabled3,
-        }
-
+    const createConfigFromData = async (settings) => {
+        const value = settings;
         const pluginStore = getPluginStore();
         await pluginStore.set({ key: 'settings', value });
         return pluginStore.get({ key: 'settings' });
     };
-
     const getSettings = async () => {
         const pluginStore = getPluginStore();
         let config = await pluginStore.get({ key: 'settings' });
@@ -46,8 +48,12 @@ module.exports = ({ strapi }) => {
     const setSettings = async (data) => {
         return createConfigFromData(data);
     };
+    const resetSettings = async () => {
+        return createDefaultConfig();
+    };
     return {
         getSettings,
-        setSettings
+        setSettings,
+        resetSettings
     }
 }

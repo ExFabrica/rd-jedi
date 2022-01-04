@@ -14,5 +14,11 @@ module.exports = {
         handler: 'setting.setSettings',
         config: { policies: [] }
       },
+      {
+        method: 'DELETE',
+        path: '/settings',
+        handler: 'setting.resetSettings',
+        config: { policies: [] }
+      },
     ]
   }

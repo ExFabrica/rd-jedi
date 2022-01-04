@@ -10,7 +10,7 @@ module.exports = ({ strapi }) => {
     catch (err) {
       ctx.throw(500, err);
     }
-  }
+  };
   const setSettings = async (ctx)  => {
     const { body } = ctx.request;
     try {
@@ -20,9 +20,18 @@ module.exports = ({ strapi }) => {
     catch (err) {
       ctx.throw(500, err);
     }
-  }
+  };
+  const resetSettings = async (ctx)  => {
+    try {
+      return settingService.resetSettings();
+    }
+    catch (err) {
+      ctx.throw(500, err);
+    }
+  };
   return {
     getSettings,
-    setSettings
+    setSettings,
+    resetSettings
   }
 };

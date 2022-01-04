@@ -14,7 +14,6 @@ const MediaPage = (props) => {
   const [isLoading, setIsLoading] = useState();
   const [toggleState, setToggleState] = useState({});
 
-  
   return <Main labelledBy="title" aria-busy={isLoading}>
     <HeaderLayout
       id="title"
