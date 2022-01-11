@@ -56,38 +56,40 @@ export default {
           },
           //permissions: pluginPermissions.settings,
         },
-        { // Media Anaylzer
-          intlLabel: {
-            id: "Media-analyzer-settings",
-            defaultMessage: 'Media analyzer settings',
-          },
-          id: 'settings-media',
-          to: `/settings/${pluginId}/media`,
-          Component: async () => {
-            const component = await import(
-                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/media'
-            );
+        /* #5182 : desactive seting entries for Media analyzer and Green analyzer BEGIN*/
+        // { // Media Anaylzer
+        //   intlLabel: {
+        //     id: "Media-analyzer-settings",
+        //     defaultMessage: 'Media analyzer settings',
+        //   },
+        //   id: 'settings-media',
+        //   to: `/settings/${pluginId}/media`,
+        //   Component: async () => {
+        //     const component = await import(
+        //           /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/media'
+        //     );
 
-            return component;
-          },
-          //permissions: pluginPermissions.settings,
-        },
-        { // Green Anaylzer
-          intlLabel: {
-            id: "Green-analyzer-settings",
-            defaultMessage: 'Green analyzer settings',
-          },
-          id: 'settings-green',
-          to: `/settings/${pluginId}/green`,
-          Component: async () => {
-            const component = await import(
-                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/green'
-            );
+        //     return component;
+        //   },
+        //   //permissions: pluginPermissions.settings,
+        // },
+        // { // Green Anaylzer
+        //   intlLabel: {
+        //     id: "Green-analyzer-settings",
+        //     defaultMessage: 'Green analyzer settings',
+        //   },
+        //   id: 'settings-green',
+        //   to: `/settings/${pluginId}/green`,
+        //   Component: async () => {
+        //     const component = await import(
+        //           /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/green'
+        //     );
 
-            return component;
-          },
-          //permissions: pluginPermissions.settings,
-        }
+        //     return component;
+        //   },
+        //   //permissions: pluginPermissions.settings,
+        // }
+        /* #5182 : desactive seting entries for Media analyzer and Green analyzer END*/
       ]
     );
   },
