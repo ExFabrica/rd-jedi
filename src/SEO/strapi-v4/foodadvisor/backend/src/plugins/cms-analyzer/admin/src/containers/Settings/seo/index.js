@@ -137,6 +137,7 @@ const SettingsPage = () => {
                         hint={'The URL of the frontend you want to analyze'}
                       />
                     </GridItem>
+                    {/* #5193 : disable enable option for primary frontend url
                     <GridItem col={6} s={12}>
                       <ToggleInput
                         checked={settings && settings.hasOwnProperty("seo") ? settings.seo.frontEnabled : false}
@@ -160,7 +161,8 @@ const SettingsPage = () => {
                           });
                         }}
                       />
-                    </GridItem>
+                    </GridItem> */}
+                    {/* #5193 : disable settings
                     <GridItem col={6} s={12}>
                       <TextInput
                         label="Second Front-end URL to analyze"
@@ -242,7 +244,7 @@ const SettingsPage = () => {
                           });
                         }}
                       />
-                    </GridItem>
+                    </GridItem> */}
                   </Grid>
                 </Stack>
               </Box>
