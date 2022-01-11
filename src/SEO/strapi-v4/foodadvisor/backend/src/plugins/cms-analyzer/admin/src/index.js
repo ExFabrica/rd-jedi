@@ -26,7 +26,9 @@ export default {
         defaultMessage: name,
       },
       Component: async () => {
-        const component = await import(/* webpackChunkName: "[request]" */ './containers/App');
+        /* #5180: redirect on seo page to hide ohter module (green and media) */
+        // const component = await import(/* webpackChunkName: "[request]" */ './containers/App');
+        const component = await import(/* webpackChunkName: "[request]" */ './containers/SeoPage');
 
         return component;
       },
