@@ -113,6 +113,26 @@ const SeoPage = (props) => {
     console.log("settings to do");
   }
 
+  const expertPage= ()=>{
+    return <Layout>
+    <AccordionGroup>
+      {results.map((analyse, index) => {
+        const id = `acc-${index}`;
+        return <AnalyseAccordion toggleState={toggleState} key={`contentpage-${index}`} id={id} value={analyse} onToggle={toggle}></AnalyseAccordion>
+      })}
+    </AccordionGroup>
+  </Layout>
+  };
+
+  const simplePage=()=>
+  {
+    return <>/!\Work in progress/!\</>;
+  };
+
+  const displayContent=()=>{
+    return settings!=undefined?(settings.seo.expertMode?expertPage():simplePage()):<></>;
+  }
+
   return <Main labelledBy="title" aria-busy={isLoading}>
     <HeaderLayout
       id="title"
@@ -133,15 +153,7 @@ const SeoPage = (props) => {
     <ContentLayout>
       {isLoading ? (
         <LoadingIndicatorPage />
-      ) : (
-        <Layout>
-          <AccordionGroup>
-            {results.map((analyse, index) => {
-              const id = `acc-${index}`;
-              return <AnalyseAccordion toggleState={toggleState} key={`contentpage-${index}`} id={id} value={analyse} onToggle={toggle}></AnalyseAccordion>
-            })}
-          </AccordionGroup>
-        </Layout>
+      ) : (displayContent()
       )}
     </ContentLayout>
   </Main>
