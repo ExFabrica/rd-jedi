@@ -4,6 +4,8 @@
  *
  */
 import React, { memo, useEffect, useState } from 'react';
+import { useHistory } from "react-router-dom";
+
 //I18n
 import { useIntl } from 'react-intl';
 import getTrad from '../../utils/getTrad';
@@ -27,6 +29,8 @@ import { Main } from '@strapi/design-system/Main';
 import { AccordionGroup } from '@strapi/design-system/Accordion';
 //Custom ACCORDION content
 import { AnalyseAccordion } from './components/analyse-accordion';
+import pluginId from '../../pluginId';
+
 
 const SeoPage = (props) => {
   const { formatMessage } = useIntl();
@@ -35,6 +39,8 @@ const SeoPage = (props) => {
   const [isLoading, setIsLoading] = useState();
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
+
+  const history = useHistory();
 
   useEffect(() => {
     try {
@@ -116,7 +122,10 @@ const SeoPage = (props) => {
   }
 
   const configure = () => {
-    console.log("settings to do");
+    /* #5181 - navigate to seo plugin's settings page - BEGIN */
+    let path = `/settings/${pluginId}/seo`; 
+    history.push(path);
+    /* #5181 - END */
   }
 
   const expertPage= ()=>{
