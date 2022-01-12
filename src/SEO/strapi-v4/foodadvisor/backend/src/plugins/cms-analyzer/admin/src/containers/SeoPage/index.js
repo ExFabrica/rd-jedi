@@ -67,11 +67,17 @@ const SeoPage = (props) => {
   const handleSubmit = () => {
     setIsLoading(true);
     try {
+      /* # 5193 - force enabled primary front url - BEGIN */
+      // const payload = [
+      //   settings.seo.frontEnabled ? settings.seo.frontUrl : "",
+      //   settings.seo.frontEnabled2 ? settings.seo.frontUrl2 : "",
+      //   settings.seo.frontEnabled3 ? settings.seo.frontUrl3 : ""
+      // ].filter(item => item);
+
       const payload = [
-        settings.seo.frontEnabled ? settings.seo.frontUrl : "",
-        settings.seo.frontEnabled2 ? settings.seo.frontUrl2 : "",
-        settings.seo.frontEnabled3 ? settings.seo.frontUrl3 : ""
+        settings.seo.frontUrl,
       ].filter(item => item);
+      /* # 5193 - END */
 
       if (payload.length > 0)
         contentAnalyzerAPI.run(payload).then((result) => {
