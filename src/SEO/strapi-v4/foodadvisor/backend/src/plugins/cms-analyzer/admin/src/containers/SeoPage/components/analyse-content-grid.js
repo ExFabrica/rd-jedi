@@ -57,7 +57,8 @@ export const AnalyseContentGrid = (props) => {
                 <Td>
                     <Typography textColor="neutral800">{entry.content}</Typography>
                 </Td>
-                <Td>
+                {/* #5179 disable action icons not yet implemented - BEGIN*/}
+                {/* <Td>
                     <Flex>
                         <IconButton onClick={() => console.log('View')} label="View" noBorder icon={<Earth />} />
                         <Box paddingLeft={1}>
@@ -70,7 +71,8 @@ export const AnalyseContentGrid = (props) => {
                             <IconButton onClick={() => console.log('delete')} label="Delete" noBorder icon={<Trash />} />
                         </Box>
                     </Flex>
-                </Td>
+                </Td> */}
+                {/* #5179 END*/}
             </Tr>)}
         </Tbody>
     </Table>
