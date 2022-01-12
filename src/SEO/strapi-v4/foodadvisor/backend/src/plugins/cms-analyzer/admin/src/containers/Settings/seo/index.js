@@ -120,7 +120,7 @@ const SettingsPage = () => {
                         }}
                       />
                     </GridItem>
-                    <GridItem col={6} s={12}>
+                    <GridItem col={12} s={12}>
                       <TextInput
                         label="Front-end URL to analyze"
                         name="siteURL"
@@ -135,6 +135,30 @@ const SettingsPage = () => {
                         }}
                         value={settings && settings.seo.frontUrl ? settings.seo.frontUrl : ""}
                         hint={'The URL of the frontend you want to analyze'}
+                      />
+                    </GridItem>
+                    <GridItem col={12} s={12}>
+                      <ToggleInput
+                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.expertMode : false}
+                        hint={'Enable or disable analyze details expert mode'}
+                        label={'Expert Mode (beta version)'}
+                        name="expertModeEnabled"
+                        offLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.off-label',
+                          defaultMessage: 'Off',
+                        })}
+                        onLabel={formatMessage({
+                          id: 'app.components.ToggleCheckbox.on-label',
+                          defaultMessage: 'On',
+                        })}
+                        onChange={e => {
+                          setSettings((prevState) => {
+                            return {
+                              ...prevState,
+                              seo: { ...prevState.seo, expertMode: e.target.checked }
+                            }
+                          });
+                        }}
                       />
                     </GridItem>
                     {/* #5193 : disable enable option for primary frontend url
