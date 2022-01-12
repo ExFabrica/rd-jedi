@@ -55,7 +55,9 @@ export const AnalyseAccordion = (props) => {
                             <Tabs>
                                 <Tab>Content optimisation ({seoContentManagerMessageList.length})</Tab>
                                 <Tab>Front optimisation ({seoFrontDeveloperMessageList.length})</Tab>
-                                <Tab>Don't show again ({seoExcludeMessageList.length})</Tab>
+                                {/* #5177 : disable this tab - BEGIN */}
+                                {/* <Tab>Don't show again ({seoExcludeMessageList.length})</Tab> */}
+                                {/* #5177 : END */}
                             </Tabs>
                             <TabPanels>
                                 <TabPanel>
@@ -66,11 +68,14 @@ export const AnalyseAccordion = (props) => {
                                         <AnalyseFrontGrid value={seoFrontDeveloperMessageList}></AnalyseFrontGrid>
                                     </Box>
                                 </TabPanel>
-                                <TabPanel>
+                                {/* #5177 : disable this tab - BEGIN */}
+                                {/* <TabPanel>
                                     <Box padding={4} background="neutral0">
                                         <AnalyseExcludeGrid value={seoExcludeMessageList}></AnalyseExcludeGrid>
                                     </Box>
-                                </TabPanel>
+                                </TabPanel> */}
+                                {/* #5177 : END */}
+
                             </TabPanels>
                         </TabGroup>
                     </Box>
