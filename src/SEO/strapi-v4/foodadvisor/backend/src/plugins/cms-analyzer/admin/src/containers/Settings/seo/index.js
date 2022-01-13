@@ -27,6 +27,8 @@ const SettingsPage = () => {
   const [settings, setSettings] = useState();
   const toggleNotification = useNotification();
 
+  const enableResetBtn=false;/* #5195 - use to enable reset BTN */
+
   //mount
   useEffect(() => {
     SettingsAPI.get().then((data) => {
@@ -70,11 +72,13 @@ const SettingsPage = () => {
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}
             </Button>
           }
-          secondaryAction={
+          /* #5195 - enable reset btn if enableResetBtn is true - BEGIN  */
+          secondaryAction={(enableResetBtn?
             <Button variant="tertiary" onClick={handleReset} startIcon={<Cog />}>
               {"Reset"}
-            </Button>
+            </Button> :"")
           }
+          /* #5195 - END  */
         >
         </HeaderLayout>
         {isLoading ? (<LoadingIndicatorPage />)
