@@ -20,8 +20,13 @@ import {
 } from '@strapi/helper-plugin';
 //Custom
 import { Button } from '@strapi/design-system/Button';
+import { IconButton } from '@strapi/design-system/IconButton';
 import Plus from '@strapi/icons/Plus';
 import Cog from '@strapi/icons/Cog';
+import Pencil from '@strapi/icons/Pencil';
+import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
+import { Typography } from '@strapi/design-system/Typography';
+import { LinkButton } from '@strapi/design-system/LinkButton';
 //Layout
 import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
 import { Main } from '@strapi/design-system/Main';
@@ -40,7 +45,7 @@ const SeoPage = (props) => {
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
 
-  const history = useHistory();
+  const { push } = useHistory();
 
   useEffect(() => {
     try {
@@ -123,11 +128,17 @@ const SeoPage = (props) => {
 
   const configure = () => {
     /* #5181 - navigate to seo plugin's settings page - BEGIN */
-    let path = `/settings/${pluginId}/seo`; 
-    history.push(path);
+    push(`/settings/${pluginId}/seo`);
     /* #5181 - END */
   }
 
+  
+
+  /** #5178 - introduce "expert mode". 
+   * When expert mode is enable, accordion view with detail per page is displayed.
+   * otherwise a simple list view with only few information( rank, url..) is displayed.
+   * */
+  /** display expert mode content*/
   const expertPage= ()=>{
     return <Layout>
     <AccordionGroup>
@@ -139,11 +150,48 @@ const SeoPage = (props) => {
   </Layout>
   };
 
-  const simplePage=()=>
-  {
-    return <>/!\Work in progress/!\</>;
+  /** display simple mode content*/
+  const simplePage = () => {
+    const COL_COUNT = 5;
+    return <Table colCount={COL_COUNT} rowCount={results.length}>
+      <Thead>
+        <Tr>
+          <Th>
+            <Typography variant="sigma">Rank</Typography>
+          </Th>
+          <Th>
+            <Typography variant="sigma">URL</Typography>
+          </Th>
+          <Th>
+            <Typography variant="sigma">api</Typography>
+          </Th>
+          <Th>
+            <Typography variant="sigma">id</Typography>
+          </Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {results.map((analyse, index) => {
+          return <Tr key={`contentpage-${index}`}>
+            <Td>
+              <Typography textColor="neutral800">{analyse.depth}</Typography>
+            </Td>
+            <Td>
+              <Typography textColor="neutral800">{analyse.frontUrl}</Typography>
+            </Td>
+            <Td>
+              <Typography textColor="neutral800">{analyse.apiName}/{analyse.documentId}</Typography>
+            </Td>
+            <Td>
+              
+            </Td>
+          </Tr>
+        })}
+      </Tbody>
+    </Table>
   };
 
+  /** display content according expertMode setting */
   const displayContent=()=>{
     return settings!=undefined?(settings.seo.expertMode?expertPage():simplePage()):<></>;
   }
