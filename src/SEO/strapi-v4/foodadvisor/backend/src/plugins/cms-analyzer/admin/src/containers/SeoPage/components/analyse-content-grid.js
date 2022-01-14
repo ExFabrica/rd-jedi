@@ -18,9 +18,13 @@ import { IconButton } from '@strapi/design-system/IconButton';
 //Badge
 import { Badge } from '@strapi/design-system/Badge';
 
+import getSeoErrorLevelColor from '../../../utils/getSeoErrorLevelColor';
+
+
 export const AnalyseContentGrid = (props) => {
     const { formatMessage } = useIntl();
     const COL_COUNT = 5;
+  const low_color = getSeoErrorLevelColor();
 
     return <Table colCount={COL_COUNT} rowCount={props.value.length}>
         <Thead>
@@ -50,8 +54,8 @@ export const AnalyseContentGrid = (props) => {
                 <Td>
                     {
                         entry.level === "warnings"
-                            ? <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
-                            : <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
+                            ? <Badge backgroundColor={low_color} textColor="neutral900" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
+                            : <Badge backgroundColor="danger200" textColor="neutral900" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
                     }
                 </Td>
                 <Td>

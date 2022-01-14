@@ -10,6 +10,8 @@ import { Typography } from '@strapi/design-system/Typography';
 //Box
 import { Box } from '@strapi/design-system/Box';
 
+import getSeoErrorLevelColor from '../../utils/getSeoErrorLevelColor';
+
 const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;
 
 export const StrapiUIDecorator = () => {
@@ -23,6 +25,9 @@ export const StrapiUIDecorator = () => {
     const pluginMainDivId = "plugin.cmsAnalyzer.main.container";
     const pluginInputRulesDivId = "plugin.cmsAnalyzer-input-rules-content";
     const pluginMainRulesDivId = "plugin.cmsAnalyzer-main-rules-content";
+
+    const low_color = getSeoErrorLevelColor();
+
 
     useEffect(() => {
         setGlobalPanel();
@@ -242,12 +247,12 @@ export const StrapiUIDecorator = () => {
                     return item.level === "warnings"
                         ? <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
-                            &nbsp;<Badge backgroundColor="danger200" textColor="neutral0" paddingLeft={3} paddingRight={3}>Low</Badge>
+                            &nbsp;<Badge backgroundColor={low_color} textColor="neutral900" paddingLeft={3} paddingRight={3}>Low</Badge>
                             &nbsp;<Typography textColor="neutral600" marginLeft={10} variant="pi">{item.message}</Typography>
                         </Box>
                         : <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
-                            &nbsp;<Badge backgroundColor="danger700" textColor="neutral0" paddingLeft={3} paddingRight={3}>High</Badge>
+                            &nbsp;<Badge backgroundColor="danger200" textColor="neutral900" paddingLeft={3} paddingRight={3}>High</Badge>
                             &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
                         </Box>
                 }) : <></>

@@ -9,6 +9,7 @@ import { useHistory } from "react-router-dom";
 //I18n
 import { useIntl } from 'react-intl';
 import getTrad from '../../utils/getTrad';
+
 //API Wrapper
 import settingsAPI from '../../api/settings/settings-api-wrapper';
 import contentAnalyzerAPI from '../../api/seo/seo-api-wrapper';
@@ -170,7 +171,7 @@ const SeoPage = (props) => {
             <Typography variant="sigma">api</Typography>
           </Th>
           <Th>
-            <Typography variant="sigma">id</Typography>
+            <Typography variant="sigma">Edit</Typography>
           </Th>
         </Tr>
       </Thead>

@@ -50,8 +50,8 @@ export const AnalyseFrontGrid = (props) => {
                 <Td>
                     {
                         entry.level === "warnings"
-                            ? <Badge backgroundColor="danger500" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
-                            : <Badge backgroundColor="danger700" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
+                            ? <Badge backgroundColor="primary200" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
+                            : <Badge backgroundColor="danger200" textColor="neutral0" paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
                     }
                 </Td>
                 <Td>
