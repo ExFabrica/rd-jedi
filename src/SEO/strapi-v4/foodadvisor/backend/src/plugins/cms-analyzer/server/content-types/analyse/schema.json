@@ -48,6 +48,12 @@
     },
     "depth": {
       "type": "integer"
+    },
+    "contentKind": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string"
     }
   }
 }

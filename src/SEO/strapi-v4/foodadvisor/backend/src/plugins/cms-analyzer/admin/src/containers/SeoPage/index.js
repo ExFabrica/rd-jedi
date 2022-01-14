@@ -132,7 +132,11 @@ const SeoPage = (props) => {
     /* #5181 - END */
   }
 
-  
+  /**  #5175 - redirect to url to edit  - BEGIN */
+  const handleEdit= (contentKind, apiName, documentId,locale) =>{
+    push(`/content-manager/${contentKind}/${apiName}/${documentId}?plugins[i18n][locale]=${locale}`)
+  }
+  /* #5175 -END */
 
   /** #5178 - introduce "expert mode". 
    * When expert mode is enable, accordion view with detail per page is displayed.
@@ -183,7 +187,9 @@ const SeoPage = (props) => {
               <Typography textColor="neutral800">{analyse.apiName}/{analyse.documentId}</Typography>
             </Td>
             <Td>
-              
+              {/* #5175 - add link edit page - BEGIN*/}
+              <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(analyse.contentKind,analyse.apiName,analyse.documentId, analyse.locale)}/>
+              {/* #5175 - END */}
             </Td>
           </Tr>
         })}

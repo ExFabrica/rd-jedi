@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
+import { useHistory } from "react-router-dom";
 
 //Layout
 import { Box } from '@strapi/design-system/Box';
@@ -25,6 +26,7 @@ export const AnalyseAccordion = (props) => {
     const [seoFrontDeveloperMessageList, setSeoFrontDeveloperMessageList] = useState([]);
     const [seoExcludeMessageList, setSeoExcludeMessageList] = useState([]);
     const [editTitleModalVisible, setEditTitleModalVisible] = useState(false);
+    const { push } = useHistory();
 
     useEffect(() => {
         if (props.value && props.value.seoAnalyse) {
@@ -43,9 +45,17 @@ export const AnalyseAccordion = (props) => {
         }
     }, []);
 
+    /**  #5175 - redirect to url to edit  - BEGIN */
+    const handleEdit= (contentKind, apiName, documentId, locale) =>{
+        push(`/content-manager/${contentKind}/${apiName}/${documentId}?plugins[i18n][locale]=${locale}`)
+    }
+    /* #5175 -END */
+
     return <Accordion key={props.id} expanded={props.toggleState[props.id]} toggle={() => props.onToggle(props.id)} id={props.id}>
         <AccordionToggle startIcon={<Globe aria-hidden={true} />} action={<Stack horizontal size={0}>
-            <IconButton noBorder onClick={() => setEditTitleModalVisible(prev => !prev)} label="Edit" icon={<Pencil />} />
+            {/* #5175 - add link edit page - BEGIN*/}
+            <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(props.value.contentKind,props.value.apiName,props.value.documentId, props.value.locale)}/>
+            {/* #5175 - END */}
         </Stack>} title={`Rank: ${props.value.depth} - Url: ${props.value.frontUrl}`} togglePosition="left" />
         <AccordionContent>
             <Box padding={3}>

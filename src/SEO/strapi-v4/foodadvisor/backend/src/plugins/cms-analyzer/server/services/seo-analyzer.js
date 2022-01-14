@@ -196,15 +196,17 @@ module.exports = ({ strapi }) => {
         }
         return pages;
     }
-    const setFields = (page, document, uid, tag, attributeKey, docfieldValue, text, results, componentName, dynamicZoneName) => {
+    const setFields = (page, document, uid, contentKind, tag, attributeKey, docfieldValue, text, results, componentName, dynamicZoneName) => {
         if (docfieldValue && text) {
             if (docfieldValue.toLowerCase() === text.toLowerCase()) {
                 const item = _.find(results, { key: `${uid}_${page.url}` });
-                if (!item)
+                if (!item){
+                    let lang = page.url.match('lang=([\\w\\-]*)');
                     results.push(
                         {
                             key: `${uid}_${page.url}`,
                             apiName: uid,
+                            contentKind:contentKind,
                             frontUrl: page.url,
                             documentId: document.id,
                             documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }],
@@ -212,7 +214,9 @@ module.exports = ({ strapi }) => {
                             screenshot: page.screenshot,
                             tags: page.tags,
                             depth: page.depth,
+                            locale:lang?lang[1]:''
                         });
+                }
                 else {
                     let field = componentName ?
                         _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }) :
@@ -224,7 +228,7 @@ module.exports = ({ strapi }) => {
             }
         }
     };
-    const getAttributeComparaison = (results, page, apiName, document, attribute, tag) => {
+    const getAttributeComparaison = (results, page, apiName, contentKind, document, attribute, tag) => {
         const attributeKey = attribute.key;
         let docfieldValue = "";
         const text = tag.tag.includes("META") ? tag.content : tag.innerText;
@@ -232,12 +236,12 @@ module.exports = ({ strapi }) => {
             case "default":
                 docfieldValue = document[attributeKey];
                 if (docfieldValue)
-                    setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results);
+                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results);
                 break;
             case "component":
                 docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
                 if (docfieldValue)
-                    setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
                 break;
             case "componentInZone":
                 const section = document[attribute.zone];
@@ -245,7 +249,7 @@ module.exports = ({ strapi }) => {
                     for (const componentChild of section) {
                         docfieldValue = componentChild[attributeKey];
                         if (docfieldValue)
-                            setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
+                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
                     }
                 }
                 break;
@@ -259,13 +263,13 @@ module.exports = ({ strapi }) => {
                         nestedInnerComponents[0][attribute.componentName].forEach(element => {
                             docfieldValue = element[attributeKey];
                             if (docfieldValue)
-                                setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                                setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
                         });
                     }
                     else {
                         docfieldValue = nestedInnerComponents[0][attribute.componentName][attributeKey];
                         if (docfieldValue)
-                            setFields(page, document, apiName, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
                     }
                 }
                 break;
@@ -291,6 +295,7 @@ module.exports = ({ strapi }) => {
             await analyseService().create({
                 key: result.key,
                 apiName: result.apiName,
+                contentKind: result.contentKind,
                 frontUrl: result.frontUrl,
                 documentId: result.documentId,
                 seoAnalyse: JSON.stringify(result.seoAnalyse ? result.seoAnalyse : {}),
@@ -298,6 +303,7 @@ module.exports = ({ strapi }) => {
                 screenshot: result.screenshot,
                 depth: result.depth,
                 tags: JSON.stringify(result.tags ? result.tags : {}),
+                locale:result.locale
             });
         }
     };
@@ -377,7 +383,7 @@ module.exports = ({ strapi }) => {
                     for (const documentByContentType of strapiSingleDocumentsByContentType) {
                         for (const document of documentByContentType.documents) {
                             for (const attribute of documentByContentType.contentType.attributes) {
-                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, attribute, tag);
                             }
                         }
                     }
@@ -406,7 +412,7 @@ module.exports = ({ strapi }) => {
                     for (const documentByContentType of strapiCollectionDocumentsByContentType) {
                         for (const document of documentByContentType.documents) {
                             for (const attribute of documentByContentType.contentType.attributes) {
-                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, document, attribute, tag);
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, attribute, tag);
                             }
                         }
                     }
