@@ -26,7 +26,7 @@ export const AnalyseContentGrid = (props) => {
     const { formatMessage } = useIntl();
     const COL_COUNT = 5;
     const low_color = getSeoWarningLevelColor();
-    const hight_color = getSeoErrorLevelColor();
+    const high_color = getSeoErrorLevelColor();
 
     return <Table colCount={COL_COUNT} rowCount={props.value.length}>
         <Thead>
@@ -57,7 +57,7 @@ export const AnalyseContentGrid = (props) => {
                     {
                         entry.level === "warnings"
                             ? <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">Low</Badge>
-                            : <Badge backgroundColor={hight_color} textColor={getBadgeTextColor(hight_color)} paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
+                            : <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft="5" paddingRight="5" paddingTop="2" paddingBottom="2">High</Badge>
                     }
                 </Td>
                 <Td>

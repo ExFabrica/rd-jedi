@@ -28,7 +28,7 @@ export const StrapiUIDecorator = () => {
     const pluginMainRulesDivId = "plugin.cmsAnalyzer-main-rules-content";
 
     const low_color = getSeoWarningLevelColor();
-    const hight_color = getSeoErrorLevelColor();
+    const high_color = getSeoErrorLevelColor();
 
     useEffect(() => {
         setGlobalPanel();
@@ -253,7 +253,7 @@ export const StrapiUIDecorator = () => {
                         </Box>
                         : <Box key={item.id} id={item.id}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
-                            &nbsp;<Badge backgroundColor={hight_color} textColor={getBadgeTextColor(hight_color)} paddingLeft={3} paddingRight={3}>High</Badge>
+                            &nbsp;<Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft={3} paddingRight={3}>High</Badge>
                             &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
                         </Box>
                 }) : <></>
@@ -279,7 +279,7 @@ export const StrapiUIDecorator = () => {
                                     ? <></>
                                     : <Box key={item.id} id={item.id} paddingTop={1} paddingBottom={1}>
                                         <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
-                                        &nbsp;<Badge backgroundColor={hight_color} textColor={getBadgeTextColor(hight_color)} paddingLeft={3} paddingRight={3}>High</Badge>
+                                        &nbsp;<Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft={3} paddingRight={3}>High</Badge>
                                         &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
                                     </Box>
                             }) : <></>

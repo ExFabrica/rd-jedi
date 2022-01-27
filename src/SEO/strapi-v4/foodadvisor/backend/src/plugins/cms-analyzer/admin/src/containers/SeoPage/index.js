@@ -54,7 +54,7 @@ const SeoPage = (props) => {
 
   const { push } = useHistory();
   const low_color = getSeoWarningLevelColor();
-  const hight_color = getSeoErrorLevelColor();
+  const high_color = getSeoErrorLevelColor();
 
   useEffect(() => {
     try {
@@ -197,7 +197,7 @@ const SeoPage = (props) => {
             </Td>
             <Td>
               <Flex>
-                <Badge backgroundColor={hight_color} textColor={getBadgeTextColor(hight_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High : ' + high?.length ?? 0}</Badge>
+                <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High : ' + high?.length ?? 0}</Badge>
                 <Box paddingLeft="5">
                   <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" > {'Low : ' + low?.length ?? 0}</Badge>
                 </Box>
