@@ -18,7 +18,7 @@ import { IconButton } from '@strapi/design-system/IconButton';
 //Badge
 import { Badge } from '@strapi/design-system/Badge';
 
-import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../../utils/getSeoErrorLevelColor';
+import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../../utils/getSeoColor.js';
 
 export const AnalyseFrontGrid = (props) => {
     const { formatMessage } = useIntl();

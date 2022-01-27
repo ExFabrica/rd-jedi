@@ -10,7 +10,7 @@ import { Typography } from '@strapi/design-system/Typography';
 //Box
 import { Box } from '@strapi/design-system/Box';
 
-import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoErrorLevelColor';
+import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoColor.js';
 
 
 const contentAnalyzerAPI = require("../../api/seo/seo-api-wrapper").default;

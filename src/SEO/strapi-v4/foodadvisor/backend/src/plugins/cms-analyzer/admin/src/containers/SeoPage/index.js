@@ -41,7 +41,7 @@ import { AccordionGroup } from '@strapi/design-system/Accordion';
 import { AnalyseAccordion } from './components/analyse-accordion';
 import pluginId from '../../pluginId';
 
-import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoErrorLevelColor';
+import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoColor.js';
 
 
 const SeoPage = (props) => {
