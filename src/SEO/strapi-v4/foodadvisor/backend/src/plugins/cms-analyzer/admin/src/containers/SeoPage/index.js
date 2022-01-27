@@ -28,6 +28,10 @@ import Pencil from '@strapi/icons/Pencil';
 import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
 import { Typography } from '@strapi/design-system/Typography';
 import { LinkButton } from '@strapi/design-system/LinkButton';
+import { Badge } from '@strapi/design-system/Badge';
+import { Box } from '@strapi/design-system/Box';
+import { Flex } from '@strapi/design-system/Flex';
+
 //Layout
 import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
 import { Main } from '@strapi/design-system/Main';
@@ -36,6 +40,8 @@ import { AccordionGroup } from '@strapi/design-system/Accordion';
 //Custom ACCORDION content
 import { AnalyseAccordion } from './components/analyse-accordion';
 import pluginId from '../../pluginId';
+
+import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoErrorLevelColor';
 
 
 const SeoPage = (props) => {
@@ -47,6 +53,8 @@ const SeoPage = (props) => {
   const toggleNotification = useNotification();
 
   const { push } = useHistory();
+  const low_color = getSeoWarningLevelColor();
+  const hight_color = getSeoErrorLevelColor();
 
   useEffect(() => {
     try {
@@ -157,7 +165,7 @@ const SeoPage = (props) => {
 
   /** display simple mode content*/
   const simplePage = () => {
-    const COL_COUNT = 5;
+    const COL_COUNT = 4;
     return <Table colCount={COL_COUNT} rowCount={results.length}>
       <Thead>
         <Tr>
@@ -168,7 +176,7 @@ const SeoPage = (props) => {
             <Typography variant="sigma">URL</Typography>
           </Th>
           <Th>
-            <Typography variant="sigma">api</Typography>
+            <Typography variant="sigma">Errors</Typography>
           </Th>
           <Th>
             <Typography variant="sigma">Edit</Typography>
@@ -177,6 +185,9 @@ const SeoPage = (props) => {
       </Thead>
       <Tbody>
         {results.map((analyse, index) => {
+          const analyses = JSON.parse(analyse.seoAnalyse);
+          const low = analyses.filter(item =>(item.target === 0 || item.target === 2)&& item.level=="warnings");
+          const high = analyses.filter(item =>(item.target === 0 || item.target === 2)&& item.level=="errors");
           return <Tr key={`contentpage-${index}`}>
             <Td>
               <Typography textColor="neutral800">{analyse.depth}</Typography>
@@ -185,7 +196,12 @@ const SeoPage = (props) => {
               <Typography textColor="neutral800">{analyse.frontUrl}</Typography>
             </Td>
             <Td>
-              <Typography textColor="neutral800">{analyse.apiName}/{analyse.documentId}</Typography>
+              <Flex>
+                <Badge backgroundColor={hight_color} textColor={getBadgeTextColor(hight_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High : ' + high?.length ?? 0}</Badge>
+                <Box paddingLeft="5">
+                  <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" > {'Low : ' + low?.length ?? 0}</Badge>
+                </Box>
+              </Flex>
             </Td>
             <Td>
               {/* #5175 - add link edit page - BEGIN*/}
