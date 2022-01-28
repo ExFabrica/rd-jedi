@@ -11,6 +11,7 @@ import { RTRules } from "./seo/rules/real-time.rules";
 import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
+const Crawler = require('node-html-crawler');
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -110,6 +111,8 @@ const explorer = async function* (urls: string[]) {
     toExploreURL.add(baseURL);
     depth.push({ url: baseURL, parentUrl: "", depth: 1 });
 
+    let navigatedElements: NavigatedElement[] = []
+
     while (toExploreURL.size > 0) {
 
       const toExploreIterator = toExploreURL[Symbol.iterator]();
@@ -121,10 +124,17 @@ const explorer = async function* (urls: string[]) {
 
       //Retrive all links from the current page
       const linksFound = (await puppeteerPage.$$('a'));
+      
+      const linkNavigationElements: string[] = await Promise.all(
+        linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
+      )
+      const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
+      console.log("Found " + hiddenNavigationElements.length + " onclick navigation elements");
+
+      const navigationElements = [...linkNavigationElements, ...hiddenNavigationElements]
 
       //Add each link to toExplore Set, unicity is maintained by Set object
-      for (const pptrElement of linksFound) {
-        const link = await pptrElement.getProperty('href').then(r => r._remoteObject.value);
+      for (const link of navigationElements) {
         if (!link.includes("?")) {
           if (link != currentUrl
             && !exploredURL.has(link)//add only unexplored links
@@ -169,6 +179,53 @@ const explorer = async function* (urls: string[]) {
   return null;
 }
 
+type CrawlerResult = {
+  requestMethod: string,
+  statusCode: 200,
+  headers: {
+      server: string,
+      'content-type': string
+      // and other headers
+  },
+  body: string, // html content
+  links: [ // found links in html content, for 301 only one item
+      {
+          href: string, // value attr href in html page
+          url: string // full internal links, for external is false
+      }
+  ]
+}
+
+const explorerV2 = async (urls: string[], method: (res: puppeteer.Page) => void, end: () => void) => {
+  let cptUrlDone = 0;
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    ignoreHTTPSErrors: true,
+    args: ['--no-sandbox']
+  });
+
+  urls.forEach(async url => {
+    const puppeteerPage = await browser.newPage();
+
+    const crawler = new Crawler(url);
+    crawler.crawl();
+    crawler.on('data', async (data) => {
+      console.log("Exploring ", data.url);
+      const res = data.result as CrawlerResult;
+      puppeteerPage.setContent(res.body);
+      await method(puppeteerPage);
+      if (cptUrlDone === urls.length) {
+        end();
+      }
+    });
+    crawler.on('error', (error) => console.error(error));
+    crawler.on('end', () => {
+      ++cptUrlDone
+    });
+  });
+}
+
 const runSEORealTimeRulesAnalyse = async (payload: any): Promise<IRuleResultMessage[]> => {
   const seoAnalyzer = new SeoAnalyzer(RTRules, "");
   return await seoAnalyzer.runRealTimeRules(payload);
@@ -196,27 +253,52 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
 
     for await (let pptrPage of explorer([...urls])) {
       //Page is a DOMElement or equivalent exposed by puppeteer
-      const pageName = await pptrPage?.title();
-      console.log("Explorer return a pptrPage name => ", pageName);
-      console.log('Launch Analysis =====>');
+      // const pageName = await pptrPage?.title();
+      // console.log("Explorer return a pptrPage name => ", pageName);
+      // console.log('Launch Analysis =====>');
 
-      const selectedFeatures = [];
-      //Setting Analyzers to run
-      if (features.includes('SEO')) {
-        const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
-        selectedFeatures.push(seoAnalyzer.run(pptrPage));
-      }
-      if (features.includes('Images')) {
-        const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
-        selectedFeatures.push(imagesAnalyzer.run(pptrPage));
-      }
+      // const selectedFeatures = [];
+      // //Setting Analyzers to run
+      // if (features.includes('SEO')) {
+      //   const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
+      //   selectedFeatures.push(seoAnalyzer.run(pptrPage));
+      // }
+      // if (features.includes('Images')) {
+      //   const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
+      //   selectedFeatures.push(imagesAnalyzer.run(pptrPage));
+      // }
 
-      const analysis = await Promise.allSettled(selectedFeatures);
-      console.log("Analysis results => ", analysis.map(x => x.status));
+      // const analysis = await Promise.allSettled(selectedFeatures);
+      // console.log("Analysis results => ", analysis.map(x => x.status));
 
-      //Store analysis result for this page by feature
-      categorizedResult(results, pptrPage, analysis, features);
+      // //Store analysis result for this page by feature
+      // categorizedResult(results, pptrPage, analysis, features);
     }
+
+    // await new Promise((res, rej) => {
+    //   explorerV2([...urls], async (pptrPage) => {
+    //     const pageName = await pptrPage?.title();
+    //     console.log("Explorer return a pptrPage name => ", pageName);
+    //     // console.log('Launch Analysis =====>');
+  
+    //     // const selectedFeatures = [];
+    //     // //Setting Analyzers to run
+    //     // if (features.includes('SEO')) {
+    //     //   const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
+    //     //   selectedFeatures.push(seoAnalyzer.run(pptrPage));
+    //     // }
+    //     // if (features.includes('Images')) {
+    //     //   const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
+    //     //   selectedFeatures.push(imagesAnalyzer.run(pptrPage));
+    //     // }
+  
+    //     // const analysis = await Promise.allSettled(selectedFeatures);
+    //     // console.log("Analysis results => ", analysis.map(x => x.status));
+  
+    //     // //Store analysis result for this page by feature
+    //     // categorizedResult(results, pptrPage, analysis, features);
+    //   }, () => res(null))
+    // })
 
     //Post process; Consolidate analysis ?
 
@@ -228,5 +310,179 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
     return Promise.reject(err);
   }
 }
+
+const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
+  return await page.evaluate(async () => {
+
+    const getCssSelector = (el: Element): string => {
+      let elm = el
+      if (elm.tagName === "BODY") return "BODY";
+      const names = [];
+      while (elm.parentElement && elm.tagName !== "BODY") {
+          if (elm.id) {
+              names.unshift("#" + elm.getAttribute("id")); // getAttribute, because `elm.id` could also return a child element with name "id"
+              break; // Because ID should be unique, no more is needed. Remove the break, if you always want a full path.
+          } else {
+              let c = 1, e = elm;
+              for (; e.previousElementSibling; e = e.previousElementSibling, c++) ;
+              names.unshift(elm.tagName + ":nth-child(" + c + ")");
+          }
+          elm = elm.parentElement;
+      }
+      return names.join(">");
+    }
+
+    const allElements: Element[] = Array.prototype.slice.call(document.querySelectorAll('*'));
+    // allElements.push(document);
+    // allElements.push(window);
+
+    // Limit events ??
+    const types: string[] = [
+      "onclick",
+      "onmousedown",
+      "onmouseup",
+    ];
+
+    let selectors: string[] = [];
+    for (let i = 0; i < allElements.length; i++) {
+      const currentElement = allElements[i];
+
+      // Events defined in attributes
+      for (let j = 0; j < types.length; j++) {
+        if (typeof currentElement[types[j]] === 'function') {
+          selectors.push(getCssSelector(currentElement));
+          break;
+        }
+      }
+
+      // Events defined with addEventListener
+      //@ts-ignore
+      let listeners = currentElement._getEventListeners
+      if (typeof listeners === 'function') {
+        const evts = listeners();
+        if (Object.keys(evts).length >0) {
+          listenerFor: for (let evt of Object.keys(evts)) {
+            for (let k=0; k < evts[evt].length; k++) {
+              selectors.push(getCssSelector(currentElement));
+              break listenerFor;
+            }
+          }
+        }
+      }
+    }
+
+    const allLinks: Element[] = Array.prototype.slice.call(document.querySelectorAll('a:not([href])'));
+    selectors = [...selectors, ...allLinks.map(x => getCssSelector(x))]
+
+    return selectors
+      .filter(x => x !== "BODY")
+      .sort();
+  })
+}
+
+type ClickableElement = {
+  elem: puppeteer.ElementHandle<Element>,
+  content: string,
+  selector?: string,
+}
+
+type NavigationElement = {
+  content: string,
+  tagName: string,
+  className: string,
+  url: string,
+}
+
+type NavigatedElement = {
+  selector: string,
+  content: string
+}
+
+const getAllClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
+  const elementsSelector = await getAllClickableElementsSelectors(page)
+  let allButtons = (await Promise.all(elementsSelector.map(async x => {
+    const elem = (await page.$(x))
+    return elem ? {
+      elem,
+      content: (await (await elem.getProperty('innerText')).jsonValue() || await (await elem.getProperty('innerHTML')).jsonValue()) as string,
+      selector: x,
+    } : null
+  }))).filter(x => !!x)
+
+  // let allButtons = (await page.$$('button')) // TODO replace : find all elements with events (onClick, onMouseDown, onMouseUp)
+  // Remove all buttons with "a" inside
+  for (let i = 0 ; i < allButtons.length ; ) {
+    const href: string = await (await allButtons[i].elem.getProperty('href')).jsonValue()
+    if (href || !!(await allButtons[i].elem.$('a'))) {
+      allButtons.splice(i, 1);
+      continue;
+    }
+    ++i;
+  }
+
+  return allButtons;
+}
+
+const tryClickOnElement = async (page: puppeteer.Page, currentElement: ClickableElement): Promise<NavigationElement | boolean> => {
+  const previousUrl = page.url();
+  const tagName: string = await (await currentElement.elem.getProperty('tagName')).jsonValue()
+  const className: string = await (await currentElement.elem.getProperty('className')).jsonValue()
+  // console.debug("Click will be on <" + tagName + "> " + currentElement.content)
+  const [navigation, _] = await Promise.allSettled([
+    page.waitForNavigation({
+      timeout: 1500, // Arbitrary ??
+    }),
+    currentElement.elem.click(),
+  ])
+  // TODO try to click on non-event images ?? => "noop" function, mais pas que sur les images (les vraies actions comme les menus aussi) => comment détecter ?
+  // console.debug(page.url())
+  let result: NavigationElement | boolean = false
+  if (navigation.status === 'fulfilled') {
+    const newUrl = page.url();
+    console.debug('Found onclick navigation: ' + newUrl);
+    result = {
+      content: currentElement.content,
+      tagName,
+      className,
+      url: newUrl,
+    }
+    await page.goto(previousUrl, { waitUntil: 'domcontentloaded' })
+  }
+  return result
+}
+
+const listHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: NavigatedElement[]): Promise<NavigationElement[]> => {
+  let elemCount: number = 0;
+  let navigationElements: NavigationElement[] = [];
+  
+  let currentElements = await getAllClickables(page); // Do it on loop because the page content may change after clicks
+  let allElements: NavigatedElement[] = []
+  // TODO gestion des next / previous KO => idée : s'occuper du contenu qui a changé suite à un clic AVANT de recliquer sur l'élément puis le reste
+  
+  while(true) {
+    const newElementToClick = currentElements.find(x => !elementsDone.find(y => x.content === y.content && x.selector === y.selector))
+    if (!newElementToClick) break;
+    console.debug("Click " + elemCount++);
+    const foundNavElement = await tryClickOnElement(page, newElementToClick);
+    if (!!foundNavElement) {
+      navigationElements.push(foundNavElement as NavigationElement)
+    }
+    const newAllElements = await getAllClickables(page); // Do it on loop because the page content may change after clicks
+    // If the page doesn't change (we know it because there is no navigation or unknown buttons)
+    if (!!foundNavElement || 
+        newAllElements.filter(x => allElements.find(y => x.selector === y.selector && x.content === y.content)).length === newAllElements.length
+    ) {
+      elementsDone.push({ selector: newElementToClick.selector, content: newElementToClick.content })
+    }
+    currentElements = newAllElements
+    allElements.push(
+      ...newAllElements
+        .filter(x => !allElements.find(y => x.selector === y.selector && x.content === y.content))
+        .map(x => ({ selector: x.selector, content: x.content }))
+    )
+  }
+
+  return navigationElements.sort();
+};
 
 export { terminator, runSEORealTimeRulesAnalyse }

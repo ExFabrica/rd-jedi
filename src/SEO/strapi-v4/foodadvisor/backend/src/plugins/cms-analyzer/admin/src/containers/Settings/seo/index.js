@@ -102,7 +102,7 @@ const SettingsPage = () => {
                   <Grid gap={6}>
                     <GridItem col={12} s={12}>
                       <ToggleInput
-                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.enabled : false}
+                        checked={settings?.seo?.enabled ?? false}
                         hint={'Enable or disable the SEO module'}
                         label={'Enabled?'}
                         name="moduleEnabled"
@@ -137,13 +137,13 @@ const SettingsPage = () => {
                             }
                           });
                         }}
-                        value={settings && settings.seo.frontUrl ? settings.seo.frontUrl : ""}
+                        value={settings?.seo?.frontUrl ?? ""}
                         hint={'The URL of the frontend you want to analyze'}
                       />
                     </GridItem>
                     <GridItem col={12} s={12}>
                       <ToggleInput
-                        checked={settings && settings.hasOwnProperty("seo") ? settings.seo.expertMode : false}
+                        checked={settings?.seo?.expertMode ?? false}
                         hint={'Enable or disable analyze details expert mode'}
                         label={'Expert Mode (beta version)'}
                         name="expertModeEnabled"

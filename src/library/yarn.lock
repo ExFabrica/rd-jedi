@@ -1426,6 +1426,11 @@ node-fetch@^2.6.5:
   dependencies:
     whatwg-url "^5.0.0"
 
+node-html-crawler@^1.2.3:
+  version "1.2.3"
+  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/node-html-crawler/-/node-html-crawler-1.2.3.tgz#4e1856049aca8d365ee1e63898d8533aa4c236f8"
+  integrity sha1-ThhWBJrKjTZe4eY4mNhTOqTCNvg=
+
 nodemon@^2.0.12:
   version "2.0.15"
   resolved "https://registry.yarnpkg.com/nodemon/-/nodemon-2.0.15.tgz#504516ce3b43d9dc9a955ccd9ec57550a31a8d4e"

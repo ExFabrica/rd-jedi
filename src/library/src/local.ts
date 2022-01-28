@@ -1,7 +1,8 @@
 import { terminator, runSEORealTimeRulesAnalyse } from "./index";
 
 terminator(["http://localhost:3000"], ['SEO', 'Images']).then((results) => {
-    console.debug("success", results.SEO);
+    // console.debug("success", results.SEO);
+    console.debug("success");
 }, (err) => {
     console.debug("error on main side", err);
 });
