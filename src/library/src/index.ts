@@ -228,31 +228,6 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
       // categorizedResult(results, pptrPage, analysis, features);
     }
 
-    // await new Promise((res, rej) => {
-    //   explorerV2([...urls], async (pptrPage) => {
-    //     const pageName = await pptrPage?.title();
-    //     console.log("Explorer return a pptrPage name => ", pageName);
-    //     // console.log('Launch Analysis =====>');
-  
-    //     // const selectedFeatures = [];
-    //     // //Setting Analyzers to run
-    //     // if (features.includes('SEO')) {
-    //     //   const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
-    //     //   selectedFeatures.push(seoAnalyzer.run(pptrPage));
-    //     // }
-    //     // if (features.includes('Images')) {
-    //     //   const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
-    //     //   selectedFeatures.push(imagesAnalyzer.run(pptrPage));
-    //     // }
-  
-    //     // const analysis = await Promise.allSettled(selectedFeatures);
-    //     // console.log("Analysis results => ", analysis.map(x => x.status));
-  
-    //     // //Store analysis result for this page by feature
-    //     // categorizedResult(results, pptrPage, analysis, features);
-    //   }, () => res(null))
-    // })
-
     //Post process; Consolidate analysis ?
 
     console.log('Terminator : I’ll be back.');

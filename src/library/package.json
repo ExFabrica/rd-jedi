@@ -24,7 +24,6 @@
     "@types/puppeteer": "^5.4.4",
     "lodash": "^4.17.21",
     "mz": "^2.7.0",
-    "node-html-crawler": "^1.2.3",
     "nodemon": "^2.0.12",
     "puppeteer": "^10.4.0",
     "resemblejs": "^4.0.0",
