@@ -98,8 +98,7 @@ const getAllClickables = async (page: puppeteer.Page): Promise<ClickableElement[
     } : null
   }))).filter(x => !!x)
 
-  // let allButtons = (await page.$$('button')) // TODO replace : find all elements with events (onClick, onMouseDown, onMouseUp)
-  // Remove all buttons with "a" inside
+  // Remove all clickables with "a" inside => the "a" is already clickable
   for (let i = 0 ; i < allButtons.length ; ) {
     const href: string = await (await allButtons[i].elem.getProperty('href')).jsonValue()
     if (href || !!(await allButtons[i].elem.$('a'))) {
@@ -123,12 +122,16 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
     }),
     currentElement.elem.click(),
   ])
-  // TODO try to click on non-event images ?? => "noop" function, mais pas que sur les images (les vraies actions comme les menus aussi) => comment détecter ?
+  // TODO try not to click on non-event images, for performance => there are "noop" functions, doing nothing
+  // We can't filter on "noop" function because somes functions are not empty (i.e on menus)
+  // => How to detect ???
   // console.debug(page.url())
   let result: NavigationElement | boolean = false
   if (navigation.status === 'fulfilled') {
     const newUrl = page.url();
-    console.debug('Found onclick navigation: ' + newUrl);
+    // console.debug('Found onclick navigation: ' + newUrl);
+    process.stdout.moveCursor(-1, 0)
+    process.stdout.write('!')
     result = {
       content: currentElement.content,
       tagName,
@@ -141,23 +144,23 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
 }
   
 const listHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: NavigatedElement[]): Promise<NavigationElement[]> => {
-  let elemCount: number = 0;
   let navigationElements: NavigationElement[] = [];
   
-  let currentElements = await getAllClickables(page); // Do it on loop because the page content may change after clicks
+  let currentElements = await getAllClickables(page);
   let allElements: NavigatedElement[] = []
-  // TODO gestion des next / previous KO => idée : s'occuper du contenu qui a changé suite à un clic AVANT de recliquer sur l'élément puis le reste
-  
+
+  // Click on all elements found on the page, event if modified as much as possible
+  // Doesn't work on paginated lists, but we don't care
   while(true) {
     const newElementToClick = currentElements.find(x => !elementsDone.find(y => x.content === y.content && x.selector === y.selector))
     if (!newElementToClick) break;
-    console.debug("Click " + elemCount++);
+    process.stdout.write(".")
     const foundNavElement = await tryClickOnElement(page, newElementToClick);
     if (!!foundNavElement) {
       navigationElements.push(foundNavElement as NavigationElement)
     }
     const newAllElements = await getAllClickables(page); // Do it on loop because the page content may change after clicks
-    // If the page doesn't change (we know it because there is no navigation or unknown buttons)
+    // If the page doesn't change (we know it because there is no navigation or unknown clickables)
     if (!!foundNavElement || 
         newAllElements.filter(x => allElements.find(y => x.selector === y.selector && x.content === y.content)).length === newAllElements.length
     ) {
@@ -170,11 +173,13 @@ const listHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: 
         .map(x => ({ selector: x.selector, content: x.content }))
     )
   }
+  process.stdout.write("\n")
 
   return navigationElements.sort();
 };
 
 export {
   NavigatedElement,
+  NavigationElement,
   listHiddenNavigationElements
 }

@@ -12,6 +12,7 @@ import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
 import { NavigatedElement, listHiddenNavigationElements } from "./common/crawler";
+import StructureAnalyzer from "./common/structureAnalyzer";
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -26,7 +27,7 @@ interface ComputedResults {
  * @param url URL to check
  * @returns base url as string
  */
-const retriveBaseUrl = (url: string): string => {
+const retrieveBaseUrl = (url: string): string => {
   let baseUrl;
   try {
     const { protocol, host } = new URL(url);
@@ -104,7 +105,7 @@ const explorer = async function* (urls: string[]) {
     //Start with url provided;
     //Retrieve the base url from the given string
     let baseURL;
-    baseURL = retriveBaseUrl(url);
+    baseURL = retrieveBaseUrl(url);
     if (exploredURL.has(baseURL))
       continue;
 
@@ -112,6 +113,8 @@ const explorer = async function* (urls: string[]) {
     depth.push({ url: baseURL, parentUrl: "", depth: 1 });
 
     let navigatedElements: NavigatedElement[] = []
+
+    const structureAnalyzer = new StructureAnalyzer();
 
     while (toExploreURL.size > 0) {
 
@@ -125,13 +128,22 @@ const explorer = async function* (urls: string[]) {
       //Retrive all links from the current page
       const linksFound = (await puppeteerPage.$$('a'));
       
-      const linkNavigationElements: string[] = await Promise.all(
+      let navigationElements: string[] = await Promise.all(
         linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
       )
-      const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
-      console.log("Found " + hiddenNavigationElements.length + " onclick navigation elements");
-
-      const navigationElements = [...linkNavigationElements, ...hiddenNavigationElements]
+    
+      // BODY not okay => catching bot-chat container
+      let bodyPage = await (await (await puppeteerPage.$('body')).getProperty('innerHTML')).jsonValue() as string
+      
+      const currentUrlCleaned = currentUrl
+        .split("?")[0] // Remove parameters
+        .replace(/\/*$/g, ''); // Remove last "/" if any
+      // if (await structureAnalyzer.shouldAnalyzePage({ url: currentUrlCleaned, html: bodyPage })) { // TODO not working for now
+        console.debug("Going to click on the page")
+        const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
+        console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
+        navigationElements = [...navigationElements, ...hiddenNavigationElements]
+      // }
 
       //Add each link to toExplore Set, unicity is maintained by Set object
       for (const link of navigationElements) {
