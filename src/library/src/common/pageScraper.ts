@@ -13,12 +13,17 @@ type NavigationElement = {
   url: string,
 }
 
-type NavigatedElement = {
+type ElementTarget = {
   selector: string,
   content: string
 }
 
-const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
+/**
+ * Get all selectors for clickable elements on a page
+ * @param page The page to test
+ * @returns A list of CSS selectors
+ */
+const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<string[]> => {
   return await page.evaluate(async () => {
 
     const getCssSelector = (el: Element): string => {
@@ -84,8 +89,13 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
       .sort();
   })
 }
-  
-const getAllClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
+
+/**
+ * Get all unique clickable elements on the page
+ * @param page Page to test
+ * @returns A list a clickable elements
+ */
+const getAllUniqueClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
   const elementsSelector = await getAllClickableElementsSelectors(page)
   let allButtons = (await Promise.all(elementsSelector.map(async x => {
     const elem = (await page.$(x))
@@ -108,15 +118,22 @@ const getAllClickables = async (page: puppeteer.Page): Promise<ClickableElement[
 
   return allButtons;
 }
-  
-const tryClickOnElement = async (page: puppeteer.Page, currentElement: ClickableElement): Promise<NavigationElement | boolean> => {
+
+/**
+ * Try to click on an element, and look if a new page is rendered
+ * @param page The page to test
+ * @param currentElement The element to test
+ * @returns If a new page is rendered, the element clicked with the url. Else, false.
+ */
+const tryClickOnElement = async (page: puppeteer.Page, currentElement: ClickableElement, timeout: number): Promise<NavigationElement | boolean> => {
   const previousUrl = page.url();
   const tagName: string = await (await currentElement.elem.getProperty('tagName')).jsonValue()
   const className: string = await (await currentElement.elem.getProperty('className')).jsonValue()
+  console.debug(`Click on <${tagName}>`)
   // console.debug("Click will be on <" + tagName + "> " + currentElement.content)
-  const [navigation, _] = await Promise.allSettled([
+  await Promise.allSettled([
     page.waitForNavigation({
-      timeout: 1500, // Arbitrary ??
+      timeout: timeout, // TODO Arbitrary ??
     }),
     currentElement.elem.click(),
   ])
@@ -125,11 +142,9 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
   // => How to detect ???
   // console.debug(page.url())
   let result: NavigationElement | boolean = false
-  if (navigation.status === 'fulfilled') {
-    const newUrl = page.url();
-    // console.debug('Found onclick navigation: ' + newUrl);
-    process.stdout.moveCursor(-1, 0)
-    process.stdout.write('!')
+  const newUrl = page.url();
+  if (newUrl !== previousUrl) {
+    console.debug('Found onclick navigation: ' + newUrl);
     result = {
       content: currentElement.content,
       tagName,
@@ -140,24 +155,29 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
   }
   return result
 }
-  
-const listHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: NavigatedElement[]): Promise<NavigationElement[]> => {
+
+/**
+ * Find all navigation elements other than '<a href="...">' by clicking on every clickable elements on the page
+ * @param page The page to test
+ * @param elementsDone The already found elements, to not click again on them
+ * @returns A list of navigation elemnts
+ */
+const findHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: ElementTarget[], navigationTimeout: number): Promise<NavigationElement[]> => {
   let navigationElements: NavigationElement[] = [];
   
-  let currentElements = await getAllClickables(page);
-  let allElements: NavigatedElement[] = []
+  let currentElements = await getAllUniqueClickables(page);
+  let allElements: ElementTarget[] = []
 
   // Click on all elements found on the page, event if modified as much as possible
   // Doesn't work on paginated lists, but we don't care
   while(true) {
     const newElementToClick = currentElements.find(x => !elementsDone.find(y => x.content === y.content && x.selector === y.selector))
     if (!newElementToClick) break;
-    process.stdout.write(".")
-    const foundNavElement = await tryClickOnElement(page, newElementToClick);
+    const foundNavElement = await tryClickOnElement(page, newElementToClick, navigationTimeout);
     if (!!foundNavElement) {
       navigationElements.push(foundNavElement as NavigationElement)
     }
-    const newAllElements = await getAllClickables(page); // Do it on loop because the page content may change after clicks
+    const newAllElements = await getAllUniqueClickables(page); // Do it on loop because the page content may change after clicks
     // If the page doesn't change (we know it because there is no navigation or unknown clickables)
     if (!!foundNavElement || 
         newAllElements.filter(x => allElements.find(y => x.selector === y.selector && x.content === y.content)).length === newAllElements.length
@@ -171,13 +191,12 @@ const listHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: 
         .map(x => ({ selector: x.selector, content: x.content }))
     )
   }
-  process.stdout.write("\n")
 
   return navigationElements.sort();
 };
 
 export {
-  NavigatedElement,
+  ElementTarget,
   NavigationElement,
-  listHiddenNavigationElements
+  findHiddenNavigationElements
 }

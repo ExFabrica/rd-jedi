@@ -11,7 +11,7 @@ import { RTRules } from "./seo/rules/real-time.rules";
 import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
-import { NavigatedElement, listHiddenNavigationElements } from "./common/pageScraper";
+import { ElementTarget, findHiddenNavigationElements } from "./common/pageScraper";
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -111,7 +111,7 @@ const explorer = async function* (urls: string[]) {
     toExploreURL.add(baseURL);
     depth.push({ url: baseURL, parentUrl: "", depth: 1 });
 
-    let navigatedElements: NavigatedElement[] = []
+    let navigatedElements: ElementTarget[] = []
 
     // const structureAnalyzer = new StructureAnalyzer();
 
@@ -131,7 +131,7 @@ const explorer = async function* (urls: string[]) {
         linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
       )
     
-      const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
+      const hiddenNavigationElements = (await findHiddenNavigationElements(puppeteerPage, navigatedElements, 2000)).map(x => x.url);
       console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
       navigationElements = [...navigationElements, ...hiddenNavigationElements]
 
