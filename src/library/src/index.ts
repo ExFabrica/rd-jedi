@@ -11,6 +11,7 @@ import { RTRules } from "./seo/rules/real-time.rules";
 import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
+import { ElementTarget, findHiddenNavigationElements } from "./common/pageScraper";
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -25,7 +26,7 @@ interface ComputedResults {
  * @param url URL to check
  * @returns base url as string
  */
-const retriveBaseUrl = (url: string): string => {
+const retrieveBaseUrl = (url: string): string => {
   let baseUrl;
   try {
     const { protocol, host } = new URL(url);
@@ -103,12 +104,14 @@ const explorer = async function* (urls: string[]) {
     //Start with url provided;
     //Retrieve the base url from the given string
     let baseURL;
-    baseURL = retriveBaseUrl(url);
+    baseURL = retrieveBaseUrl(url);
     if (exploredURL.has(baseURL))
       continue;
 
     toExploreURL.add(baseURL);
     depth.push({ url: baseURL, parentUrl: "", depth: 1 });
+
+    let navigatedElements: ElementTarget[] = []
 
     while (toExploreURL.size > 0) {
 
@@ -121,10 +124,17 @@ const explorer = async function* (urls: string[]) {
 
       //Retrive all links from the current page
       const linksFound = (await puppeteerPage.$$('a'));
+      
+      let navigationElements: string[] = await Promise.all(
+        linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
+      )
+    
+      const hiddenNavigationElements = (await findHiddenNavigationElements(puppeteerPage, navigatedElements, 2000)).map(x => x.url);
+      console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
+      navigationElements = [...navigationElements, ...hiddenNavigationElements]
 
       //Add each link to toExplore Set, unicity is maintained by Set object
-      for (const pptrElement of linksFound) {
-        const link = await pptrElement.getProperty('href').then(r => r._remoteObject.value);
+      for (const link of navigationElements) {
         if (!link.includes("?")) {
           if (link != currentUrl
             && !exploredURL.has(link)//add only unexplored links
@@ -195,7 +205,7 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
     //Pre-processors
 
     for await (let pptrPage of explorer([...urls])) {
-      //Page is a DOMElement or equivalent exposed by puppeteer
+      // Page is a DOMElement or equivalent exposed by puppeteer
       const pageName = await pptrPage?.title();
       console.log("Explorer return a pptrPage name => ", pageName);
       console.log('Launch Analysis =====>');

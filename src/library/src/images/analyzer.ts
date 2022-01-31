@@ -40,7 +40,7 @@ export class ImagesAnalyzer {
 
   private async getOutsideDomImages(page: puppeteer.Page): Promise<IImagesRetriver> {
     try {
-      console.debug("Begin - Get images inside DOM");
+      console.debug("Begin - Get images outside DOM");
       const images = [];
       //Get Outside DOM images
       //TODO: Use page.eval to execute previous démo script and retrive all CSS images
