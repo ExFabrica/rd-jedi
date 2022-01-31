@@ -40,8 +40,6 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
     }
 
     const allElements: Element[] = Array.prototype.slice.call(document.querySelectorAll('*'));
-    // allElements.push(document);
-    // allElements.push(window);
 
     // Limit events ??
     const types: string[] = [
@@ -49,9 +47,6 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
       "onmousedown",
       "onmouseup",
     ];
-    // for (let ev in window) {
-    //   if (/^on/.test(ev)) types[types.length] = ev;
-    // }
 
     let selectors: string[] = [];
     for (let i = 0; i < allElements.length; i++) {

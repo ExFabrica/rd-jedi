@@ -11,7 +11,7 @@ import { RTRules } from "./seo/rules/real-time.rules";
 import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
-import { NavigatedElement, listHiddenNavigationElements } from "./common/crawler";
+import { NavigatedElement, listHiddenNavigationElements } from "./common/pageScraper";
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -207,27 +207,27 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
     //Pre-processors
 
     for await (let pptrPage of explorer([...urls])) {
-      //Page is a DOMElement or equivalent exposed by puppeteer
-      // const pageName = await pptrPage?.title();
-      // console.log("Explorer return a pptrPage name => ", pageName);
-      // console.log('Launch Analysis =====>');
+      // Page is a DOMElement or equivalent exposed by puppeteer
+      const pageName = await pptrPage?.title();
+      console.log("Explorer return a pptrPage name => ", pageName);
+      console.log('Launch Analysis =====>');
 
-      // const selectedFeatures = [];
-      // //Setting Analyzers to run
-      // if (features.includes('SEO')) {
-      //   const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
-      //   selectedFeatures.push(seoAnalyzer.run(pptrPage));
-      // }
-      // if (features.includes('Images')) {
-      //   const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
-      //   selectedFeatures.push(imagesAnalyzer.run(pptrPage));
-      // }
+      const selectedFeatures = [];
+      //Setting Analyzers to run
+      if (features.includes('SEO')) {
+        const seoAnalyzer = new SeoAnalyzer(SEORules, [...urls][0]);
+        selectedFeatures.push(seoAnalyzer.run(pptrPage));
+      }
+      if (features.includes('Images')) {
+        const imagesAnalyzer = new ImagesAnalyzer(ImagesRules)
+        selectedFeatures.push(imagesAnalyzer.run(pptrPage));
+      }
 
-      // const analysis = await Promise.allSettled(selectedFeatures);
-      // console.log("Analysis results => ", analysis.map(x => x.status));
+      const analysis = await Promise.allSettled(selectedFeatures);
+      console.log("Analysis results => ", analysis.map(x => x.status));
 
-      // //Store analysis result for this page by feature
-      // categorizedResult(results, pptrPage, analysis, features);
+      //Store analysis result for this page by feature
+      categorizedResult(results, pptrPage, analysis, features);
     }
 
     //Post process; Consolidate analysis ?
