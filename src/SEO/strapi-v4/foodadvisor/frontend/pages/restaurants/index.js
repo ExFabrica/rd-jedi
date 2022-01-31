@@ -46,61 +46,6 @@ const Restaurants = ({
 
   const lastPage = Math.ceil(data.count / perPage) || 1;
 
-  const listAllEventListeners = () => {
-    const allElements = Array.prototype.slice.call(document.querySelectorAll('*'));
-    allElements.push(document);
-    allElements.push(window);
-
-    const types = [];
-
-    for (let ev in window) {
-      if (/^on/.test(ev)) types[types.length] = ev;
-    }
-
-    let elements = [];
-    for (let i = 0; i < allElements.length; i++) {
-      const currentElement = allElements[i];
-
-      // Events defined in attributes
-      for (let j = 0; j < types.length; j++) {
-
-        if (typeof currentElement[types[j]] === 'function') {
-          elements.push({
-            "node": currentElement,
-            "type": types[j],
-            "func": currentElement[types[j]].toString(),
-          });
-        }
-      }
-
-      // Events defined with addEventListener
-      if (typeof currentElement._getEventListeners === 'function') {
-        evts = currentElement._getEventListeners();
-        if (Object.keys(evts).length > 0) {
-          for (let evt of Object.keys(evts)) {
-            for (k = 0; k < evts[evt].length; k++) {
-              elements.push({
-                "node": currentElement,
-                "type": evt,
-                "func": evts[evt][k].listener.toString()
-              });
-            }
-          }
-        }
-      }
-    }
-
-    console.log(elements.sort());
-    return elements.sort();
-
-  };
-
-  useEffect(() => {
-    console.log("here MODAFOKA");
-    listAllEventListeners();
-  }, []);
-
-
   return (
     <Layout
       global={global}
