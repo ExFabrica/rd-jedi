@@ -113,8 +113,6 @@ const explorer = async function* (urls: string[]) {
 
     let navigatedElements: ElementTarget[] = []
 
-    // const structureAnalyzer = new StructureAnalyzer();
-
     while (toExploreURL.size > 0) {
 
       const toExploreIterator = toExploreURL[Symbol.iterator]();
