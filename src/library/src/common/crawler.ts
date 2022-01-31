@@ -49,6 +49,9 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page) => {
       "onmousedown",
       "onmouseup",
     ];
+    // for (let ev in window) {
+    //   if (/^on/.test(ev)) types[types.length] = ev;
+    // }
 
     let selectors: string[] = [];
     for (let i = 0; i < allElements.length; i++) {
@@ -93,7 +96,7 @@ const getAllClickables = async (page: puppeteer.Page): Promise<ClickableElement[
     const elem = (await page.$(x))
     return elem ? {
       elem,
-      content: (await (await elem.getProperty('innerText')).jsonValue() || await (await elem.getProperty('innerHTML')).jsonValue()) as string,
+      content: (await (await elem.getProperty('innerText')).jsonValue()) as string,
       selector: x,
     } : null
   }))).filter(x => !!x)

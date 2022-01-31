@@ -12,7 +12,6 @@ import { IRuleResultMessage } from "./common/models/rule.interfaces";
 //Tooling
 import puppeteer from "puppeteer";
 import { NavigatedElement, listHiddenNavigationElements } from "./common/crawler";
-import StructureAnalyzer from "./common/structureAnalyzer";
 
 type SeoPreview = Omit<SEOPageResult, "type">;
 type ImagesPreview = Omit<ImagesPageResult, "type">;
@@ -114,7 +113,7 @@ const explorer = async function* (urls: string[]) {
 
     let navigatedElements: NavigatedElement[] = []
 
-    const structureAnalyzer = new StructureAnalyzer();
+    // const structureAnalyzer = new StructureAnalyzer();
 
     while (toExploreURL.size > 0) {
 
@@ -132,18 +131,9 @@ const explorer = async function* (urls: string[]) {
         linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
       )
     
-      // BODY not okay => catching bot-chat container
-      let bodyPage = await (await (await puppeteerPage.$('body')).getProperty('innerHTML')).jsonValue() as string
-      
-      const currentUrlCleaned = currentUrl
-        .split("?")[0] // Remove parameters
-        .replace(/\/*$/g, ''); // Remove last "/" if any
-      // if (await structureAnalyzer.shouldAnalyzePage({ url: currentUrlCleaned, html: bodyPage })) { // TODO not working for now
-        console.debug("Going to click on the page")
-        const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
-        console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
-        navigationElements = [...navigationElements, ...hiddenNavigationElements]
-      // }
+      const hiddenNavigationElements = (await listHiddenNavigationElements(puppeteerPage, navigatedElements)).map(x => x.url);
+      console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
+      navigationElements = [...navigationElements, ...hiddenNavigationElements]
 
       //Add each link to toExplore Set, unicity is maintained by Set object
       for (const link of navigationElements) {
