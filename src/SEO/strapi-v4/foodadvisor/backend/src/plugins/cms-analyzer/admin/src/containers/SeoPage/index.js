@@ -165,7 +165,7 @@ const SeoPage = (props) => {
 
   /** display simple mode content*/
   const simplePage = () => {
-    const COL_COUNT = 4;
+    const COL_COUNT = 5;
     return <Table colCount={COL_COUNT} rowCount={results.length}>
       <Thead>
         <Tr>
@@ -176,7 +176,10 @@ const SeoPage = (props) => {
             <Typography variant="sigma">URL</Typography>
           </Th>
           <Th>
-            <Typography variant="sigma">Errors</Typography>
+            <Typography variant="sigma"></Typography>
+          </Th>
+          <Th>
+            <Typography variant="sigma"></Typography>
           </Th>
           <Th>
             <Typography variant="sigma">Edit</Typography>
@@ -197,10 +200,18 @@ const SeoPage = (props) => {
             </Td>
             <Td>
               <Flex>
-                <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High : ' + high?.length ?? 0}</Badge>
-                <Box paddingLeft="5">
-                  <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" > {'Low : ' + low?.length ?? 0}</Badge>
-                </Box>
+                { high?.length ? 
+                <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High: ' + high?.length ?? 0}</Badge>
+                :<></>}
+                
+              </Flex>
+            </Td>
+            <Td>
+              <Flex>
+                
+                { low?.length ? 
+                <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" > {'Low: ' + low?.length ?? 0}</Badge>
+                :<></>}
               </Flex>
             </Td>
             <Td>
