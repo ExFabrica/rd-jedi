@@ -1,6 +1,6 @@
 
 'use strict';
-const { parseMultipartData, sanitizeEntity } = require('@strapi/utils');
+const { parseMultipartData } = require('@strapi/utils');
 
 module.exports = ({ strapi }) => {
   const analyseService = strapi.plugins["cms-analyzer"].services.analyse;
@@ -13,7 +13,6 @@ module.exports = ({ strapi }) => {
       entities = await analyseService.findMany(ctx.query);
     }
 
-    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
     ctx.send(entities);
   };
   const findOne = async (ctx) => {
@@ -24,7 +23,6 @@ module.exports = ({ strapi }) => {
         id: id
       }
     });
-    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
     ctx.send(entity);
   };
   const findByApiNameAndDocumentId = async (ctx) => {
@@ -35,14 +33,12 @@ module.exports = ({ strapi }) => {
         documentId: documentId
       }
     });
-    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
     ctx.send(entity);
   };
   const findManyWithDefaultSorting = async (ctx) => {
     const entities = await analyseService.findMany({
       orderBy: ['depth', 'frontUrl'],
     });
-    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
     ctx.send(entities);
   };
   const count = async (ctx) => {
@@ -59,7 +55,6 @@ module.exports = ({ strapi }) => {
     } else {
       entity = analyseService.create(ctx.request.body);
     }
-    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
     ctx.send(entity);
   };
   const update = async (ctx) => {
@@ -81,7 +76,6 @@ module.exports = ({ strapi }) => {
         }
       }, ctx.request.body);
     }
-    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
     ctx.send(entity);
   };
   const deleteOne = async (ctx) => {

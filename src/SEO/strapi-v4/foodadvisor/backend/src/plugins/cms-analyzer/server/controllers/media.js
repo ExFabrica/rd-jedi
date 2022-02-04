@@ -1,6 +1,5 @@
 
 'use strict';
-const { parseMultipartData, sanitizeEntity } = require('@strapi/utils')
 
 module.exports = ({ strapi }) => {
   const mediaService = strapi.plugins["cms-analyzer"].services.media;
@@ -13,12 +12,12 @@ module.exports = ({ strapi }) => {
       entities = await mediaService.findMany(ctx.query);
     }
 
-    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: mediaContentType })));
+    ctx.send(entities);
   };
   const findOne = async (ctx) => {
     const { id } = ctx.params;
     const entity = await mediaService.findOne({ id });
-    ctx.send(sanitizeEntity(entity, { model: mediaContentType }));
+    ctx.send(entity);
   };
   const count = async (ctx) => {
     if (ctx.query._q) {
@@ -34,7 +33,7 @@ module.exports = ({ strapi }) => {
     } else {
       entity = mediaService.create(ctx.request.body);
     }
-    ctx.send(sanitizeEntity(entity, { model: mediaContentType }));
+    ctx.send(entity);
   };
   const update = async (ctx) => {
     const { id } = ctx.params;
@@ -49,7 +48,7 @@ module.exports = ({ strapi }) => {
       entity = await mediaService.update({ id }, ctx.request.body);
     }
 
-    ctx.send(sanitizeEntity(entity, { model: mediaContentType }));
+    ctx.send(entity);
   };
   const deleteOne = async (ctx) => {
     const { id } = ctx.params;

@@ -1,5 +1,4 @@
 'use strict';
-const { parseMultipartData, sanitizeEntity } = require('@strapi/utils');
 
 module.exports = ({ strapi }) => {
     const exampleService = strapi.plugins["cms-analyzer"].services.example;

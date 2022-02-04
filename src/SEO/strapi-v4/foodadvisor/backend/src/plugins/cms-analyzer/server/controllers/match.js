@@ -1,6 +1,5 @@
 
 'use strict';
-const { parseMultipartData, sanitizeEntity } = require('@strapi/utils')
 
 module.exports = ({ strapi }) => {
   const matchService = strapi.plugins["cms-analyzer"].services.match;
@@ -13,13 +12,11 @@ module.exports = ({ strapi }) => {
       entities = await matchService.findMany(ctx.query);
     }
 
-    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
     ctx.send(entities);
   };
   const findOne = async (ctx) => {
     const { id } = ctx.params;
     const entity = await matchService.findOne({ id });
-    // ctx.send(sanitizeEntity(entity, { model: matchContentType }));
     ctx.send(entity);
   };
   const findByUid = async (ctx) => {
@@ -30,7 +27,6 @@ module.exports = ({ strapi }) => {
         status: { $eq: "active" }
       }
     });
-    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: matchContentType })));
     ctx.send(entities);
   };
   const count = async (ctx) => {
@@ -47,7 +43,6 @@ module.exports = ({ strapi }) => {
     } else {
       entity = matchService.create(ctx.request.body);
     }
-    // ctx.send(sanitizeEntity(entity, { model: matchContentType }));
     ctx.send(entity);
   };
   const update = async (ctx) => {
@@ -63,7 +58,6 @@ module.exports = ({ strapi }) => {
       entity = await matchService.update({ id }, ctx.request.body);
     }
 
-    // ctx.send(sanitizeEntity(entity, { model: matchContentType }));
     ctx.send(entity);
   };
   const deleteOne = async (ctx) => {
