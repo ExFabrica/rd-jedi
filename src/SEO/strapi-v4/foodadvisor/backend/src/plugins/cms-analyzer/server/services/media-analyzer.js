@@ -1,6 +1,6 @@
 
 'use strict';
-const analyzer = require('exfabrica-cms-engine-analyzer');
+const analyzer = require('@exfabrica/cms-engine-analyzer');
 const { result } = require('lodash');
 
 module.exports = ({ strapi }) => {
