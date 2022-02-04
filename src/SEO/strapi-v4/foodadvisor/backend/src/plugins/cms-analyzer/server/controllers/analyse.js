@@ -13,7 +13,8 @@ module.exports = ({ strapi }) => {
       entities = await analyseService.findMany(ctx.query);
     }
 
-    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+    ctx.send(entities);
   };
   const findOne = async (ctx) => {
     const { id } = ctx.params;
@@ -23,7 +24,8 @@ module.exports = ({ strapi }) => {
         id: id
       }
     });
-    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    ctx.send(entity);
   };
   const findByApiNameAndDocumentId = async (ctx) => {
     const { apiName, documentId } = ctx.params;
@@ -33,13 +35,15 @@ module.exports = ({ strapi }) => {
         documentId: documentId
       }
     });
-    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    ctx.send(entity);
   };
   const findManyWithDefaultSorting = async (ctx) => {
     const entities = await analyseService.findMany({
       orderBy: ['depth', 'frontUrl'],
     });
-    ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+    // ctx.send(entities.map(entity => sanitizeEntity(entity, { model: analyseContentType })));
+    ctx.send(entities);
   };
   const count = async (ctx) => {
     if (ctx.query._q) {
@@ -55,7 +59,8 @@ module.exports = ({ strapi }) => {
     } else {
       entity = analyseService.create(ctx.request.body);
     }
-    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    ctx.send(entity);
   };
   const update = async (ctx) => {
     const { id } = ctx.params;
@@ -76,7 +81,8 @@ module.exports = ({ strapi }) => {
         }
       }, ctx.request.body);
     }
-    ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    // ctx.send(sanitizeEntity(entity, { model: analyseContentType }));
+    ctx.send(entity);
   };
   const deleteOne = async (ctx) => {
     const { id } = ctx.params;

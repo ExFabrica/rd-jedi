@@ -117,6 +117,7 @@ const SeoPage = (props) => {
       }
     } catch (err) {
       setIsLoading(false);
+      if(toggleNotification ===undefined) return;
       toggleNotification({
         type: 'warning',
         message: err,
