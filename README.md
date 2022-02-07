@@ -29,7 +29,7 @@ ___
 ### Backend:
 #### Build
 (In backend folder)
-> cd src /plugins/cms-analyzer  
+> cd src/plugins/cms-analyzer  
 > yarn  
 > cd ../../..  
 > yarn  
