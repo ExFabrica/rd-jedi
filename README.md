@@ -2,9 +2,13 @@
 - [Project : RD-STRAPI](#project--rd-strapi)
   - [Prerequist](#prerequist)
   - [Folder structure](#folder-structure)
-  - [Build](#build)
-    - [build modules:](#build-modules)
-    - [build Strapi](#build-strapi)
+  - [Build & Run](#build--run)
+    - [Backend:](#backend)
+      - [Build](#build)
+      - [Run](#run)
+    - [Frontend](#frontend)
+      - [Build](#build-1)
+      - [Run](#run-1)
 
 ___
 ## Prerequist  
@@ -14,34 +18,32 @@ ___
 ## Folder structure  
 
 src:
- * librairy
-   * node_modules
-   * src
-       * common -> lib common modules used by specific modules
-       * i18n -> translate module
-       * image-comparaison -> image module
-       * seo -> seo module
- * SOE -> Strapi starter use to validate/test
-   * extensions -> content-manager
-   * plugins -> cms-analyzer
+ * librairy : cms engine analyzer src
+ * SOE -> Strapi V4 dev environment based on *foodadvisor* template
+   * frontend -> foodadvisor frontend.
+   * backend -> strapi v4 backend, contains **plugin** smc analyzer plugin (src/plugins/cms-analyzer).  
+___
 
+## Build & Run
 
-## Build
-
-### build modules:
-in src/library
-> yarn
-
-### build Strapi
-in src/SEO
-
-copy extentions and plugins folder in [starter]/backend to use (eg coorporate)
-
-> cd strapi-starters/[starter]/backend  
+### Backend:
+#### Build
+(In backend folder)
+> cd src /plugins/cms-analyzer  
 > yarn  
-> cd plugins/cms-anaylser  
+> cd ../../..  
 > yarn  
-> cd ../..  
-> yarn build  
-> cd ../frontend  
-> yarn
+> yarn build
+
+#### Run
+> yarn admin
+
+### Frontend
+#### Build
+(in frontend folder)
+> yarn  
+> yarn build
+
+#### Run
+> yarn dev
+
