@@ -398,5 +398,28 @@ export const RTRules: IRule[] = [
                 ));
             }
         },
-    }
+    },
+    {
+        name: 'IMG',
+        description: 'Validate the IMG tag.',
+        success: false,
+        errors: [],
+        warnings: [],
+        info: [],
+        testData: {},
+        validator: async (payload, tester) => {
+            const value = payload.value;
+
+            tester.BooleanLint(Helper.getBooleanTestParameters(
+                100,
+                assert.ok,
+                value.alt && value.alt.length > 0,
+                `Images should have alt tags.`,
+                IUserTarget.both,
+                "IMG",
+                false,
+                value,
+            ));
+        },
+      },
 ]

@@ -39,6 +39,9 @@
     },
     "status": {
       "type": "string"
+    },
+    "isMultipleDoc": {
+      "type": "boolean"
     }
   }
 }
