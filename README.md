@@ -22,6 +22,8 @@ ___
   * SOE -> Strapi V4 dev environment based on *foodadvisor* template
     * frontend -> foodadvisor frontend.
     * backend -> strapi v4 backend, contains **plugin** cms analyzer plugin (src/plugins/cms-analyzer).  
+* tests : test environment src 
+  * foodadvisor : front and back template used. 
 ___
 
 ## Build & Run
