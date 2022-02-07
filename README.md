@@ -17,11 +17,11 @@ ___
 
 ## Folder structure  
 
-src:
- * librairy : cms engine analyzer src
- * SOE -> Strapi V4 dev environment based on *foodadvisor* template
-   * frontend -> foodadvisor frontend.
-   * backend -> strapi v4 backend, contains **plugin** smc analyzer plugin (src/plugins/cms-analyzer).  
+* src:
+  * librairy : cms engine analyzer src
+  * SOE -> Strapi V4 dev environment based on *foodadvisor* template
+    * frontend -> foodadvisor frontend.
+    * backend -> strapi v4 backend, contains **plugin** cms analyzer plugin (src/plugins/cms-analyzer).  
 ___
 
 ## Build & Run
