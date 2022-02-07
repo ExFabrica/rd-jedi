@@ -695,7 +695,16 @@ export const rules: IRule[] = [
     },
     validator: async (payload, tester) => {
       payload.result.imgs.forEach((i) => {
-        if (!i.src.includes('data:')) {
+        tester.BooleanTest(Helper.getBooleanTestParameters(
+          150,
+          assert.ok,
+          i.src && i.src !== "undefined" && i.src !== "null",
+          `Images should have src tags.`,
+          IUserTarget.developer,
+          "IMG",
+          false,
+        ));
+        if (i.src && i.src !== "undefined" && i.src !== "null" && !i.src.includes('data:')) {
           tester.BooleanLint(Helper.getBooleanTestParameters(
             100,
             assert.ok,

@@ -67,7 +67,10 @@ export class SeoAnalyzer {
         return out;
       });
     });
-    return tags && tags.length ? tags : [];
+    let result = tags && tags.length ? tags : [];
+    // remove duplicates
+    result = result.filter((x, idx, arr) => arr.findIndex(y => JSON.stringify(x) === JSON.stringify(y)) === idx)
+    return result
   };
 
   private async getSEOTags(page: puppeteer.Page): Promise<ITags> {
