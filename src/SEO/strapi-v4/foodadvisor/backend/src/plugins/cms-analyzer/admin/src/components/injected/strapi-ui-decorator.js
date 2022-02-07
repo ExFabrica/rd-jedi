@@ -99,7 +99,7 @@ export const StrapiUIDecorator = () => {
     };
     const updateInputLabel = (tagName, parent) => {
         const label = parent.querySelector("label");
-        if (!label.innerText.includes(`(${tagName})`)) {
+        if (label && !label.innerText.includes(`(${tagName})`)) {
             if (!label.innerText.includes(`(`))
                 label.innerText = `${label.innerText} (${tagName})`;
             else
@@ -115,7 +115,14 @@ export const StrapiUIDecorator = () => {
     };
     const createRuleDisplayPanel = (inputItem, parent) => {
         if (inputItem) {
-            const filteredAnalyses = seoAnalyses.filter(item => item.payload.name === inputItem.name);
+            const filteredAnalyses = seoAnalyses.filter(item => {
+                if (inputItem.name) {
+                    return item.payload.name === inputItem.name
+                } else {
+                    const matchRegex = buildRegexForMultiple(item.payload.name)
+                    return inputItem.ariaLabel?.match(matchRegex)
+                }
+            });
             if (filteredAnalyses && filteredAnalyses.length > 0) {
                 let index = 0;
                 for (const filteredAnalyse of filteredAnalyses) {
@@ -137,13 +144,10 @@ export const StrapiUIDecorator = () => {
         }
     };
     const createAnalyzerPanel = (inputItem, tagName) => {
-        const inputItemHtmlControl = document.querySelector(`[id='${inputItem.id}']`);
-        if (inputItemHtmlControl) {
-            const parent = inputItemHtmlControl.parentNode?.parentNode;
-            if (parent) {
-                createRuleDisplayPanel(inputItem, parent);
-                updateInputLabel(tagName, parent);
-            }
+        const parent = inputItem.parentNode?.parentNode;
+        if (parent) {
+            createRuleDisplayPanel(inputItem, parent);
+            updateInputLabel(tagName, parent);
         }
     };
     const getAnalyses = async (structure) => {
@@ -158,10 +162,17 @@ export const StrapiUIDecorator = () => {
             //console.debug("Payload", payload);
             const results = await contentAnalyzerAPI.runRT(payload);
             if (results) {
-                results.forEach(item => item["id"] = uuidv4());
-                setSeoAnalyses(results);
+                const uniqueResults = results.filter((val, idx, arr) =>
+                    arr.findIndex(x => x.payload?.name === val.payload?.name
+                        && x.message === val.message) === idx
+                )
+                uniqueResults.forEach(item => {
+                    item["id"] = uuidv4()
+                    item.count = results.filter(x => x.payload?.name === item.payload?.name && x.message === item.message).length
+                });
+                setSeoAnalyses(uniqueResults);
 
-                if (results && results.length === 0)
+                if (uniqueResults.length === 0)
                     clearAllAnalyzerPanels();
             }
         }
@@ -220,6 +231,10 @@ export const StrapiUIDecorator = () => {
                         }
                     }
                 }
+                //img
+                else if (structureField.tagName === "IMG") {
+                    htmlLookupForImages(structureField, structure)
+                }
                 //simple component
                 else {
                     const inputName = `${structureField.componentName}.${structureField.fieldName}`;
@@ -231,30 +246,59 @@ export const StrapiUIDecorator = () => {
                 }
             }
             else {
-                //simple field
-                const inputItem = document.getElementById(structureField.fieldName);
-                if (inputItem) {
-                    structure.push({ tagName: structureField.tagName, name: inputItem.name, value: inputItem.value });
-                    createAnalyzerPanel(inputItem, structureField.tagName);
+                if (structureField.tagName === "IMG") {
+                    htmlLookupForImages(structureField, structure)
+                } else {
+                    //simple field
+                    const inputItem = document.getElementById(structureField.fieldName);
+                    if (inputItem) {
+                        structure.push({ tagName: structureField.tagName, name: inputItem.name, value: inputItem.value });
+                        createAnalyzerPanel(inputItem, structureField.tagName);
+                    }
                 }
             }
         }
         return structure;
     };
+
+    const htmlLookupForImages = (structureField, structure) => {
+        const ariaLabel = structureField.fieldName[0].toUpperCase() + structureField.fieldName.slice(1);
+        const imgContainers = document.querySelectorAll(`section[aria-label^=${ariaLabel}]`)
+        if (imgContainers) {
+            const matchRegex = buildRegexForMultiple(ariaLabel)
+            const imgContainer = Array.from(imgContainers).find(x => x.ariaLabel?.match(matchRegex))
+            if(imgContainer) {
+                const imgs = Array.from(imgContainer.querySelectorAll("img"))
+                if (imgs.length > 0) {
+                    imgs.forEach(img => {
+                        const altText = img.alt && !img.alt.startsWith("https://") ? img.alt : null
+                        structure.push({ tagName: structureField.tagName, name: ariaLabel, value: { url: img.src, alt: altText } });
+                    })
+                    createAnalyzerPanel(imgContainer, structureField.tagName);
+                }
+            }
+        }
+    }
+
+    const buildRegexForMultiple = (textToFind) => {
+        const payloadEscapedRegex = textToFind.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') // To escape potential special char for using ariaLabel in regex
+        return new RegExp(`^${payloadEscapedRegex}( \\([0-9]* \\/ [0-9]*\\))?$`) // For example, can match "Images (1 / 4)"
+    }
+
     return <>
         <div id={pluginInputRulesDivId} style={{ display: "none" }}>
             {seoAnalyses && seoAnalyses.length > 0 ?
                 seoAnalyses.map(item => {
                     return item.level === "warnings"
-                        ? <Box key={item.id} id={item.id}>
+                        ? <Box key={item.id} id={item.id} paddingTop={4}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
                             &nbsp;<Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft={3} paddingRight={3}>Low</Badge>
-                            &nbsp;<Typography textColor="neutral600" marginLeft={10} variant="pi">{item.message}</Typography>
+                            &nbsp;<Typography textColor="neutral600" marginLeft={10} variant="pi">{item.message}{item.count > 1 ? ` (${item.count})`  : ''}</Typography>
                         </Box>
-                        : <Box key={item.id} id={item.id}>
+                        : <Box key={item.id} id={item.id} paddingTop={4}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
                             &nbsp;<Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft={3} paddingRight={3}>High</Badge>
-                            &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}</Typography>
+                            &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}{item.count > 1 ? ` (${item.count})`  : ''}</Typography>
                         </Box>
                 }) : <></>
             }

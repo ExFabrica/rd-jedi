@@ -28,6 +28,9 @@ module.exports = ({ strapi }) => {
                     case "dynamiczone":
                         components.filter(item => item.uid === contentType.uid)[0].dynamicZones.push(key);
                         break;
+                    case "media":
+                        components.filter(item => item.uid === contentType.uid)[0].components.push(key);
+                        break;
                     default:
                         break;
                 }
@@ -148,7 +151,7 @@ module.exports = ({ strapi }) => {
             getStructure(item, contentType, "default");
             potentialFields.push(item);
         }
-        return potentialFields.filter(content => content.attributes.length > 0);
+        return potentialFields.filter(content => content.attributes.length > 0 || content.medias.length > 0);
     };
     const getStrapiDocumentsByContentType = async () => {
         const contentTypes = await getContents();
@@ -190,15 +193,20 @@ module.exports = ({ strapi }) => {
                 stringTags = _.concat(stringTags, tags.h5s);
                 stringTags = _.concat(stringTags, tags.h6s);
                 //stringTags = _.concat(stringTags, tags.ps);
+                stringTags = _.concat(stringTags, tags.imgs)
             }
             page.tags = stringTags;
             pages.push(page);
         }
         return pages;
     }
-    const setFields = (page, document, uid, contentKind, tag, attributeKey, docfieldValue, text, results, componentName, dynamicZoneName) => {
-        if (docfieldValue && text) {
-            if (docfieldValue.toLowerCase() === text.toLowerCase()) {
+    const setFields = (page, document, uid, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc, componentName, dynamicZoneName) => {
+        if (!docfieldValue || !text) return
+
+        const values = isMultipleDoc ? docfieldValue : [docfieldValue]
+        values.forEach(val => {
+            if ((val.url && text && text.endsWith(val.url))
+                || (val.toLowerCase && text.toLowerCase && val.toLowerCase() === text.toLowerCase())) {
                 const item = _.find(results, { key: `${uid}_${page.url}` });
                 if (!item){
                     let lang = page.url.match('lang=([\\w\\-]*)');
@@ -209,7 +217,7 @@ module.exports = ({ strapi }) => {
                             contentKind:contentKind,
                             frontUrl: page.url,
                             documentId: document.id,
-                            documentFields: [{ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }],
+                            documentFields: [{ fieldName: attributeKey, value: val, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active", isMultipleDoc: isMultipleDoc }],
                             seoAnalyse: page.seoAnalyse,
                             screenshot: page.screenshot,
                             tags: page.tags,
@@ -219,29 +227,35 @@ module.exports = ({ strapi }) => {
                 }
                 else {
                     let field = componentName ?
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" }) :
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: docfieldValue, tagName: tag.tag, status: "active" });
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: val, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active", isMultipleDoc: isMultipleDoc }) :
+                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: val, tagName: tag.tag, status: "active", isMultipleDoc: isMultipleDoc });
                     if (!field) {
-                        item.documentFields.push({ fieldName: attributeKey, value: docfieldValue, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active" });
+                        item.documentFields.push({ fieldName: attributeKey, value: val, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active", isMultipleDoc: isMultipleDoc });
                     }
                 }
             }
-        }
+        });
     };
     const getAttributeComparaison = (results, page, apiName, contentKind, document, attribute, tag) => {
         const attributeKey = attribute.key;
+        const isMultipleDoc = !!attribute.value?.multiple
         let docfieldValue = "";
-        const text = tag.tag.includes("META") ? tag.content : tag.innerText;
+        let text = tag.innerText;
+        if (tag.tag.includes("META")) {
+            text = tag.content
+        } else if (tag.tag === "IMG") {
+            text = tag.src
+        }
         switch (attribute.container) {
             case "default":
                 docfieldValue = document[attributeKey];
                 if (docfieldValue)
-                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results);
+                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc);
                 break;
             case "component":
                 docfieldValue = document[attribute.componentName] ? document[attribute.componentName][attributeKey] : null;
                 if (docfieldValue)
-                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName);
+                    setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc, attribute.componentName);
                 break;
             case "componentInZone":
                 const section = document[attribute.zone];
@@ -249,7 +263,7 @@ module.exports = ({ strapi }) => {
                     for (const componentChild of section) {
                         docfieldValue = componentChild[attributeKey];
                         if (docfieldValue)
-                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, componentChild.__component, attribute.zone);
+                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc, componentChild.__component, attribute.zone);
                     }
                 }
                 break;
@@ -263,13 +277,13 @@ module.exports = ({ strapi }) => {
                         nestedInnerComponents[0][attribute.componentName].forEach(element => {
                             docfieldValue = element[attributeKey];
                             if (docfieldValue)
-                                setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                                setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc, attribute.componentName, attribute.zone);
                         });
                     }
                     else {
                         docfieldValue = nestedInnerComponents[0][attribute.componentName][attributeKey];
                         if (docfieldValue)
-                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, attribute.componentName, attribute.zone);
+                            setFields(page, document, apiName, contentKind, tag, attributeKey, docfieldValue, text, results, isMultipleDoc, attribute.componentName, attribute.zone);
                     }
                 }
                 break;
@@ -353,7 +367,8 @@ module.exports = ({ strapi }) => {
                 tagName: field.tagName,
                 fieldName: field.fieldName,
                 dynamicZoneName: field.dynamicZoneName,
-                status: field.status
+                status: field.status,
+                isMultipleDoc: field.isMultipleDoc,
             });
         }
     };
@@ -385,6 +400,9 @@ module.exports = ({ strapi }) => {
                             for (const attribute of documentByContentType.contentType.attributes) {
                                 results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, attribute, tag);
                             }
+                            for (const media of documentByContentType.contentType.medias) {
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, media, tag);
+                            }
                         }
                     }
                 }
@@ -413,6 +431,9 @@ module.exports = ({ strapi }) => {
                         for (const document of documentByContentType.documents) {
                             for (const attribute of documentByContentType.contentType.attributes) {
                                 results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, attribute, tag);
+                            }
+                            for (const media of documentByContentType.contentType.medias) {
+                                results = getAttributeComparaison(results, page, documentByContentType.contentType.uid, documentByContentType.contentType.kind, document, media, tag);
                             }
                         }
                     }
