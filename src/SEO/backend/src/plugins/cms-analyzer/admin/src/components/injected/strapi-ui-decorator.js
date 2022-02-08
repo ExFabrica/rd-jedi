@@ -127,17 +127,18 @@ export const StrapiUIDecorator = () => {
                 let index = 0;
                 for (const filteredAnalyse of filteredAnalyses) {
                     const analyseDiv = document.querySelector(`[id='${filteredAnalyse.id}']`);
-                    const analyserDiv = document.querySelector(`[id='${filteredAnalyse.payload.name}.${index}_analyzer']`);
+                    const analyserDivId = `${filteredAnalyse.payload.name}.${index}_analyzer`
+                    const analyserDiv = document.querySelector(`[id='${analyserDivId}']`);
                     if (!analyserDiv) {
                         let div = document.createElement("div");
-                        div.id = `${filteredAnalyse.payload.name}.${index}_analyzer`;
-                        div.innerHTML = analyseDiv.innerHTML;
+                        div.id = analyserDivId;
+                        copycatHtmlElement(analyseDiv, div);
                         parent.appendChild(div);
                         if (inputItem.value === "RBAC")
                             console.log('parent', div, parent);
                     }
                     else
-                        analyserDiv.innerHTML = analyseDiv.innerHTML;
+                        copycatHtmlElement(analyseDiv, analyserDiv);
                     index++;
                 }
             }
@@ -285,17 +286,22 @@ export const StrapiUIDecorator = () => {
         return new RegExp(`^${payloadEscapedRegex}( \\([0-9]* \\/ [0-9]*\\))?$`) // For example, can match "Images (1 / 4)"
     }
 
+    const copycatHtmlElement = (sourceElem, targetElem) => {
+        targetElem.innerHTML = sourceElem.innerHTML;
+        targetElem.className = sourceElem.className;
+    }
+
     return <>
         <div id={pluginInputRulesDivId} style={{ display: "none" }}>
             {seoAnalyses && seoAnalyses.length > 0 ?
                 seoAnalyses.map(item => {
                     return item.level === "warnings"
-                        ? <Box key={item.id} id={item.id} paddingTop={4}>
+                        ? <Box key={item.id} id={item.id} marginTop={1}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
                             &nbsp;<Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft={3} paddingRight={3}>Low</Badge>
                             &nbsp;<Typography textColor="neutral600" marginLeft={10} variant="pi">{item.message}{item.count > 1 ? ` (${item.count})`  : ''}</Typography>
                         </Box>
-                        : <Box key={item.id} id={item.id} paddingTop={4}>
+                        : <Box key={item.id} id={item.id} marginTop={1}>
                             <Badge backgroundColor="primary600" textColor="neutral0" paddingLeft={3} paddingRight={3}>SEO</Badge>
                             &nbsp;<Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft={3} paddingRight={3}>High</Badge>
                             &nbsp;<Typography textColor="danger700" marginLeft={10} variant="pi">{item.message}{item.count > 1 ? ` (${item.count})`  : ''}</Typography>
