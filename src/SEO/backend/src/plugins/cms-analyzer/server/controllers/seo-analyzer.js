@@ -23,8 +23,17 @@ module.exports = ({ strapi }) => {
       ctx.throw(500, err);
     }
   };
+  const isRunning= async (ctx) => {
+    try {
+      return analyserService.isRunning();
+    }
+    catch (err) {
+      ctx.throw(500, err);
+    }
+  };
   return {
     run,
-    runRT
+    runRT,
+    isRunning
   };
 };

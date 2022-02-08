@@ -2,6 +2,8 @@
     "plugin.name":"CMS Analyzer",
     "plugin.homepage.title":"Plugin HomePage",
     "plugin.homepage.subtitle":"CMS analyzer by ExFabrica",
+    "plugin.homepage.loading":"Loading data...",
+    "plugin.homepage.runningAnalysis":"The current analysis may take a few minutes, please wait...",
     "plugin.editor.title":"Editeur",
     "plugin.settings.title":"Settings",
     "plugin.settings.subtitle":"Settings sous titre",

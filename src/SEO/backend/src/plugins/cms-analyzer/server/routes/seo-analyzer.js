@@ -13,6 +13,12 @@ module.exports = {
         path: '/seo-analyzer/runRT',
         handler: 'seo-analyzer.runRT',
         config: { policies: [] }
+      },
+      {
+        method: 'GET',
+        path: '/seo-analyzer/isRunning',
+        handler: 'seo-analyzer.isRunning',
+        config: { policies: [] }
       }
     ]
   }

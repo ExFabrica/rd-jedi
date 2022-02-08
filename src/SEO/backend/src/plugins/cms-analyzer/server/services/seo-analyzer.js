@@ -379,6 +379,9 @@ module.exports = ({ strapi }) => {
     const runRT = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
     };
+    const isRunning = () => {
+        return analyzer.isRunningAnalysis()
+    }
     const run = async (payload) => {
         console.log("received payload", payload);
         try {
@@ -457,5 +460,6 @@ module.exports = ({ strapi }) => {
     return {
         run,
         runRT,
+        isRunning,
     };
 }

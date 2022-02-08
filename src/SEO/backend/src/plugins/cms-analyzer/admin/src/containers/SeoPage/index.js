@@ -16,12 +16,12 @@ import contentAnalyzerAPI from '../../api/seo/seo-api-wrapper';
 //Some components
 import {
   CheckPagePermissions,
-  LoadingIndicatorPage,
   useNotification,
 } from '@strapi/helper-plugin';
 //Custom
 import { Button } from '@strapi/design-system/Button';
 import { IconButton } from '@strapi/design-system/IconButton';
+import { Loader } from '@strapi/design-system/Loader';
 import Plus from '@strapi/icons/Plus';
 import Cog from '@strapi/icons/Cog';
 import Pencil from '@strapi/icons/Pencil';
@@ -34,6 +34,7 @@ import { Flex } from '@strapi/design-system/Flex';
 
 //Layout
 import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
+import { EmptyStateLayout } from '@strapi/design-system/EmptyStateLayout';
 import { Main } from '@strapi/design-system/Main';
 //ACCORDION
 import { AccordionGroup } from '@strapi/design-system/Accordion';
@@ -48,7 +49,8 @@ const SeoPage = (props) => {
   const { formatMessage } = useIntl();
   const [settings, setSettings] = useState();
   const [results, setResults] = useState([]);
-  const [isLoading, setIsLoading] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAnalysisRunning, setIsAnalysisRunning] = useState();
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
 
@@ -57,22 +59,57 @@ const SeoPage = (props) => {
   const high_color = getSeoErrorLevelColor();
 
   useEffect(() => {
+    // If an analysis is pending, refresh the state until the analysis ends
+    let refreshInterval
+    refreshAllData().then(async analysisRunning => {
+      if (analysisRunning) {
+        refreshInterval = setInterval(async () => {
+          const stillRunning = await contentAnalyzerAPI.isRunning()
+          if (!stillRunning) {
+            await refreshAllData();
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+          }
+        }, 3000);
+      }
+    });
+    
+    return () => {
+      if(refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    };
+  }, []);
+
+  /**
+   * Refresh all the data of the page
+   * @returns true if an analysis is running, false otherwise
+   */
+  const refreshAllData = async () => {
     try {
-      contentAnalyzerAPI.getSortedAnalyses().then((analyses) => {
+      setIsLoading(true);
+
+      const analysisRunning = await contentAnalyzerAPI.isRunning();
+      setIsAnalysisRunning(analysisRunning);
+
+      if (!analysisRunning) {
+        const analyses = await contentAnalyzerAPI.getSortedAnalyses();
         console.log("Retrieved analyses:", analyses);
         setResults(analyses);
         initToggleState(analyses);
-      }, (err) => {
-        console.log(err);
-      });
-      settingsAPI.get().then(settings => {
-        setSettings(settings);
-      });
+      }
+      
+      setSettings(await settingsAPI.get());
+
+      setIsLoading(false);
+      return analysisRunning
     }
     catch (err) {
       console.log("HomePage mount error: ", err);
+      return false;
     }
-  }, []);
+  }
 
   const initToggleState = (analyses) => {
     let index = 0;
@@ -84,8 +121,8 @@ const SeoPage = (props) => {
     setToggleState(toggleState);
   }
 
-  const handleSubmit = () => {
-    setIsLoading(true);
+  const handleSubmit = async () => {
+    setIsAnalysisRunning(true);
     try {
       /* # 5193 - force enabled primary front url - BEGIN */
       // const payload = [
@@ -99,24 +136,20 @@ const SeoPage = (props) => {
       ].filter(item => item);
       /* # 5193 - END */
 
-      if (payload.length > 0)
-        contentAnalyzerAPI.run(payload).then((result) => {
-          console.log("run result ", result);
-          if (result.success) {
-            contentAnalyzerAPI.getAnalyses().then((analyses) => {
-              console.log("run getAnalyses analyses ", analyses);
-              setResults(analyses);
-              setIsLoading(false);
-            });
-          }
-        }, (err) => {
-          console.log(err);
-        });
-      else {
+      if (payload.length > 0) {
+        const result = await contentAnalyzerAPI.run(payload)
+        console.log("run result ", result);
+        if (result.success) {
+          const analyses = await contentAnalyzerAPI.getAnalyses()
+          console.log("run getAnalyses analyses ", analyses);
+          setResults(analyses);
+          setIsAnalysisRunning(false);
+        }
+      } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
       }
     } catch (err) {
-      setIsLoading(false);
+      setIsAnalysisRunning(false);
       if(toggleNotification ===undefined) return;
       toggleNotification({
         type: 'warning',
@@ -231,13 +264,13 @@ const SeoPage = (props) => {
     return settings!=undefined?(settings.seo.expertMode?expertPage():simplePage()):<></>;
   }
 
-  return <Main labelledBy="title" aria-busy={isLoading}>
+  return <Main labelledBy="title" aria-busy={isLoading || isAnalysisRunning}>
     <HeaderLayout
       id="title"
       title={"SEO Analyzer"}
       subtitle={"From the frontend to your STRAPI!"}
       primaryAction={
-        <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
+        <Button onClick={handleSubmit} startIcon={<Plus />} size="L" disabled={isLoading || isAnalysisRunning} >
           {"Run Analyzer"}
         </Button>
       }
@@ -249,9 +282,14 @@ const SeoPage = (props) => {
     >
     </HeaderLayout>
     <ContentLayout>
-      {isLoading ? (
-        <LoadingIndicatorPage />
-      ) : (displayContent()
+      {isLoading || isAnalysisRunning ? (
+        <EmptyStateLayout icon={
+          <Loader>{formatMessage({ id: getTrad("plugin.homepage.loading") })}</Loader>
+        } content={
+          isAnalysisRunning ? formatMessage({ id: getTrad("plugin.homepage.runningAnalysis") }) : ''
+        } />
+      ) : (
+        displayContent()
       )}
     </ContentLayout>
   </Main>

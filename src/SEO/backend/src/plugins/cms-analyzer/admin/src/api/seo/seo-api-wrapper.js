@@ -102,6 +102,16 @@ const contentAnalyzerAPI = {
         catch (ex) {
             console.log("Error: ", ex);
         }
+    },
+    isRunning: async () => {
+        try {
+            return await request("/cms-analyzer/seo-analyzer/isRunning", {
+                method: 'GET',
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
     }
 }
 
