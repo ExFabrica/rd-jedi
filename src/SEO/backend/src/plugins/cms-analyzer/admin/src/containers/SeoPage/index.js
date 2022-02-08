@@ -18,6 +18,7 @@ import {
   CheckPagePermissions,
   useNotification,
 } from '@strapi/helper-plugin';
+import { AbortController } from 'native-abort-controller';
 //Custom
 import { Button } from '@strapi/design-system/Button';
 import { IconButton } from '@strapi/design-system/IconButton';
@@ -51,6 +52,7 @@ const SeoPage = (props) => {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysisRunning, setIsAnalysisRunning] = useState();
+  const [abortController, setAbortController] = useState();
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
 
@@ -81,6 +83,18 @@ const SeoPage = (props) => {
       }
     };
   }, []);
+
+  // The analysis can be very long and should not be waited when we exit the page
+  // For this behaviour, we send a cancel signal to the AbortController when the component is destroyed
+  useEffect(() => {
+    const currentAbortController = abortController
+    
+    return () => {
+      if (currentAbortController) {
+        currentAbortController.abort();
+      }
+    }
+  }, [abortController])
 
   /**
    * Refresh all the data of the page
@@ -123,6 +137,13 @@ const SeoPage = (props) => {
 
   const handleSubmit = async () => {
     setIsAnalysisRunning(true);
+
+    // The "run" operation can be very long and should not be waited when we exit the page
+    // For this behaviour, we create an AbortController to cancel the request on page exit
+    // The HTTP request will be canceled but the server will continue to run the analysis.
+    const controller = new AbortController();
+    setAbortController(controller);
+
     try {
       /* # 5193 - force enabled primary front url - BEGIN */
       // const payload = [
@@ -137,24 +158,28 @@ const SeoPage = (props) => {
       /* # 5193 - END */
 
       if (payload.length > 0) {
-        const result = await contentAnalyzerAPI.run(payload)
+        const result = await contentAnalyzerAPI.run(payload, controller.signal)
         console.log("run result ", result);
         if (result.success) {
           const analyses = await contentAnalyzerAPI.getAnalyses()
           console.log("run getAnalyses analyses ", analyses);
           setResults(analyses);
-          setIsAnalysisRunning(false);
         }
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
       }
     } catch (err) {
-      setIsAnalysisRunning(false);
+      // If the error comes from a cancelation of request, ignore it
+      if (controller.signal.aborted) return;
       if(toggleNotification ===undefined) return;
       toggleNotification({
         type: 'warning',
         message: err,
       });
+    } finally {
+      if (controller.signal.aborted) return;
+      setIsAnalysisRunning(false);
+      setAbortController(null);
     }
   }
 

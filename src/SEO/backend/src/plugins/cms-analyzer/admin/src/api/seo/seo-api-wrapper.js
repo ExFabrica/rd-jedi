@@ -31,11 +31,12 @@ const contentAnalyzerAPI = {
             console.log("Error: ", ex);
         }
     },*/
-    run: async (payload) => {
+    run: async (payload, abortSignal) => {
         try {
             return request(`/cms-analyzer/seo-analyzer/run`, {
                 method: 'POST',
-                body:payload
+                body:payload,
+                signal: abortSignal,
             });
         }
         catch (ex) {
