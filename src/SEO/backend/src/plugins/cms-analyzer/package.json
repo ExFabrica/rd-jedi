@@ -1,7 +1,7 @@
 {
   "name": "@exfabrica/plugin-cms-analyzer",
   "private": true,
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "First Exfabrica Strapi Plugin.",
   "strapi": {
     "name": "cms-analyzer",
