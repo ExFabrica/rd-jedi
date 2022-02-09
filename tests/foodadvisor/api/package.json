@@ -22,7 +22,7 @@
     "sqlite3": "5.0.2",
     "unzip-stream": "^0.3.1",
     "uuid-v4": "^0.1.0",
-    "@exfabrica/plugin-cms-analyzer" : "./exfabrica-plugin-cms-analyzer-v1.0.0-beta.0.tgz"
+    "@exfabrica/plugin-cms-analyzer" : "latest"
   },
   "author": {
     "name": "A Strapi developer"
