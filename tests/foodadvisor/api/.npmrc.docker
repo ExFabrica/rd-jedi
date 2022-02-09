@@ -1,0 +1,10 @@
+registry=https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/           
+always-auth=true
+; begin auth token
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/:username=exfabrica
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/:_password=${NPM_TOKEN}
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/:email=npm requires email to be set but doesn't use the value
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/:username=exfabrica
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/:_password=${NPM_TOKEN}
+//pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/:email=npm requires email to be set but doesn't use the value
+; end auth token
