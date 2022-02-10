@@ -126,11 +126,9 @@ const SeoPage = (props) => {
   }
 
   const initToggleState = (analyses) => {
-    let index = 0;
     let toggleState = {};
-    for (const analyse of analyses) {
-      toggleState[`acc-${index}`] = index === 0;
-      index++;
+    for (let i = 0 ; i < analyses.length ; ++i) {
+      toggleState[`acc-${i}`] = i === 0;
     }
     setToggleState(toggleState);
   }
@@ -164,6 +162,7 @@ const SeoPage = (props) => {
           const analyses = await contentAnalyzerAPI.getAnalyses()
           console.log("run getAnalyses analyses ", analyses);
           setResults(analyses);
+          initToggleState(analyses);
         }
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
@@ -201,7 +200,8 @@ const SeoPage = (props) => {
   }
 
   /**  #5175 - redirect to url to edit  - BEGIN */
-  const handleEdit= (contentKind, apiName, documentId,locale) =>{
+  const handleEdit= async (id, contentKind, apiName, documentId,locale) =>{
+    await contentAnalyzerAPI.setAnalyzeAsChecked(id)
     push(`/content-manager/${contentKind}/${apiName}/${documentId}?plugins[i18n][locale]=${locale}`)
   }
   /* #5175 -END */
@@ -252,10 +252,10 @@ const SeoPage = (props) => {
           const high = analyses.filter(item =>(item.target === 0 || item.target === 2)&& item.level=="errors");
           return <Tr key={`contentpage-${index}`}>
             <Td>
-              <Typography textColor="neutral800">{analyse.depth}</Typography>
+              <Typography textColor="neutral800" fontWeight={analyse.isChecked ? 'inherited' : 'bold'}>{analyse.depth}</Typography>
             </Td>
             <Td>
-              <Typography textColor="neutral800">{analyse.frontUrl}</Typography>
+              <Typography textColor="neutral800" fontWeight={analyse.isChecked ? 'inherited' : 'bold'}>{analyse.frontUrl}</Typography>
             </Td>
             <Td>
               <Flex>
@@ -275,7 +275,7 @@ const SeoPage = (props) => {
             </Td>
             <Td>
               {/* #5175 - add link edit page - BEGIN*/}
-              <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(analyse.contentKind,analyse.apiName,analyse.documentId, analyse.locale)}/>
+              <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(analyse.id, analyse.contentKind,analyse.apiName,analyse.documentId, analyse.locale)}/>
               {/* #5175 - END */}
             </Td>
           </Tr>

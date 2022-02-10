@@ -222,7 +222,7 @@ module.exports = ({ strapi }) => {
                             screenshot: page.screenshot,
                             tags: page.tags,
                             depth: page.depth,
-                            locale:lang?lang[1]:''
+                            locale:lang?lang[1]:'',
                         });
                 }
                 else {
@@ -317,7 +317,8 @@ module.exports = ({ strapi }) => {
                 screenshot: result.screenshot,
                 depth: result.depth,
                 tags: JSON.stringify(result.tags ? result.tags : {}),
-                locale:result.locale
+                locale:result.locale,
+                isChecked: false,
             });
         }
     };

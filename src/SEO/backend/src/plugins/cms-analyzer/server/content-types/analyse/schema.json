@@ -54,6 +54,9 @@
     },
     "locale": {
       "type": "string"
+    },
+    "isChecked": {
+      "type": "boolean"
     }
   }
 }

@@ -3,6 +3,8 @@ import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useHistory } from "react-router-dom";
 
+// API
+import contentAnalyzerAPI from '../../../api/seo/seo-api-wrapper';
 //Layout
 import { Box } from '@strapi/design-system/Box';
 import { Stack } from '@strapi/design-system/Stack';
@@ -46,17 +48,26 @@ export const AnalyseAccordion = (props) => {
     }, []);
 
     /**  #5175 - redirect to url to edit  - BEGIN */
-    const handleEdit= (contentKind, apiName, documentId, locale) =>{
+    const handleEdit = async (id, contentKind, apiName, documentId, locale) => {
+        await contentAnalyzerAPI.setAnalyzeAsChecked(id)
         push(`/content-manager/${contentKind}/${apiName}/${documentId}?plugins[i18n][locale]=${locale}`)
     }
     /* #5175 -END */
 
     return <Accordion key={props.id} expanded={props.toggleState[props.id]} toggle={() => props.onToggle(props.id)} id={props.id}>
-        <AccordionToggle startIcon={<Globe aria-hidden={true} />} action={<Stack horizontal size={0}>
-            {/* #5175 - add link edit page - BEGIN*/}
-            <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(props.value.contentKind,props.value.apiName,props.value.documentId, props.value.locale)}/>
-            {/* #5175 - END */}
-        </Stack>} title={`Rank: ${props.value.depth} - Url: ${props.value.frontUrl}`} togglePosition="left" />
+        <AccordionToggle
+            startIcon={<Globe aria-hidden={true} />}
+            togglePosition="left"
+            action={
+                <Stack horizontal size={0}>
+                    {/* #5175 - add link edit page - BEGIN*/}
+                    <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(props.value.id,props.value.contentKind,props.value.apiName,props.value.documentId, props.value.locale)}/>
+                    {/* #5175 - END */}
+                </Stack>
+            }
+            title={!props.value.isChecked ? `Rank: ${props.value.depth} - Url: ${props.value.frontUrl}` : ''}
+            description={props.value.isChecked ? `Rank: ${props.value.depth} - Url: ${props.value.frontUrl}` : ''}
+        />
         <AccordionContent>
             <Box padding={3}>
                 <Box padding={4} background="neutral0">

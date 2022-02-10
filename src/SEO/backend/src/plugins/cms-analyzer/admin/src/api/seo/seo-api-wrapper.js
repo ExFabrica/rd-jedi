@@ -113,7 +113,18 @@ const contentAnalyzerAPI = {
         catch (ex) {
             console.log("Error: ", ex);
         }
-    }
+    },
+    setAnalyzeAsChecked: async (payload) => {
+        try {
+            return await request(`/cms-analyzer/analyses/${payload}`, {
+                method: 'PUT',
+                body: { isChecked: true }
+            });
+        }
+        catch (ex) {
+            console.log("Error: ", ex);
+        }
+    },
 }
 
 export default contentAnalyzerAPI;
