@@ -708,7 +708,7 @@ export const rules: IRule[] = [
           tester.BooleanLint(Helper.getBooleanTestParameters(
             100,
             assert.ok,
-            i.alt && i.alt.length > 0,
+            i.alt && i.alt.length > 0 && !i.alt.startsWith("https://"),
             `Images should have alt tags.`,
             IUserTarget.both,
             "IMG",

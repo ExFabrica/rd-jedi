@@ -413,7 +413,7 @@ export const RTRules: IRule[] = [
             tester.BooleanLint(Helper.getBooleanTestParameters(
                 100,
                 assert.ok,
-                value.alt && value.alt.length > 0,
+                value.alt && value.alt.length > 0 && !value.alt.startsWith("https://"),
                 `Images should have alt tags.`,
                 IUserTarget.both,
                 "IMG",

@@ -1,5 +1,5 @@
 //Analyzers
-import { SeoAnalyzer } from "./seo/analyzer";
+import { SeoAnalyzer, RealtimeStructure } from "./seo/analyzer";
 import { ImagesAnalyzer } from "./images/analyzer";
 //Analyzer results interfaces
 import { IPageResult as SEOPageResult } from "./seo/models/interfaces";
@@ -20,6 +20,19 @@ interface ComputedResults {
   SEO?: SeoPreview[];
   Images?: ImagesPreview[];
 }
+
+/**
+ * The initial state of analysis
+ */
+const initialState = {
+  isRunning: false,
+  analyzed: 0,
+  total: 0,
+}
+/**
+ * The current state of analysis
+ */
+let state = { ...initialState }
 
 /**
  * Use URL API to retrive base url from given URL
@@ -82,11 +95,11 @@ const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, a
 }
 let depth: any[] = [];
 /**
-   * Explore a list of URL, navigate throught the links found on the pages
-   * Each time it navigate to a new page, it yield the DOM for analysis
-   * @param browser puppeteer instance
-   * @param urls Website URLs to crawl
-   */
+ * Explore a list of URL, navigate throught the links found on the pages
+ * Each time it navigate to a new page, it yield the DOM for analysis
+ * @param browser puppeteer instance
+ * @param urls Website URLs to crawl
+ */
 const explorer = async function* (urls: string[]) {
   //Init explorer lists
   const exploredURL = new Set<string>();
@@ -135,7 +148,8 @@ const explorer = async function* (urls: string[]) {
       state.total = exploredURL.size + toExploreURL.size
     
       // Do the same for elements found on click (may take a while)
-      for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, 2000)) {
+      const navigationTestTimeout = 2000; // TODO Arbitrary timeout ?
+      for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, navigationTestTimeout)) {
         addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
         state.total = exploredURL.size + toExploreURL.size
       }
@@ -156,6 +170,14 @@ const explorer = async function* (urls: string[]) {
   return null;
 }
 
+/**
+ * Try to add the given link to the list of exploration
+ * @param link The link to add
+ * @param currentUrl The current URL of the crawled page
+ * @param baseURL The base URL of the site
+ * @param exploredURL The URLs already explored
+ * @param toExploreURL The URLs to explore
+ */
 const addUrlToExplorationList = (link: string, currentUrl: string, baseURL: string, exploredURL: Set<string>, toExploreURL: Set<string>) => {
   if (!link.includes("?")) {
     if (link != currentUrl
@@ -188,17 +210,10 @@ const addUrlToExplorationList = (link: string, currentUrl: string, baseURL: stri
   }
 }
 
-const runSEORealTimeRulesAnalyse = async (payload: any): Promise<IRuleResultMessage[]> => {
+const runSEORealTimeRulesAnalyse = async (payload: RealtimeStructure | RealtimeStructure[]): Promise<IRuleResultMessage[]> => {
   const seoAnalyzer = new SeoAnalyzer(RTRules, "");
   return await seoAnalyzer.runRealTimeRules(payload);
 }
-
-const initialState = {
-  isRunning: false,
-  analyzed: 0,
-  total: 0,
-}
-let state = { ...initialState }
 
 /**
   * Schedule analysis while exploring pages of given urls
@@ -266,6 +281,10 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
   }
 }
 
+/**
+ * Get the current state of the analysis
+ * @returns The state
+ */
 const analysisState = () => {
   return { ...state }
 }

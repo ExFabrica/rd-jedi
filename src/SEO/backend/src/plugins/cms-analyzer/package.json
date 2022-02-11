@@ -11,7 +11,7 @@
     "displayName": "CMS Analyzer"
   },
   "dependencies": {
-    "@exfabrica/cms-engine-analyzer": "^0.7.0",
+    "@exfabrica/cms-engine-analyzer": "^0.7.1",
     "@strapi/utils": "4.0.7",
     "abort-controller": "^3.0.0",
     "native-abort-controller": "^1.0.4"

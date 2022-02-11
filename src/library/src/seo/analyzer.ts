@@ -1,4 +1,3 @@
-const _ = require('lodash');
 import puppeteer from 'puppeteer';
 //import cheerio from 'cheerio';
 import { IAnalysisPageResults, IPageInfo, IPageResult, ITags } from './models/interfaces';
@@ -7,6 +6,13 @@ import { ITesterCompareParams, ITesterBooleanParams } from '../common/models/tes
 
 function uuid() {
   return "00000000-0000-4000-8000-000000000000".replace(/0/g, function () { return (0 | Math.random() * 16).toString(16) })
+}
+
+export class RealtimeStructure {
+  tag: string
+  value: any
+  titleValue: string
+  name: string
 }
 
 export class SeoAnalyzer {
@@ -266,7 +272,7 @@ export class SeoAnalyzer {
     }
   }
 
-  private async runRealTimeRule(payload: any): Promise<IRuleResultMessage[]> {
+  private async runRealTimeRule(payload: RealtimeStructure): Promise<IRuleResultMessage[]> {
     let results: any = [];
     const rules = this.rulesToUse.filter(item => item.name === payload.tag);
     if (rules && rules.length > 0) {
@@ -281,9 +287,9 @@ export class SeoAnalyzer {
     return results;
   }
 
-  public async runRealTimeRules(payloads: any): Promise<IRuleResultMessage[]> {
+  public async runRealTimeRules(payloads: RealtimeStructure | RealtimeStructure[]): Promise<IRuleResultMessage[]> {
     let results: any = [];
-    if (!_.isArray(payloads))
+    if (!Array.isArray(payloads))
       results = await this.runRealTimeRule(payloads);
     else {
       for (const payload of payloads) {
