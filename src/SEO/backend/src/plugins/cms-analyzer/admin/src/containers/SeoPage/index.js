@@ -23,7 +23,7 @@ import { AbortController } from 'native-abort-controller';
 import { Button } from '@strapi/design-system/Button';
 import { IconButton } from '@strapi/design-system/IconButton';
 import { Loader } from '@strapi/design-system/Loader';
-import Plus from '@strapi/icons/Plus';
+import Play from '@strapi/icons/Play';
 import Cog from '@strapi/icons/Cog';
 import Pencil from '@strapi/icons/Pencil';
 import { Table, Thead, Tbody, Tr, Td, Th } from '@strapi/design-system/Table';
@@ -52,6 +52,7 @@ const SeoPage = (props) => {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysisRunning, setIsAnalysisRunning] = useState();
+  const [analysisProgress, setAnalysisProgress] = useState();
   const [abortController, setAbortController] = useState();
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
@@ -60,21 +61,28 @@ const SeoPage = (props) => {
   const low_color = getSeoWarningLevelColor();
   const high_color = getSeoErrorLevelColor();
 
+  useEffect(async () => {
+    setIsLoading(true);
+    await refreshAllData()
+    setSettings(await settingsAPI.get());
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     // If an analysis is pending, refresh the state until the analysis ends
     let refreshInterval
-    refreshAllData().then(async analysisRunning => {
-      if (analysisRunning) {
-        refreshInterval = setInterval(async () => {
-          const stillRunning = await contentAnalyzerAPI.isRunning()
-          if (!stillRunning) {
-            await refreshAllData();
-            clearInterval(refreshInterval);
-            refreshInterval = null;
-          }
-        }, 3000);
-      }
-    });
+    if (isAnalysisRunning) {
+      refreshInterval = setInterval(async () => {
+        const analysisState = await contentAnalyzerAPI.analysisState()
+        setAnalysisProgress({ current: analysisState.analyzed, total: analysisState.total })
+        if (!analysisState.isRunning) {
+          await refreshAllData();
+          setAbortController(null);
+          clearInterval(refreshInterval);
+          refreshInterval = null;
+        }
+      }, 3000);
+    }
     
     return () => {
       if(refreshInterval) {
@@ -82,7 +90,7 @@ const SeoPage = (props) => {
         refreshInterval = null;
       }
     };
-  }, []);
+  }, [isAnalysisRunning]);
 
   // The analysis can be very long and should not be waited when we exit the page
   // For this behaviour, we send a cancel signal to the AbortController when the component is destroyed
@@ -102,26 +110,19 @@ const SeoPage = (props) => {
    */
   const refreshAllData = async () => {
     try {
-      setIsLoading(true);
+      const analysisState = await contentAnalyzerAPI.analysisState();
+      setIsAnalysisRunning(analysisState.isRunning);
+      setAnalysisProgress({ current: analysisState.analyzed, total: analysisState.total })
 
-      const analysisRunning = await contentAnalyzerAPI.isRunning();
-      setIsAnalysisRunning(analysisRunning);
-
-      if (!analysisRunning) {
+      if (!analysisState.isRunning) {
         const analyses = await contentAnalyzerAPI.getSortedAnalyses();
         console.log("Retrieved analyses:", analyses);
         setResults(analyses);
         initToggleState(analyses);
       }
-      
-      setSettings(await settingsAPI.get());
-
-      setIsLoading(false);
-      return analysisRunning
     }
     catch (err) {
       console.log("HomePage mount error: ", err);
-      return false;
     }
   }
 
@@ -156,29 +157,19 @@ const SeoPage = (props) => {
       /* # 5193 - END */
 
       if (payload.length > 0) {
-        const result = await contentAnalyzerAPI.run(payload, controller.signal)
-        console.log("run result ", result);
-        if (result.success) {
-          const analyses = await contentAnalyzerAPI.getAnalyses()
-          console.log("run getAnalyses analyses ", analyses);
-          setResults(analyses);
-          initToggleState(analyses);
-        }
+        setAnalysisProgress(null)
+        await contentAnalyzerAPI.run(payload)
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
       }
     } catch (err) {
       // If the error comes from a cancelation of request, ignore it
       if (controller.signal.aborted) return;
-      if(toggleNotification ===undefined) return;
+      if (toggleNotification === undefined) return;
       toggleNotification({
         type: 'warning',
         message: err,
       });
-    } finally {
-      if (controller.signal.aborted) return;
-      setIsAnalysisRunning(false);
-      setAbortController(null);
     }
   }
 
@@ -295,7 +286,7 @@ const SeoPage = (props) => {
       title={"SEO Analyzer"}
       subtitle={"From the frontend to your STRAPI!"}
       primaryAction={
-        <Button onClick={handleSubmit} startIcon={<Plus />} size="L" disabled={isLoading || isAnalysisRunning} >
+        <Button onClick={handleSubmit} startIcon={<Play />} size="L" disabled={isLoading || isAnalysisRunning} >
           {"Run Analyzer"}
         </Button>
       }
@@ -311,7 +302,9 @@ const SeoPage = (props) => {
         <EmptyStateLayout icon={
           <Loader>{formatMessage({ id: getTrad("plugin.homepage.loading") })}</Loader>
         } content={
-          isAnalysisRunning ? formatMessage({ id: getTrad("plugin.homepage.runningAnalysis") }) : ''
+          isAnalysisRunning
+            ? formatMessage({ id: getTrad("plugin.homepage.runningAnalysisProgress") }, analysisProgress ?? { current: 0, total: 0 })
+            : ''
         } />
       ) : (
         displayContent()

@@ -21,10 +21,10 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@exfabrica/cms-engine-analyzer@^0.6.0":
-  version "0.6.0"
-  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/@exfabrica/cms-engine-analyzer/-/cms-engine-analyzer-0.6.0.tgz#299ab3860be81dbede7c8237bebe35e981879a13"
-  integrity sha1-KZqzhgvoHb7efII3vr416YGHmhM=
+"@exfabrica/cms-engine-analyzer@^0.7.0":
+  version "0.7.0"
+  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/@exfabrica/cms-engine-analyzer/-/cms-engine-analyzer-0.7.0.tgz#e36cfd8cc5296d1d3f447a85a23b50b8133eea2b"
+  integrity sha1-42z9jMUpbR0/RHqFojtQuBM+6is=
   dependencies:
     "@types/node" "^16.9.6"
     "@types/puppeteer" "^5.4.4"

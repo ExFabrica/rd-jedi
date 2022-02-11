@@ -3,7 +3,7 @@
     "plugin.homepage.title":"Plugin HomePage",
     "plugin.homepage.subtitle":"CMS analyzer by ExFabrica",
     "plugin.homepage.loading":"Chargement des données...",
-    "plugin.homepage.runningAnalysis":"L'analyse actuelle peut prendre plusieurs minutes, veuillez patienter...",
+    "plugin.homepage.runningAnalysisProgress":"{current}/{total} pages analysées. L'analyse peut prendre plusieurs minutes, veuillez patienter...",
     "plugin.editor.title":"Editeur",
     "plugin.settings.title":"Settings",
     "plugin.settings.subtitle":"Settings sous titre",

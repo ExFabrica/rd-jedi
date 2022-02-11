@@ -8,7 +8,9 @@ module.exports = ({ strapi }) => {
     const { body } = ctx.request;
     delete ctx.query['url'];
     try {
-      return analyserService.run(body);
+      analyserService.run(body);
+      // ctx.res.statusCode = 202 // TODO
+      return { }
     }
     catch (err) {
       ctx.throw(500, err);
@@ -23,9 +25,9 @@ module.exports = ({ strapi }) => {
       ctx.throw(500, err);
     }
   };
-  const isRunning= async (ctx) => {
+  const analysisState= async (ctx) => {
     try {
-      return analyserService.isRunning();
+      return analyserService.analysisState();
     }
     catch (err) {
       ctx.throw(500, err);
@@ -34,6 +36,6 @@ module.exports = ({ strapi }) => {
   return {
     run,
     runRT,
-    isRunning
+    analysisState
   };
 };

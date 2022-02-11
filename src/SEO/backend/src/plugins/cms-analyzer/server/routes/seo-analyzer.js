@@ -16,8 +16,8 @@ module.exports = {
       },
       {
         method: 'GET',
-        path: '/seo-analyzer/isRunning',
-        handler: 'seo-analyzer.isRunning',
+        path: '/seo-analyzer/analysisState',
+        handler: 'seo-analyzer.analysisState',
         config: { policies: [] }
       }
     ]

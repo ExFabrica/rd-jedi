@@ -162,9 +162,7 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
  * @param elementsDone The already found elements, to not click again on them
  * @returns A list of navigation elemnts
  */
-const findHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: ElementTarget[], navigationTimeout: number): Promise<NavigationElement[]> => {
-  let navigationElements: NavigationElement[] = [];
-  
+const findHiddenNavigationElements = async function* (page: puppeteer.Page, elementsDone: ElementTarget[], navigationTimeout: number) {
   let currentElements = await getAllUniqueClickables(page);
   let allElements: ElementTarget[] = []
 
@@ -175,7 +173,7 @@ const findHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: 
     if (!newElementToClick) break;
     const foundNavElement = await tryClickOnElement(page, newElementToClick, navigationTimeout);
     if (!!foundNavElement) {
-      navigationElements.push(foundNavElement as NavigationElement)
+      yield foundNavElement as NavigationElement
     }
     const newAllElements = await getAllUniqueClickables(page); // Do it on loop because the page content may change after clicks
     // If the page doesn't change (we know it because there is no navigation or unknown clickables)
@@ -191,8 +189,6 @@ const findHiddenNavigationElements = async (page: puppeteer.Page, elementsDone: 
         .map(x => ({ selector: x.selector, content: x.content }))
     )
   }
-
-  return navigationElements.sort();
 };
 
 export {

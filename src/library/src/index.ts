@@ -125,50 +125,27 @@ const explorer = async function* (urls: string[]) {
       //Retrive all links from the current page
       const linksFound = (await puppeteerPage.$$('a'));
       
-      let navigationElements: string[] = await Promise.all(
+      const navigationElements: string[] = await Promise.all(
         linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
       )
-    
-      const hiddenNavigationElements = (await findHiddenNavigationElements(puppeteerPage, navigatedElements, 2000)).map(x => x.url);
-      console.debug("Found " + hiddenNavigationElements.length + " onclick navigation elements: [" + hiddenNavigationElements.join(', ') + "]");
-      navigationElements = [...navigationElements, ...hiddenNavigationElements]
-
       //Add each link to toExplore Set, unicity is maintained by Set object
       for (const link of navigationElements) {
-        if (!link.includes("?")) {
-          if (link != currentUrl
-            && !exploredURL.has(link)//add only unexplored links
-            && !toExploreURL.has(link)//avoid setting a value already existing
-            && link.startsWith(baseURL)
-            && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
-            toExploreURL.add(link);
-          }
-        } else {
-          //Get the url without queryString
-          const linkWithoutQueryString = link.split("?")[0];
-          const filteredExploredURL = Array.from(exploredURL).map(item => item.includes("?") ? item.split("?")[0] : item);
-          const filteredToExploreURL = Array.from(toExploreURL).map(item => item.includes("?") ? item.split("?")[0] : item);
-          if (!filteredExploredURL.includes(linkWithoutQueryString)
-            && !filteredToExploreURL.includes(linkWithoutQueryString)
-            && link != currentUrl
-            && !exploredURL.has(link)//add only unexplored links
-            && !toExploreURL.has(link)//avoid setting a value already existing
-            && link.startsWith(baseURL)
-            && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
-            toExploreURL.add(link);
-          }
-          //calculate the depth
-          const parents = depth.filter(item => item.url === currentUrl);
-          if (parents && parents.length > 0) {
-            const parent = parents[0];
-            depth.push({ url: link, parentUrl: currentUrl, depth: parent.depth + 1 });
-          }
-        }
+        addUrlToExplorationList(link, currentUrl, baseURL, exploredURL, toExploreURL);
+      }
+      state.total = exploredURL.size + toExploreURL.size
+    
+      // Do the same for elements found on click (may take a while)
+      for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, 2000)) {
+        addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
+        state.total = exploredURL.size + toExploreURL.size
       }
 
       //Sync both list for next iteration
       exploredURL.add(currentUrl);
       toExploreURL.delete(currentUrl);
+
+      state.total = exploredURL.size + toExploreURL.size
+      state.analyzed++
 
       console.log("Already explored URLs", exploredURL);
       console.log('URLs to explore', toExploreURL);
@@ -179,10 +156,49 @@ const explorer = async function* (urls: string[]) {
   return null;
 }
 
+const addUrlToExplorationList = (link: string, currentUrl: string, baseURL: string, exploredURL: Set<string>, toExploreURL: Set<string>) => {
+  if (!link.includes("?")) {
+    if (link != currentUrl
+      && !exploredURL.has(link)//add only unexplored links
+      && !toExploreURL.has(link)//avoid setting a value already existing
+      && link.startsWith(baseURL)
+      && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+      toExploreURL.add(link);
+    }
+  } else {
+    //Get the url without queryString
+    const linkWithoutQueryString = link.split("?")[0];
+    const filteredExploredURL = Array.from(exploredURL).map(item => item.includes("?") ? item.split("?")[0] : item);
+    const filteredToExploreURL = Array.from(toExploreURL).map(item => item.includes("?") ? item.split("?")[0] : item);
+    if (!filteredExploredURL.includes(linkWithoutQueryString)
+      && !filteredToExploreURL.includes(linkWithoutQueryString)
+      && link != currentUrl
+      && !exploredURL.has(link)//add only unexplored links
+      && !toExploreURL.has(link)//avoid setting a value already existing
+      && link.startsWith(baseURL)
+      && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
+      toExploreURL.add(link);
+    }
+    //calculate the depth
+    const parents = depth.filter(item => item.url === currentUrl);
+    if (parents && parents.length > 0) {
+      const parent = parents[0];
+      depth.push({ url: link, parentUrl: currentUrl, depth: parent.depth + 1 });
+    }
+  }
+}
+
 const runSEORealTimeRulesAnalyse = async (payload: any): Promise<IRuleResultMessage[]> => {
   const seoAnalyzer = new SeoAnalyzer(RTRules, "");
   return await seoAnalyzer.runRealTimeRules(payload);
 }
+
+const initialState = {
+  isRunning: false,
+  analyzed: 0,
+  total: 0,
+}
+let state = { ...initialState }
 
 /**
   * Schedule analysis while exploring pages of given urls
@@ -190,10 +206,11 @@ const runSEORealTimeRulesAnalyse = async (payload: any): Promise<IRuleResultMess
   * @param features List of analyse to run on selected website; ex: ['SEO', 'Image']
   * @returns Analysis made by selected features on each website
   */
-let isRunning = false
 const terminator = async (siteUrls: string[], features: string[]): Promise<ComputedResults> => {
-  if (isRunning) return
-  isRunning = true
+  if (state.isRunning) return
+  state = { ...initialState }
+  state.isRunning = true
+  
   try {
     console.log('Terminator: Sarah Connor ?');
     console.log('Provided URLs => ', siteUrls);
@@ -245,12 +262,12 @@ const terminator = async (siteUrls: string[], features: string[]): Promise<Compu
     console.error(e)
     return Promise.reject(e);
   } finally {
-    isRunning = false
+    state.isRunning = false
   }
 }
 
-const isRunningAnalysis = () => {
-  return !!isRunning
+const analysisState = () => {
+  return { ...state }
 }
 
-export { terminator, runSEORealTimeRulesAnalyse, isRunningAnalysis }
+export { terminator, runSEORealTimeRulesAnalyse, analysisState }
