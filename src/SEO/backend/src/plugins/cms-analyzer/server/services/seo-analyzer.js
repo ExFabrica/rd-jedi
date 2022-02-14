@@ -1,6 +1,5 @@
 'use strict';
 const analyzer = require('@exfabrica/cms-engine-analyzer');
-const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
     const analyseService = () => strapi.plugins["cms-analyzer"].services.analyse;
@@ -163,11 +162,10 @@ module.exports = ({ strapi }) => {
                 populate: populate
             });
             if (contentTypeDocuments) {
-                documentsByContentType = _.concat(documentsByContentType,
-                    {
-                        contentType: contentType,
-                        documents: _.isArray(contentTypeDocuments) ? contentTypeDocuments : [contentTypeDocuments],
-                    });
+                documentsByContentType.push({
+                    contentType: contentType,
+                    documents: Array.isArray(contentTypeDocuments) ? contentTypeDocuments : [contentTypeDocuments],
+                });
             }
         }
         return documentsByContentType;
@@ -180,20 +178,15 @@ module.exports = ({ strapi }) => {
             let stringTags = [];
             const tags = seo.result.tags;
             if (tags) {
-                stringTags = _.concat(stringTags, tags.title);
+                stringTags.push(...tags.title);
                 const description = tags.meta.filter(item => item.name === "description");
                 if (description && description.length > 0) {
                     description[0].tag = `${description[0].tag} (${description[0].name})`
-                    stringTags = _.concat(stringTags, description[0]);
+                    stringTags.push(description[0]);
                 }
-                stringTags = _.concat(stringTags, tags.h1s);
-                stringTags = _.concat(stringTags, tags.h2s);
-                stringTags = _.concat(stringTags, tags.h3s);
-                stringTags = _.concat(stringTags, tags.h4s);
-                stringTags = _.concat(stringTags, tags.h5s);
-                stringTags = _.concat(stringTags, tags.h6s);
-                //stringTags = _.concat(stringTags, tags.ps);
-                stringTags = _.concat(stringTags, tags.imgs)
+                stringTags.push(...tags.h1s, ...tags.h2s, ...tags.h3s, ...tags.h4s, ...tags.h5s, ...tags.h6s);
+                //stringTags.push(...tags.ps);
+                stringTags.push(...tags.imgs)
             }
             page.tags = stringTags;
             pages.push(page);
@@ -207,12 +200,13 @@ module.exports = ({ strapi }) => {
         values.forEach(val => {
             if ((val.url && text && text.endsWith(val.url))
                 || (val.toLowerCase && text.toLowerCase && val.toLowerCase() === text.toLowerCase())) {
-                const item = _.find(results, { key: `${uid}_${page.url}` });
+                const itemKey = `${uid}_${page.url}`
+                const item = results.find(x => x.key === itemKey);
                 if (!item){
                     let lang = page.url.match('lang=([\\w\\-]*)');
                     results.push(
                         {
-                            key: `${uid}_${page.url}`,
+                            key: itemKey,
                             apiName: uid,
                             contentKind:contentKind,
                             frontUrl: page.url,
@@ -226,9 +220,9 @@ module.exports = ({ strapi }) => {
                         });
                 }
                 else {
-                    let field = componentName ?
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: val, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active", isMultipleDoc: isMultipleDoc }) :
-                        _.find(item.documentFields, { fieldName: attributeKey, apiName: uid, value: val, tagName: tag.tag, status: "active", isMultipleDoc: isMultipleDoc });
+                    let field = componentName
+                        ? item.documentFields.find(f => f.fieldName === attributeKey && f.apiName === uid && f.value === val && f.tagName === tag.tag && f.componentName === componentName && f.dynamicZoneName === dynamicZoneName)
+                        : item.documentFields.find(f => f.fieldName === attributeKey && f.apiName === uid && f.value === val && f.tagName === tag.tag)
                     if (!field) {
                         item.documentFields.push({ fieldName: attributeKey, value: val, apiName: uid, tagName: tag.tag, componentName: componentName, dynamicZoneName: dynamicZoneName, status: "active", isMultipleDoc: isMultipleDoc });
                     }
@@ -259,7 +253,7 @@ module.exports = ({ strapi }) => {
                 break;
             case "componentInZone":
                 const section = document[attribute.zone];
-                if (_.isArray(section)) {
+                if (Array.isArray(section)) {
                     for (const componentChild of section) {
                         docfieldValue = componentChild[attributeKey];
                         if (docfieldValue)
@@ -273,7 +267,7 @@ module.exports = ({ strapi }) => {
                 const nestedCompoent = componentsName[1];
                 const nestedInnerComponents = document[zone].filter(item => item.__component === nestedCompoent);
                 if (nestedInnerComponents && nestedInnerComponents.length > 0) {
-                    if (_.isArray(nestedInnerComponents[0][attribute.componentName])) {
+                    if (Array.isArray(nestedInnerComponents[0][attribute.componentName])) {
                         nestedInnerComponents[0][attribute.componentName].forEach(element => {
                             docfieldValue = element[attributeKey];
                             if (docfieldValue)
@@ -293,16 +287,13 @@ module.exports = ({ strapi }) => {
         return results;
     };
     const filterAnalysesByFieldsCount = (results) => {
-        const finalResults = _.groupBy(results, "frontUrl");
-        let newResults = [];
-        if (finalResults) {
-            for (const result in finalResults) {
-                newResults.push(finalResults[result].reduce((prev, curr) => {
-                    return prev.documentFields.length > curr.documentFields.length ? prev : curr;
-                }));
+        let newResults = {};
+        for (const res of results) {
+            if (!newResults[res.frontUrl] || newResults[res.frontUrl].documentFields.length < res.documentFields.length) {
+                newResults[res.frontUrl] = res;
             }
         }
-        return newResults;
+        return Object.values(newResults);
     }
     const pushAnalyseInStrapiCollection = async (results) => {
         for (const result of results) {
@@ -323,16 +314,37 @@ module.exports = ({ strapi }) => {
         }
     };
     const FixMatchesErrors = (results) => {
-        const finalResults = _.groupBy(results, "apiName");
+        let finalResults = {};
+        // Group by apiName
+        results.forEach(current => {
+            if (finalResults[current.apiName]) {
+                finalResults[current.apiName].push(current);
+            } else {
+                finalResults[current.apiName] = [current];
+            }
+        })
         for (const result in finalResults) {
             const treeFields = finalResults[result].map(item => item.documentFields);
-            const flattenFields = _.flatten(treeFields);
+            // Flatten
+            const flattenFields = treeFields.reduce((array, current) => {
+                array.push(...current)
+                return array
+            }, []);
+
             let generatedKeys = [];
             flattenFields.forEach(item => {
                 if (!item.dynamicZoneName)
                     generatedKeys.push({ key: `${item.tagName}|${item.fieldName}|${item.componentName}`, items: item });
             });
-            const treeKeys = _.groupBy(generatedKeys, "key");
+            let treeKeys = {};
+            // Group by "key"
+            generatedKeys.forEach(current => {
+                if (treeKeys[current.key]) {
+                    treeKeys[current.key].push(current);
+                } else {
+                    treeKeys[current.key] = [current];
+                }
+            })
             if (finalResults[result].length) {
                 for (const key in treeKeys) {
                     if (treeKeys[key].length < finalResults[result].length / 2) {
@@ -358,8 +370,10 @@ module.exports = ({ strapi }) => {
     const pushMatchesInStrapiCollection = async (results) => {
         let fields = [];
         for (const result of results)
-            fields = _.concat(fields, result.documentFields);
-        fields = _.uniqBy(fields, v => [v.componentName, v.tagName, v.apiName, v.fieldName].join());
+            fields.push(...result.documentFields);
+        fields = fields.filter((val, idx, arr) => // Unique
+            arr.findIndex(item => item.componentName === val.componentName && item.tagName === val.tagName && item.apiName === val.apiName && item.fieldName === val.fieldName)
+            === idx)
 
         for (const field of fields) {
             await matchService().create({
@@ -380,11 +394,17 @@ module.exports = ({ strapi }) => {
     const runRT = async (payload) => {
         return analyzer.runSEORealTimeRulesAnalyse(payload);
     };
-    const analysisState = () => {
-        return analyzer.analysisState()
+    const analysisState = async () => {
+        let state = await analyzer.analysisState()
+        if (state) {
+            state.isRunning = state.isRunning || isSeoAggregationRunning
+        }
+        return state
     }
+    let isSeoAggregationRunning = false
     const run = async (payload) => {
         console.log("received payload", payload);
+        isSeoAggregationRunning = true
         try {
             let results = [];
             await clear();
@@ -424,12 +444,9 @@ module.exports = ({ strapi }) => {
             results = [];
             const strapiCollectionDocumentsByContentType = strapiDocumentsByContentType.filter(item => item.contentType.kind == "collectionType");
             //Remove single type from analyzed page.
-            const analyses = await analyseService().findMany();
-            const groupedMatchesByApiName = _.groupBy(analyses, "frontUrl");
-            _.remove(pages, (item) => {
-                return Object.keys(groupedMatchesByApiName).includes(item.url);
-            });
-            for (const page of pages) {
+            const analysesUrls = new Set((await analyseService().findMany()).map(x => x.frontUrl))
+            const pagesToBrowse = pages.filter(p => !analysesUrls.has(p.url))
+            for (const page of pagesToBrowse) {
                 for (const tag of page.tags) {
                     for (const documentByContentType of strapiCollectionDocumentsByContentType) {
                         for (const document of documentByContentType.documents) {
@@ -455,6 +472,8 @@ module.exports = ({ strapi }) => {
         catch (ex) {
             console.debug("Error", ex);
             return Promise.reject({ success: false, error: ex });
+        } finally {
+            isSeoAggregationRunning = false
         }
         return Promise.resolve({ success: true })
     };

@@ -16,10 +16,7 @@
     "@strapi/plugin-i18n": "4.0.7",
     "@strapi/plugin-users-permissions": "4.0.7",
     "@strapi/strapi": "4.0.7",
-    "fs": "^0.0.1-security",
     "fs-extra": "^10.0.0",
-    "lodash": "^4.17.21",
-    "lodash.set": "^4.3.2",
     "sqlite3": "5.0.2",
     "unzip-stream": "^0.3.1",
     "uuid-v4": "^0.1.0"

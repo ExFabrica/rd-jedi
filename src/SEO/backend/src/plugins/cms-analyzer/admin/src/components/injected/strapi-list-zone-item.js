@@ -1,4 +1,3 @@
-const _ = require('lodash');
 import React, { useState, useEffect } from 'react';
 import { StrapiUIDecorator } from './strapi-ui-decorator'
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
@@ -15,9 +14,12 @@ export const StrapiListZoneItem = () => {
     settingsAPI.get().then(data => {
       if (data.seo.enabled) {
         contentAnalyzerAPI.getMatches().then(result => {
-          const slugs = _.groupBy(result, "apiName");
-          if (slugs)
-            setIsVisible(Object.getOwnPropertyNames(slugs).includes(slug));
+          if (result) {
+            const slugs = result
+              .map(x => x.apiName)
+              .filter((val, idx, arr) => arr.findIndex(x => x === val) === idx) // Unique
+            setIsVisible(slugs.includes(slug));
+          }
         });
       }
     });

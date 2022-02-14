@@ -1,5 +1,4 @@
 'use strict';
-const _ = require('lodash');
 const { isDraft } = require('@strapi/utils').contentTypes;
 
 module.exports = ({ strapi }) => {

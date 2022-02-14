@@ -1,5 +1,4 @@
 'use strict';
-const _ = require('lodash');
 
 module.exports = ({ strapi }) => {
   const analyserService = strapi.plugins["cms-analyzer"].services.seoAnalyzer;
