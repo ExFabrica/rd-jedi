@@ -9,7 +9,7 @@ COPY ./src /opt/app/src
 COPY ./package.json ./
 # COPY ./yarn.lock ./
 COPY .npmrc.docker .npmrc
-COPY ./exfabrica-plugin-cms-analyzer-v1.0.0-beta.0.tgz ./
+# COPY ./exfabrica-plugin-cms-analyzer-v1.0.0-beta.0.tgz ./
 ENV PATH /opt/node_modules/.bin:$PATH
 RUN yarn config set network-timeout 600000 -g
 RUN yarn install
