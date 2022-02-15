@@ -1,0 +1,72 @@
+# Build and push an image to Azure Container Registry
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - tests/foodadvisor/api/*
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  azureSubscription: 'rg-jedi-service-connection'
+  dockerRegistryServiceConnection: 'acr-exfabrica-service-connection'
+  imageRepository: 'rd/jedi-strapi-api'
+  webAppName: 'jedi-strapi-api-test'
+  containerRegistry: 'exfabrica.azurecr.io'
+  dockerfilePath: './api/Dockerfile'
+  npmToken: 'YmV6dDVuemZ2aTZub250c2Z4NjNzbmJmNmpod3I2a2hoYXE1cWNzanVrMjI1d2l1dDIzcQ=='
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '16.x'
+    - task: Docker@2
+      enabled: true
+      displayName: Build docker image
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        dockerfile: $(dockerfilePath)
+        arguments: --build-arg NPM_TOKEN=$(npmToken)
+        tags: |
+          test
+    - task: Docker@2
+      enabled: true
+      displayName: Push docker image to container registry
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          test
+- stage: Restart
+  dependsOn: Build
+  displayName: Restart web app
+  jobs:
+  - job: Restart
+    displayName: Restart web app
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureAppServiceManage@0
+      displayName: Restart WebApp
+      inputs:
+        enabled: false
+        azureSubscription: $(azureSubscription)
+        Action: 'Restart Azure App Service'
+        WebAppName: $(webAppName)
