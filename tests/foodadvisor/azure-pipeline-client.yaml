@@ -11,13 +11,6 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
-  azureSubscription: 'rg-jedi-service-connection'
-  dockerRegistryServiceConnection: 'acr-exfabrica-service-connection'
-  imageRepository: 'rd/jedi-strapi-client'
-  webAppName: 'jedi-strapi-client-test'
-  containerRegistry: 'exfabrica.azurecr.io'
-  dockerfilePath: './client/Dockerfile'
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
