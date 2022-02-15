@@ -62,9 +62,9 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: AzureAppServiceManage@0
+      enabled: false
       displayName: Restart WebApp
       inputs:
-        enabled: false
         azureSubscription: $(azureSubscription)
         Action: 'Restart Azure App Service'
         WebAppName: $(webAppName)
