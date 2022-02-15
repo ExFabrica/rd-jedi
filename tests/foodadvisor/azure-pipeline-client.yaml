@@ -55,7 +55,6 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: AzureAppServiceManage@0
-      enabled: false
       displayName: Restart WebApp
       inputs:
         azureSubscription: $(azureSubscription)
