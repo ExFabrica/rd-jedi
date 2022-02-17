@@ -24,8 +24,15 @@ type ElementTarget = {
  * @returns A list of CSS selectors
  */
 const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<string[]> => {
+  // Using "page.evaluate" to find event listeners
   return await page.evaluate(async () => {
 
+    /**
+     * Get the CSS selector for an element.
+     * Defined here because used inside "page.evaluate"
+     * @param el The targeted element
+     * @returns The CSS selector, as a string. Example: `#id>div:nth-child(3)>div:nth-child(1)`
+     */
     const getCssSelector = (el: Element): string => {
       let elm = el
       if (elm.tagName === "BODY") return "BODY";
@@ -37,9 +44,9 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
             break; // Because ID should be unique, no more is needed. Remove the break, if you always want a full path.
           } else {
             // Count similar elements on the same level
-            let c = 1, e = elm;
-            for (; e.previousElementSibling; e = e.previousElementSibling, c++) ;
-            names.unshift(`${elm.tagName}:nth-child(${c})`);
+            let cpt = 1, e = elm;
+            for (; e.previousElementSibling; e = e.previousElementSibling, cpt++) ;
+            names.unshift(`${elm.tagName}:nth-child(${cpt})`);
           }
           elm = elm.parentElement;
       }
@@ -48,14 +55,14 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
 
     const allElements: Element[] = Array.prototype.slice.call(document.querySelectorAll('*'));
 
-    // Limit events ??
+    // Add more events ??
     const types: string[] = [
       "onclick",
       "onmousedown",
       "onmouseup",
     ];
 
-    let selectors: string[] = allElements
+    let clickableSelectors: string[] = allElements
       .filter(elem => 
         !!types.find(t => typeof elem[t] === 'function') // Events defined in attributes
         //@ts-ignore to make _getEventListeners works
@@ -64,9 +71,9 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
       .map(elem => getCssSelector(elem))
 
     const allLinks: Element[] = Array.prototype.slice.call(document.querySelectorAll('a:not([href])'));
-    selectors = [...selectors, ...allLinks.map(x => getCssSelector(x))]
+    clickableSelectors = [...clickableSelectors, ...allLinks.map(x => getCssSelector(x))]
 
-    return selectors
+    return clickableSelectors
       .filter(x => x !== "BODY")
       .sort();
   })
@@ -78,29 +85,34 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
  * @returns A list a clickable elements
  */
 const getAllUniqueClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
-  const elementsSelector = await getAllClickableElementsSelectors(page)
-  let allButtons = (await Promise.all(
-    elementsSelector.map(async x => {
-      const elem = (await page.$(x))
-      return elem ? {
-        elem,
-        content: (await (await elem.getProperty('innerText')).jsonValue()) as string,
-        selector: x,
-      } : null
-    })
-  )).filter(x => !!x)
+  try {
+    const elementsSelector = await getAllClickableElementsSelectors(page)
+    let allButtons = (await Promise.all(
+      elementsSelector.map(async x => {
+        const elem = (await page.$(x))
+        return elem ? {
+          elem,
+          content: (await (await elem.getProperty('innerText')).jsonValue()) as string,
+          selector: x,
+        } : null
+      })
+    )).filter(x => !!x)
 
-  // Remove all clickables with "a" inside => the "a" is already clickable
-  for (let i = 0 ; i < allButtons.length ; ) {
-    const href: string = await (await allButtons[i].elem.getProperty('href')).jsonValue()
-    if (href || !!(await allButtons[i].elem.$('a'))) {
-      allButtons.splice(i, 1);
-      continue;
+    // Remove all clickables with "a" inside => the "a" is already clickable
+    for (let i = 0 ; i < allButtons.length ; ) {
+      const href: string = await (await allButtons[i].elem.getProperty('href')).jsonValue()
+      if (href || !!(await allButtons[i].elem.$('a'))) {
+        allButtons.splice(i, 1);
+        continue;
+      }
+      ++i;
     }
-    ++i;
-  }
 
-  return allButtons;
+    return allButtons;
+  } catch(e) {
+    console.error(e)
+    return []
+  }
 }
 
 /**
@@ -145,7 +157,7 @@ const tryClickOnElement = async (page: puppeteer.Page, currentElement: Clickable
  * @param page The page to test
  * @param elementsDone The already found elements, to not click again on them
  * @param navigationTestTimeout The timeout for the navigation detection on click
- * @returns Yield for each new navigation element found
+ * @yields Navigation element found
  */
 const findHiddenNavigationElements = async function* (page: puppeteer.Page, elementsDone: ElementTarget[], navigationTestTimeout: number) {
   let currentElements = await getAllUniqueClickables(page);
