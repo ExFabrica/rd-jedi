@@ -1,6 +1,9 @@
 import React from 'react';
-import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
+
+//I18n
+import { useIntl } from 'react-intl';
+import getTrad from '../../../utils/getTrad';
 
 //Layout
 import { Box } from '@strapi/design-system/Box';
@@ -32,16 +35,16 @@ export const AnalyseContentGrid = (props) => {
         <Thead>
             <Tr>
                 <Th>
-                    <Typography variant="sigma">Tag</Typography>
+                    <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.experttable.tag")}) }</Typography>
                 </Th>
                 <Th>
-                    <Typography variant="sigma">Message</Typography>
+                    <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.experttable.message")}) }</Typography>
                 </Th>
                 <Th>
-                    <Typography variant="sigma">Level</Typography>
+                    <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.experttable.level")}) }</Typography>
                 </Th>
                 <Th>
-                    <Typography variant="sigma">Content</Typography>
+                    <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.experttable.content")}) }</Typography>
                 </Th>
             </Tr>
         </Thead>

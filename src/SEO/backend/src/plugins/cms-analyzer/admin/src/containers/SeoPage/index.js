@@ -199,19 +199,19 @@ const SeoPage = (props) => {
       <Thead>
         <Tr>
           <Th>
-            <Typography variant="sigma">Rank</Typography>
+            <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.rank")}) }</Typography>
           </Th>
           <Th>
-            <Typography variant="sigma">URL</Typography>
-          </Th>
-          <Th>
-            <Typography variant="sigma"></Typography>
+            <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.url")}) }</Typography>
           </Th>
           <Th>
             <Typography variant="sigma"></Typography>
           </Th>
           <Th>
-            <Typography variant="sigma">Edit</Typography>
+            <Typography variant="sigma"></Typography>
+          </Th>
+          <Th>
+            <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.edit")}) }</Typography>
           </Th>
         </Tr>
       </Thead>
@@ -262,16 +262,16 @@ const SeoPage = (props) => {
   return <Main labelledBy="title" aria-busy={isLoading || isAnalysisRunning}>
     <HeaderLayout
       id="title"
-      title={"SEO Analyzer"}
-      subtitle={"From the frontend to your STRAPI!"}
+      title={ formatMessage({id: getTrad("plugin.seo.title")}) }
+      subtitle={ formatMessage({id: getTrad("plugin.seo.subtitle")}) }
       primaryAction={
-        <Button onClick={handleSubmit} startIcon={<Play />} size="L" disabled={isLoading || isAnalysisRunning} >
-          {"Run Analyzer"}
+        <Button onClick={handleSubmit} startIcon={isAnalysisRunning ? <Loader small/> : <Play />} size="L" disabled={isLoading || isAnalysisRunning} >
+          { formatMessage({id: getTrad(isAnalysisRunning ? "plugin.seo.analysisPending" : "plugin.seo.runAnalysis")})}
         </Button>
       }
       secondaryAction={
         <Button variant="tertiary" onClick={configure} startIcon={<Cog />}>
-          {"Settings"}
+          { formatMessage({id: getTrad("plugin.seo.settings")}) }
         </Button>
       }
     >
@@ -279,10 +279,10 @@ const SeoPage = (props) => {
     <ContentLayout>
       {isLoading || isAnalysisRunning ? (
         <EmptyStateLayout icon={
-          <Loader>{formatMessage({ id: getTrad("plugin.homepage.loading") })}</Loader>
+          <Loader>{formatMessage({ id: getTrad("plugin.seo.loading") })}</Loader>
         } content={
           isAnalysisRunning
-            ? formatMessage({ id: getTrad("plugin.homepage.runningAnalysisProgress") }, analysisProgress ?? { current: 0, total: 0 })
+            ? formatMessage({ id: getTrad("plugin.seo.runningAnalysisProgress") }, analysisProgress ?? { current: 0, total: 0 })
             : ''
         } />
       ) : (

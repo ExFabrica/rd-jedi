@@ -1,7 +1,10 @@
 import React, { memo, useEffect, useState } from 'react';
-import { useIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { useHistory } from "react-router-dom";
+
+//I18n
+import { useIntl } from 'react-intl';
+import getTrad from '../../../utils/getTrad';
 
 // API
 import contentAnalyzerAPI from '../../../api/seo/seo-api-wrapper';
@@ -61,12 +64,12 @@ export const AnalyseAccordion = (props) => {
             action={
                 <Stack horizontal size={0}>
                     {/* #5175 - add link edit page - BEGIN*/}
-                    <IconButton label='Edit' icon={<Pencil />} onClick={() => handleEdit(props.value.id,props.value.contentKind,props.value.apiName,props.value.documentId, props.value.locale)}/>
+                    <IconButton label={ formatMessage({id: getTrad("plugin.seo.table.edit")}) } icon={<Pencil />} onClick={() => handleEdit(props.value.id,props.value.contentKind,props.value.apiName,props.value.documentId, props.value.locale)}/>
                     {/* #5175 - END */}
                 </Stack>
             }
-            title={!props.value.isChecked ? `Rank: ${props.value.depth} - Url: ${props.value.frontUrl}` : ''}
-            description={props.value.isChecked ? `Rank: ${props.value.depth} - Url: ${props.value.frontUrl}` : ''}
+            title={!props.value.isChecked ? `${ formatMessage({id: getTrad("plugin.seo.table.rank")}) }: ${props.value.depth} - ${ formatMessage({id: getTrad("plugin.seo.table.url")}) }: ${props.value.frontUrl}` : ''}
+            description={props.value.isChecked ? `${ formatMessage({id: getTrad("plugin.seo.table.rank")}) }: ${props.value.depth} - ${ formatMessage({id: getTrad("plugin.seo.table.url")}) }: ${props.value.frontUrl}` : ''}
         />
         <AccordionContent>
             <Box padding={3}>
@@ -74,8 +77,8 @@ export const AnalyseAccordion = (props) => {
                     <Box padding={8} background="primary100">
                         <TabGroup label="Some stuff for the label" id="tabs" onTabChange={selected => console.log(selected)}>
                             <Tabs>
-                                <Tab>Content optimisation ({seoContentManagerMessageList.length})</Tab>
-                                <Tab>Front optimisation ({seoFrontDeveloperMessageList.length})</Tab>
+                                <Tab>{ formatMessage({id: getTrad("plugin.seo.experttable.contentOptimisation")}) } ({seoContentManagerMessageList.length})</Tab>
+                                <Tab>{ formatMessage({id: getTrad("plugin.seo.experttable.frontOptimisation")}) } ({seoFrontDeveloperMessageList.length})</Tab>
                                 {/* #5177 : disable this tab - BEGIN */}
                                 {/* <Tab>Don't show again ({seoExcludeMessageList.length})</Tab> */}
                                 {/* #5177 : END */}

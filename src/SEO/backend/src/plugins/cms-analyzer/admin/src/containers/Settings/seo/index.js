@@ -9,7 +9,7 @@ import { Box } from '@strapi/design-system/Box';
 import { H2 } from '@strapi/design-system/Text';
 import { TextInput } from '@strapi/design-system/TextInput';
 import { Button } from '@strapi/design-system/Button';
-import Plus from '@strapi/icons/Plus';
+import Check from '@strapi/icons/Check';
 import { HeaderLayout } from '@strapi/design-system/Layout';
 import { Grid, GridItem } from '@strapi/design-system/Grid';
 import Cog from '@strapi/icons/Cog';
@@ -68,7 +68,7 @@ const SettingsPage = () => {
           title={formatMessage({ id: getTrad("plugin.settings.title") })}
           subtitle={formatMessage({ id: getTrad("plugin.settings.subtitle") })}
           primaryAction={
-            <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
+            <Button onClick={handleSubmit} startIcon={<Check />} size="L" >
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}
             </Button>
           }
