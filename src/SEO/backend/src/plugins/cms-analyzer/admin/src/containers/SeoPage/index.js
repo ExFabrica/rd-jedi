@@ -18,7 +18,6 @@ import {
   CheckPagePermissions,
   useNotification,
 } from '@strapi/helper-plugin';
-import { AbortController } from 'native-abort-controller';
 //Custom
 import { Button } from '@strapi/design-system/Button';
 import { IconButton } from '@strapi/design-system/IconButton';
@@ -53,7 +52,6 @@ const SeoPage = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalysisRunning, setIsAnalysisRunning] = useState();
   const [analysisProgress, setAnalysisProgress] = useState();
-  const [abortController, setAbortController] = useState();
   const [toggleState, setToggleState] = useState({});
   const toggleNotification = useNotification();
 
@@ -77,7 +75,6 @@ const SeoPage = (props) => {
         setAnalysisProgress({ current: analysisState.analyzed, total: analysisState.total })
         if (!analysisState.isRunning) {
           await refreshAllData();
-          setAbortController(null);
           clearInterval(refreshInterval);
           refreshInterval = null;
         }
@@ -91,18 +88,6 @@ const SeoPage = (props) => {
       }
     };
   }, [isAnalysisRunning]);
-
-  // The analysis can be very long and should not be waited when we exit the page
-  // For this behaviour, we send a cancel signal to the AbortController when the component is destroyed
-  useEffect(() => {
-    const currentAbortController = abortController
-    
-    return () => {
-      if (currentAbortController) {
-        currentAbortController.abort();
-      }
-    }
-  }, [abortController])
 
   /**
    * Refresh all the data of the page
@@ -136,12 +121,6 @@ const SeoPage = (props) => {
 
   const handleSubmit = async () => {
     setIsAnalysisRunning(true);
-
-    // The "run" operation can be very long and should not be waited when we exit the page
-    // For this behaviour, we create an AbortController to cancel the request on page exit
-    // The HTTP request will be canceled but the server will continue to run the analysis.
-    const controller = new AbortController();
-    setAbortController(controller);
 
     try {
       /* # 5193 - force enabled primary front url - BEGIN */
