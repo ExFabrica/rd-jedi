@@ -6,7 +6,7 @@
   "strapi": {
     "name": "cms-analyzer",
     "icon": "plug",
-    "description": "Analyzer Plugin for Strapi, check your SEO and your sustainabilty.",
+    "description": "SEO analyzer that crawls your website and display for each page in Strapi the notation and advices for empowering your SEO.",
     "kind": "plugin",
     "displayName": "CMS Analyzer"
   },

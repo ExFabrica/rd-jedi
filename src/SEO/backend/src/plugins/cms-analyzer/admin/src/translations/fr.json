@@ -19,13 +19,18 @@
     "plugin.seo.experttable.content":"Contenu",
     "plugin.seo.subtitle":"From the frontend to your STRAPI!",
     "plugin.editor.title":"Editeur",
+    "plugin.settings.menuGeneral":"Paramètres généraux",
     "plugin.settings.title":"Settings",
-    "plugin.settings.subtitle":"Settings sous titre",
-    "plugin.settings.panel.title":"Titre Panneau",
+    "plugin.settings.version":"V{version}",
+    "plugin.settings.seo.title":"Paramètres généraux",
+    "plugin.settings.seo.enabled":"Plugin activé ?",
+    "plugin.settings.seo.frontEnd":"L'adresse de votre site consommant le contenu Strapi",
+    "plugin.settings.seo.expert": "Mode expert ?",
+    "plugin.settings.seo.expert.descr": "Expert mode allows you to see a sum-up of errors on global result page. It also allows you to see errors which must be fixed by your website development teams",
     "plugin.settings.panel.setting1.label":"Setting 1",
     "plugin.settings.panel.setting1.placeholder":"Setting 1 Placeholder",
     "plugin.settings.panel.setting2.label":"Setting 2",
     "plugin.settings.panel.setting3.label":"Setting 3",
-    "plugin.settings.button.save.label":"Sauver les paramètres",
-    "plugin.settings.button.save.message":"Paramètres sauvegardés."
+    "plugin.settings.button.save.label":"Sauvegarder",
+    "plugin.settings.button.save.message":"Sauvegardé"
 }
