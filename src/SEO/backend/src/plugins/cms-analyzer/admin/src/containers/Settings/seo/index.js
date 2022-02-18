@@ -25,6 +25,7 @@ const SettingsPage = () => {
   const { formatMessage } = useIntl();
   const isMounted = useRef(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState();
   const toggleNotification = useNotification();
 
@@ -43,11 +44,11 @@ const SettingsPage = () => {
   }, []);
 
   const handleSubmit = async () => {
-    setIsLoading(true);
+    setIsSaving(true);
     const data = await SettingsAPI.set(settings);
     console.log("settings saved", data);
     setSettings(data);
-    setIsLoading(false);
+    setIsSaving(false);
     toggleNotification({
       type: 'success',
       message: { id: getTrad("plugin.settings.button.save.message") },
@@ -69,7 +70,8 @@ const SettingsPage = () => {
           title={formatMessage({ id: getTrad("plugin.settings.title") })}
           subtitle={formatMessage({ id: getTrad("plugin.settings.version") }, { version: packageVersion })}
           primaryAction={
-            <Button onClick={handleSubmit} startIcon={<Check />} size="L" >
+            isLoading ? <></> :
+            <Button onClick={handleSubmit} startIcon={<Check />} size="L" disabled={isSaving} loading={isSaving}>
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}
             </Button>
           }
@@ -129,7 +131,7 @@ const SettingsPage = () => {
                       <TextInput
                         label={formatMessage({ id: getTrad("plugin.settings.seo.frontEnd") })}
                         name="siteURL"
-                        placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
+                        placeholder={formatMessage({ id: getTrad("plugin.settings.seo.frontEnd.placeholder") })}
                         onChange={({ target: { value } }) => {
                           setSettings((prevState) => {
                             return {
