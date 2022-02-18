@@ -45,7 +45,7 @@ export default {
       [
         {
           intlLabel: {
-            id: getTrad("plugin.settings.menuGeneral"),
+            id: getTrad("plugin.settings.seo.title"),
             defaultMessage: "General settings" // Mandatory but should not be used
           },
           id: 'settings',
@@ -53,6 +53,22 @@ export default {
           Component: async () => {
             const component = await import(
                   /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/seo'
+            );
+
+            return component;
+          },
+          //permissions: pluginPermissions.settings,
+        },
+        {
+          intlLabel: {
+            id: getTrad("plugin.settings.expert.title"),
+            defaultMessage: "Expert settings" // Mandatory but should not be used
+          },
+          id: 'settings',
+          to: `/settings/${pluginId}/expert`,
+          Component: async () => {
+            const component = await import(
+                  /* webpackChunkName: "cms-analyzer-settings-page" */ './containers/Settings/expert'
             );
 
             return component;

@@ -130,14 +130,18 @@ const SeoPage = (props) => {
       //   settings.seo.frontEnabled3 ? settings.seo.frontUrl3 : ""
       // ].filter(item => item);
 
-      const payload = [
+      const urls = [
         settings.seo.frontUrl,
       ].filter(item => item);
       /* # 5193 - END */
 
-      if (payload.length > 0) {
+      if (urls.length > 0) {
         setAnalysisProgress(null)
-        await contentAnalyzerAPI.run(payload)
+        await contentAnalyzerAPI.run({
+          urls: urls,
+          navigationTimeout: settings.seo.navigationTimeout * 1000, // Seconds to millis
+          clickToFind: settings.seo.clickToFind,
+        })
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
       }

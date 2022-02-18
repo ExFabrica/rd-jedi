@@ -9,10 +9,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@exfabrica/cms-engine-analyzer@^0.7.2":
-  version "0.7.2"
-  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/@exfabrica/cms-engine-analyzer/-/cms-engine-analyzer-0.7.2.tgz#7b82d7512685c7d0d4ecc752ae98553c89a2092f"
-  integrity sha1-e4LXUSaFx9DU7MdSrphVPImiCS8=
+"@exfabrica/cms-engine-analyzer@^0.8.0":
+  version "0.8.0"
+  resolved "https://pkgs.dev.azure.com/exfabrica/RD-Strapi/_packaging/cms-analyzer/npm/registry/@exfabrica/cms-engine-analyzer/-/cms-engine-analyzer-0.8.0.tgz#80b1beb0275a1c8d2e8831c7fc790cd6f0c06f82"
+  integrity sha1-gLG+sCdaHI0uiDHH/HkM1vDAb4I=
   dependencies:
     mz "^2.7.0"
     nodemon "^2.0.15"

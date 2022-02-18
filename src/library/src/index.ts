@@ -100,7 +100,11 @@ let depth: any[] = [];
  * @param browser puppeteer instance
  * @param urls Website URLs to crawl
  */
-const explorer = async function* (urls: string[]) {
+type ExplorerOptions = {
+  navigationTimeout: number,
+  clickToFind: boolean,
+}
+const explorer = async function* (urls: string[], options: ExplorerOptions) {
   //Init explorer lists
   const exploredURL = new Set<string>();
   const toExploreURL = new Set<string>();
@@ -147,11 +151,13 @@ const explorer = async function* (urls: string[]) {
       }
       state.total = exploredURL.size + toExploreURL.size
     
-      // Do the same for elements found on click (may take a while)
-      const navigationTestTimeout = 2000; // TODO Arbitrary timeout ?
-      for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, navigationTestTimeout)) {
-        addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
-        state.total = exploredURL.size + toExploreURL.size
+      if (options.clickToFind) {
+        // Do the same for elements found on click (may take a while)
+        const navigationTestTimeout = options.navigationTimeout >= 2000 && options.navigationTimeout <= 10000 ? options.navigationTimeout : 2000;
+        for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, navigationTestTimeout)) {
+          addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
+          state.total = exploredURL.size + toExploreURL.size
+        }
       }
 
       //Sync both list for next iteration
@@ -221,26 +227,32 @@ const runSEORealTimeRulesAnalyse = async (payload: RealtimeStructure | RealtimeS
   * @param features List of analyse to run on selected website; ex: ['SEO', 'Image']
   * @returns Analysis made by selected features on each website
   */
-const terminator = async (siteUrls: string[], features: string[]): Promise<ComputedResults> => {
+type Payload = {
+  urls: string[],
+  navigationTimeout: number,
+  clickToFind: boolean,
+}
+const terminator = async (payload: Payload, features: string[]): Promise<ComputedResults> => {
   if (state.isRunning) return
   state = { ...initialState }
   state.isRunning = true
   
   try {
     console.log('Terminator: Sarah Connor ?');
-    console.log('Provided URLs => ', siteUrls);
+    console.log('Provided URLs => ', payload.urls);
+    console.log('Provided timeout => ', payload.navigationTimeout);
     console.log("Active features ", features);
     console.log("= = = = = = = = = = = = = = =")
 
     //Init
-    const urls = new Set(siteUrls);//Deduplicate urls
+    const urls = new Set(payload.urls);//Deduplicate urls
     const results = { Sitemap: [], SEO: [], Images: [] } as ComputedResults;
 
     //Guard clauses for
     if (urls.size > 0 && [...urls].every(isValidUrl)) {
       //Pre-processors
 
-      for await (let pptrPage of explorer([...urls])) {
+      for await (let pptrPage of explorer([...urls], { navigationTimeout: payload.navigationTimeout, clickToFind: payload.clickToFind })) {
         // Page is a DOMElement or equivalent exposed by puppeteer
         const pageName = await pptrPage?.title();
         console.log("Explorer return a pptrPage name => ", pageName);

@@ -141,7 +141,7 @@ const SettingsPage = () => {
                           });
                         }}
                         value={settings?.seo?.frontUrl ?? ""}
-                        hint={'The URL of the frontend you want to analyze'}
+                        hint={ formatMessage({id: getTrad("plugin.settings.seo.frontEnd.descr")}) }
                       />
                     </GridItem>
                     <GridItem col={12} s={12}>
