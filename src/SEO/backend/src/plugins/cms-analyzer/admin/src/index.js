@@ -40,7 +40,7 @@ export default {
     app.createSettingSection(
       {
         id: pluginId,
-        intlLabel: { id: 'Analyzer Plugin', defaultMessage: 'Analyzer Plugin' },
+        intlLabel: { id: getTrad('plugin.name'), defaultMessage: 'Awesome SEO' },
       },
       [
         {

@@ -106,7 +106,7 @@ const SettingsPage = () => {
                     <GridItem col={12} s={12}>
                       <ToggleInput
                         checked={settings?.seo?.enabled ?? false}
-                        hint={'Enable or disable the SEO module'}
+                        hint={ formatMessage({ id: getTrad("plugin.settings.seo.enabled.descr") }) }
                         label={ formatMessage({ id: getTrad("plugin.settings.seo.enabled") }) }
                         name="moduleEnabled"
                         offLabel={formatMessage({
