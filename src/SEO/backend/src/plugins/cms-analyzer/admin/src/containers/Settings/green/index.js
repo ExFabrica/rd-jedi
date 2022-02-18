@@ -18,6 +18,7 @@ import {
   useNotification,
 } from '@strapi/helper-plugin';
 import { ToggleInput } from '@strapi/design-system/ToggleInput';
+import { version as packageVersion } from '../../../../../package.json';
 
 const SettingsGreenPage = () => {
   const { formatMessage } = useIntl();
@@ -59,7 +60,7 @@ const SettingsGreenPage = () => {
         <HeaderLayout
           id="title"
           title={formatMessage({ id: getTrad("plugin.settings.title") })}
-          subtitle={formatMessage({ id: getTrad("plugin.settings.subtitle") })}
+          subtitle={formatMessage({ id: getTrad("plugin.settings.version") }, { version: packageVersion })}
           primaryAction={
             <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}

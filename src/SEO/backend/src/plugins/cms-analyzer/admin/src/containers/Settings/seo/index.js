@@ -19,6 +19,7 @@ import {
   useNotification,
 } from '@strapi/helper-plugin';
 import { ToggleInput } from '@strapi/design-system/ToggleInput';
+import { version as packageVersion } from '../../../../../package.json';
 
 const SettingsPage = () => {
   const { formatMessage } = useIntl();
@@ -66,7 +67,7 @@ const SettingsPage = () => {
         <HeaderLayout
           id="title"
           title={formatMessage({ id: getTrad("plugin.settings.title") })}
-          subtitle={formatMessage({ id: getTrad("plugin.settings.subtitle") })}
+          subtitle={formatMessage({ id: getTrad("plugin.settings.version") }, { version: packageVersion })}
           primaryAction={
             <Button onClick={handleSubmit} startIcon={<Check />} size="L" >
               {formatMessage({ id: getTrad("plugin.settings.button.save.label") })}
@@ -96,7 +97,7 @@ const SettingsPage = () => {
                 <Stack size={3}>
                   <H2>
                     {formatMessage({
-                      id: getTrad("plugin.settings.panel.title")
+                      id: getTrad("plugin.settings.seo.title")
                     })}
                   </H2>
                   <Grid gap={6}>
@@ -104,7 +105,7 @@ const SettingsPage = () => {
                       <ToggleInput
                         checked={settings?.seo?.enabled ?? false}
                         hint={'Enable or disable the SEO module'}
-                        label={'Enabled?'}
+                        label={ formatMessage({ id: getTrad("plugin.settings.seo.enabled") }) }
                         name="moduleEnabled"
                         offLabel={formatMessage({
                           id: 'app.components.ToggleCheckbox.off-label',
@@ -126,7 +127,7 @@ const SettingsPage = () => {
                     </GridItem>
                     <GridItem col={12} s={12}>
                       <TextInput
-                        label="Front-end URL to analyze"
+                        label={formatMessage({ id: getTrad("plugin.settings.seo.frontEnd") })}
                         name="siteURL"
                         placeholder={formatMessage({ id: getTrad("plugin.settings.panel.setting1.placeholder") })}
                         onChange={({ target: { value } }) => {
@@ -144,8 +145,8 @@ const SettingsPage = () => {
                     <GridItem col={12} s={12}>
                       <ToggleInput
                         checked={settings?.seo?.expertMode ?? false}
-                        hint={'Enable or disable analyze details expert mode'}
-                        label={'Expert Mode (beta version)'}
+                        hint={ formatMessage({ id: getTrad("plugin.settings.seo.expert.descr") }) }
+                        label={ formatMessage({ id: getTrad("plugin.settings.seo.expert") }) }
                         name="expertModeEnabled"
                         offLabel={formatMessage({
                           id: 'app.components.ToggleCheckbox.off-label',

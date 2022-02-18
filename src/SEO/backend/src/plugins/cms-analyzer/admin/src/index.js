@@ -6,8 +6,9 @@ import PluginIcon from './components/PluginIcon';
 import pluginPermissions from './permissions';
 import { StrapiListZoneItem } from './components/injected/strapi-list-zone-item';
 
+import getTrad from './utils/getTrad';
+
 const name = pluginPkg.strapi.name;
-const media_page_name='Media Analyzer';
 
 export default {
   register(app) {
@@ -44,8 +45,8 @@ export default {
       [
         {
           intlLabel: {
-            id: "Seo-analyzer-settings",
-            defaultMessage: 'SEO analyzer settings',
+            id: getTrad("plugin.settings.menuGeneral"),
+            defaultMessage: "General settings" // Mandatory but should not be used
           },
           id: 'settings',
           to: `/settings/${pluginId}/seo`,
