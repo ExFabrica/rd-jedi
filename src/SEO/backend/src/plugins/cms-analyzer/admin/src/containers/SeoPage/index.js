@@ -30,7 +30,7 @@ import { Typography } from '@strapi/design-system/Typography';
 import { LinkButton } from '@strapi/design-system/LinkButton';
 import { Badge } from '@strapi/design-system/Badge';
 import { Box } from '@strapi/design-system/Box';
-import { Flex } from '@strapi/design-system/Flex';
+import { Grid } from '@strapi/design-system/Grid';
 
 //Layout
 import { ContentLayout, HeaderLayout, Layout } from '@strapi/design-system/Layout';
@@ -205,10 +205,7 @@ const SeoPage = (props) => {
             <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.url")}) }</Typography>
           </Th>
           <Th>
-            <Typography variant="sigma"></Typography>
-          </Th>
-          <Th>
-            <Typography variant="sigma"></Typography>
+            <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.errors")}) }</Typography>
           </Th>
           <Th>
             <Typography variant="sigma">{ formatMessage({id: getTrad("plugin.seo.table.edit")}) }</Typography>
@@ -228,20 +225,19 @@ const SeoPage = (props) => {
               <Typography textColor="neutral800" fontWeight={analyse.isChecked ? 'inherited' : 'bold'}>{analyse.frontUrl}</Typography>
             </Td>
             <Td>
-              <Flex>
-                { high?.length ? 
-                <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2"> {'High: ' + high?.length ?? 0}</Badge>
-                :<></>}
-                
-              </Flex>
-            </Td>
-            <Td>
-              <Flex>
-                
-                { low?.length ? 
-                <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} paddingLeft="2" paddingRight="2" paddingTop="2" paddingBottom="2" > {'Low: ' + low?.length ?? 0}</Badge>
-                :<></>}
-              </Flex>
+              <Grid gridCols={2}>
+                <Box>
+                  { high?.length ? 
+                  <Badge backgroundColor={high_color} textColor={getBadgeTextColor(high_color)} padding={2}>{'High: ' + high?.length ?? 0}</Badge>
+                  :<></>}
+                </Box>
+
+                <Box>
+                  { low?.length ? 
+                  <Badge backgroundColor={low_color} textColor={getBadgeTextColor(low_color)} padding={2}>{'Low: ' + low?.length ?? 0}</Badge>
+                  :<></>}
+                </Box>
+              </Grid>
             </Td>
             <Td>
               {/* #5175 - add link edit page - BEGIN*/}
@@ -265,7 +261,7 @@ const SeoPage = (props) => {
       title={ formatMessage({id: getTrad("plugin.seo.title")}) }
       subtitle={ formatMessage({id: getTrad("plugin.seo.subtitle")}) }
       primaryAction={
-        <Button onClick={handleSubmit} startIcon={isAnalysisRunning ? <Loader small/> : <Play />} size="L" disabled={isLoading || isAnalysisRunning} >
+        <Button onClick={handleSubmit} startIcon={<Play />} size="L" disabled={isLoading || isAnalysisRunning} loading={isAnalysisRunning}>
           { formatMessage({id: getTrad(isAnalysisRunning ? "plugin.seo.analysisPending" : "plugin.seo.runAnalysis")})}
         </Button>
       }

@@ -50,7 +50,7 @@ const MediaPage = (props) => {
       subtitle={formatMessage({ id: getTrad("plugin.homepage.subtitle") })}
       primaryAction={
         <Button onClick={handleSubmit} startIcon={<Plus />} size="L" >
-          {"Run Analyzer"}
+          {formatMessage({ id: getTrad("plugin.seo.runAnalysis") })}
         </Button>
       }
     >

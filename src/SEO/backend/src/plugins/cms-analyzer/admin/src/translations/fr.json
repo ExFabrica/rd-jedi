@@ -10,6 +10,7 @@
     "plugin.seo.title":"SEO Analyzer",
     "plugin.seo.table.rank":"Rang",
     "plugin.seo.table.url":"Url",
+    "plugin.seo.table.errors":"Erreurs SEO",
     "plugin.seo.table.edit":"Editer",
     "plugin.seo.experttable.contentOptimisation":"Optimisation du contenu",
     "plugin.seo.experttable.frontOptimisation":"Front optimisation",
