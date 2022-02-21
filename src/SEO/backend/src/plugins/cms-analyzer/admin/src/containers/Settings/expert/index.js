@@ -75,7 +75,7 @@ const SettingsPage = () => {
       <Main labelledBy="title" aria-busy={isLoading}>
         <HeaderLayout
           id="title"
-          title={`${formatMessage({ id: getTrad("plugin.seo.title") })} - ${formatMessage({ id: getTrad("plugin.settings.expert.title") })}`}
+          title={`${formatMessage({ id: getTrad("plugin.seo.title") })} - ${formatMessage({ id: getTrad("plugin.settings.advanced.title") })}`}
           subtitle={formatMessage({ id: getTrad("plugin.settings.version") }, { version: packageVersion })}
           primaryAction={
             isLoading ? <></> :
@@ -107,15 +107,15 @@ const SettingsPage = () => {
                 <Stack size={3}>
                   <H2>
                     {formatMessage({
-                      id: getTrad("plugin.settings.expert.title")
+                      id: getTrad("plugin.settings.advanced.title")
                     })}
                   </H2>
                   <Grid gap={6}>
                     <GridItem col={6} s={12}>
                       <ToggleInput
                         checked={settings?.seo?.clickToFind ?? true}
-                        hint={ formatMessage({ id: getTrad("plugin.settings.expert.clickToFind.descr") }) }
-                        label={ formatMessage({ id: getTrad("plugin.settings.expert.clickToFind") }) }
+                        hint={ formatMessage({ id: getTrad("plugin.settings.advanced.clickToFind.descr") }) }
+                        label={ formatMessage({ id: getTrad("plugin.settings.advanced.clickToFind") }) }
                         name="clickToFindEnabled"
                         offLabel={formatMessage({
                           id: 'app.components.ToggleCheckbox.off-label',
@@ -138,11 +138,11 @@ const SettingsPage = () => {
                     <GridItem col={6} s={12}>
                       <NumberInput
                         name="navigationTimeout"
-                        hint={ formatMessage({ id: getTrad("plugin.settings.expert.navigationTimeout.descr") }) }
-                        label={ formatMessage({ id: getTrad("plugin.settings.expert.navigationTimeout") }) }
+                        hint={ formatMessage({ id: getTrad("plugin.settings.advanced.navigationTimeout.descr") }) }
+                        label={ formatMessage({ id: getTrad("plugin.settings.advanced.navigationTimeout") }) }
                         value={settings?.seo?.navigationTimeout ?? 2}
                         error={ settings?.seo?.navigationTimeout < 2 || settings?.seo?.navigationTimeout > 10
-                          ? formatMessage({ id: getTrad("plugin.settings.expert.navigationTimeout.error") })
+                          ? formatMessage({ id: getTrad("plugin.settings.advanced.navigationTimeout.error") })
                           : null}
                         onValueChange={(value) => {
                           setSettings((prevState) => {

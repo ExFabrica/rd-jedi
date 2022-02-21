@@ -87,30 +87,24 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
 const getAllUniqueClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
   try {
     const elementsSelector = await getAllClickableElementsSelectors(page)
-    let allButtons = (await Promise.all(
-      elementsSelector.map(async x => {
-        const elem = (await page.$(x))
-        return elem ? {
-          elem,
-          content: (await (await elem.getProperty('innerText')).jsonValue()) as string,
-          selector: x,
-        } : null
-      })
-    )).filter(x => !!x)
-
-    // Remove all clickables with "a" inside => the "a" is already clickable
-    for (let i = 0 ; i < allButtons.length ; ) {
-      const href: string = await (await allButtons[i].elem.getProperty('href')).jsonValue()
-      if (href || !!(await allButtons[i].elem.$('a'))) {
-        allButtons.splice(i, 1);
-        continue;
+    let allButtons: ClickableElement[] = []
+    for (let i = 0 ; i < elementsSelector.length ; ++i) {
+      const elem = (await page.$(elementsSelector[i]))
+      if (elem) {
+        // Don't add clickables with "a" inside => the "a" is already clickable
+        const asInnerLink = (await (await elem.getProperty('href')).jsonValue()) || !!(await elem.$('a'))
+        if (!asInnerLink) {
+          allButtons.push({
+            elem,
+            content: (await (await elem.getProperty('innerText')).jsonValue()) as string,
+            selector: elementsSelector[i],
+          })
+        }
       }
-      ++i;
     }
-
     return allButtons;
   } catch(e) {
-    console.error(e)
+    console.error(`Error while clicking on page ${page.url()}`, e)
     return []
   }
 }
@@ -165,27 +159,34 @@ const findHiddenNavigationElements = async function* (page: puppeteer.Page, elem
 
   // Click on all elements found on the page, event if modified as much as possible
   // Doesn't work on paginated lists, but we don't care
-  while(true) {
-    const newElementToClick = currentElements.find(x => !elementsDone.find(y => x.content === y.content && x.selector === y.selector))
-    if (!newElementToClick) break; // Stop when no new element found
+  const initialUrl = page.url();
+  try {
+    while(true) {
+      const newElementToClick = currentElements.find(x => !elementsDone.find(y => x.content === y.content && x.selector === y.selector))
+      if (!newElementToClick) break; // Stop when no new element found
 
-    const foundNavElement = await tryClickOnElement(page, newElementToClick, navigationTestTimeout);
-    if (!!foundNavElement) {
-      yield foundNavElement as NavigationElement
+      const foundNavElement = await tryClickOnElement(page, newElementToClick, navigationTestTimeout);
+      if (!!foundNavElement) {
+        yield foundNavElement as NavigationElement
+      }
+      const newAllElements = await getAllUniqueClickables(page); // Do it on loop because the page content may change after clicks
+      // If the page doesn't change (we know it because there is no navigation or unknown clickables)
+      if (!!foundNavElement || 
+          newAllElements.filter(x => allElements.find(y => x.selector === y.selector && x.content === y.content)).length === newAllElements.length
+      ) {
+        elementsDone.push({ selector: newElementToClick.selector, content: newElementToClick.content })
+      }
+      currentElements = newAllElements
+      allElements.push(
+        ...newAllElements
+          .filter(x => !allElements.find(y => x.selector === y.selector && x.content === y.content))
+          .map(x => ({ selector: x.selector, content: x.content }))
+      )
     }
-    const newAllElements = await getAllUniqueClickables(page); // Do it on loop because the page content may change after clicks
-    // If the page doesn't change (we know it because there is no navigation or unknown clickables)
-    if (!!foundNavElement || 
-        newAllElements.filter(x => allElements.find(y => x.selector === y.selector && x.content === y.content)).length === newAllElements.length
-    ) {
-      elementsDone.push({ selector: newElementToClick.selector, content: newElementToClick.content })
-    }
-    currentElements = newAllElements
-    allElements.push(
-      ...newAllElements
-        .filter(x => !allElements.find(y => x.selector === y.selector && x.content === y.content))
-        .map(x => ({ selector: x.selector, content: x.content }))
-    )
+  } catch(e) {
+    console.error(`Error on browsing elements of page ${initialUrl}`, e);
+    // If any error, try to go back to the initial page
+    await page.goto(initialUrl, { waitUntil: 'domcontentloaded' })
   }
 };
 

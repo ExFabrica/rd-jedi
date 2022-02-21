@@ -61,7 +61,7 @@ export default {
         },
         {
           intlLabel: {
-            id: getTrad("plugin.settings.expert.title"),
+            id: getTrad("plugin.settings.advanced.title"),
             defaultMessage: "Expert settings" // Mandatory but should not be used
           },
           id: 'settings',

@@ -140,7 +140,7 @@ const SeoPage = (props) => {
         await contentAnalyzerAPI.run({
           urls: urls,
           navigationTimeout: settings.seo.navigationTimeout * 1000, // Seconds to millis
-          clickToFind: settings.seo.clickToFind,
+          clickToFind: settings.seo.clickToFind !== false, // Null is true
         })
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
