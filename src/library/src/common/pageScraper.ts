@@ -85,6 +85,7 @@ const getAllClickableElementsSelectors = async (page: puppeteer.Page): Promise<s
  * @returns A list a clickable elements
  */
 const getAllUniqueClickables = async (page: puppeteer.Page): Promise<ClickableElement[]> => {
+  console.log(`Looking for all clickable elements for page ${page.url()}`)
   try {
     const elementsSelector = await getAllClickableElementsSelectors(page)
     let allButtons: ClickableElement[] = []
@@ -104,7 +105,7 @@ const getAllUniqueClickables = async (page: puppeteer.Page): Promise<ClickableEl
     }
     return allButtons;
   } catch(e) {
-    console.error(`Error while clicking on page ${page.url()}`, e)
+    console.error(`Error while getting clickables on page ${page.url()}`, e)
     return []
   }
 }
@@ -184,7 +185,7 @@ const findHiddenNavigationElements = async function* (page: puppeteer.Page, elem
       )
     }
   } catch(e) {
-    console.error(`Error on browsing elements of page ${initialUrl}`, e);
+    console.error(`Error while clicking elements of page ${initialUrl}`, e);
     // If any error, try to go back to the initial page
     await page.goto(initialUrl, { waitUntil: 'domcontentloaded' })
   }

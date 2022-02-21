@@ -51,6 +51,9 @@ const SettingsPage = () => {
       });
       return;
     }
+    if (!settings.seo.navigationTimeout) { // If not defined, default value at first save
+      settings.seo.navigationTimeout = 2
+    }
 
     setIsSaving(true);
     const data = await SettingsAPI.set(settings);

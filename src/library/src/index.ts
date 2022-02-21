@@ -28,6 +28,7 @@ const initialState = {
   isRunning: false,
   analyzed: 0,
   total: 0,
+  errors: [],
 }
 /**
  * The current state of analysis
@@ -167,17 +168,19 @@ const explorer = async function* (urls: string[], options: ExplorerOptions) {
         }
       } catch(e) {
         console.error(`Error while fetching url ${currentUrl}`, e)
+        state.errors.push(currentUrl)
+        continue;
+      } finally {
+        //Sync both list for next iteration
+        exploredURL.add(currentUrl);
+        toExploreURL.delete(currentUrl);
+  
+        state.total = exploredURL.size + toExploreURL.size
+        state.analyzed++
+  
+        console.log("Already explored URLs", exploredURL);
+        console.log('URLs to explore', toExploreURL);
       }
-
-      //Sync both list for next iteration
-      exploredURL.add(currentUrl);
-      toExploreURL.delete(currentUrl);
-
-      state.total = exploredURL.size + toExploreURL.size
-      state.analyzed++
-
-      console.log("Already explored URLs", exploredURL);
-      console.log('URLs to explore', toExploreURL);
 
       yield puppeteerPage; //Expose each navigable page only once for different analysis
     }
