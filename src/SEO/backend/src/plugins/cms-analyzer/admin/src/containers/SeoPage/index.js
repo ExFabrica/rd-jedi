@@ -42,7 +42,7 @@ import { AccordionGroup } from '@strapi/design-system/Accordion';
 import { AnalyseAccordion } from './components/analyse-accordion';
 import pluginId from '../../pluginId';
 
-import {getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor  }from '../../utils/getSeoColor.js';
+import { getSeoWarningLevelColor,getSeoErrorLevelColor, getBadgeTextColor }from '../../utils/getSeoColor.js';
 
 
 const SeoPage = (props) => {
@@ -120,8 +120,6 @@ const SeoPage = (props) => {
   }
 
   const handleSubmit = async () => {
-    setIsAnalysisRunning(true);
-
     try {
       /* # 5193 - force enabled primary front url - BEGIN */
       // const payload = [
@@ -136,18 +134,17 @@ const SeoPage = (props) => {
       /* # 5193 - END */
 
       if (urls.length > 0) {
+        setIsAnalysisRunning(true)
         setAnalysisProgress(null)
         await contentAnalyzerAPI.run({
           urls: urls,
           navigationTimeout: settings.seo.navigationTimeout * 1000, // Seconds to millis
-          clickToFind: settings.seo.clickToFind,
+          clickToFind: settings.seo.clickToFind !== false, // Null is true
         })
       } else {
         throw "No front end URL to crawl. Check in settings if an URL is set.";
       }
     } catch (err) {
-      // If the error comes from a cancelation of request, ignore it
-      if (controller.signal.aborted) return;
       if (toggleNotification === undefined) return;
       toggleNotification({
         type: 'warning',

@@ -1,6 +1,6 @@
 # Project : RD-STRAPI  
 - [Project : RD-STRAPI](#project--rd-strapi)
-  - [Prerequist](#prerequist)
+  - [Prerequisites](#prerequisites)
   - [Folder structure](#folder-structure)
   - [Build & Run](#build--run)
     - [Backend:](#backend)
@@ -11,14 +11,14 @@
       - [Run](#run-1)
 
 ___
-## Prerequist  
+## Prerequisites  
 - [NodeJS 14.18.1](https://nodejs.org/download/release/v14.18.1/])  
 - yarn (npm install --global yarn)  
 
 ## Folder structure  
 
 * src:
-  * librairy : cms engine analyzer src
+  * library : cms engine analyzer src
   * SOE -> Strapi V4 dev environment based on *foodadvisor* template
     * frontend -> foodadvisor frontend.
     * backend -> strapi v4 backend, contains **plugin** cms analyzer plugin (src/plugins/cms-analyzer).  

@@ -28,6 +28,7 @@ const initialState = {
   isRunning: false,
   analyzed: 0,
   total: 0,
+  errors: [],
 }
 /**
  * The current state of analysis
@@ -71,12 +72,12 @@ const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, a
   for (const analyseResult of analysis) {
     if (features.includes('SEO')) {
       if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "SEO") {
-        //Remove analysis type to avoid redoundancy information 
+        //Remove analysis type to avoid redundant information 
         const { result, pageInfo } = (analyseResult?.value as unknown as SeoPreview);
         //Set page depth
         const filteredDepths = depth.filter(item => item.url == pageInfo.url);
         if (filteredDepths && filteredDepths.length > 0)
-          pageInfo.depth = depth.filter(item => item.url == pageInfo.url)[0].depth;
+          pageInfo.depth = filteredDepths[0].depth;
         results.SEO.push({ result, pageInfo });
       } else if (analyseResult.status == "rejected") {
         console.error("SEO Analysis failed : ", analyseResult?.reason);
@@ -84,7 +85,7 @@ const categorizedResult = (results: ComputedResults, pptrPage: puppeteer.Page, a
     }
     if (features.includes('Images')) {
       if (analyseResult.status == "fulfilled" && analyseResult?.value?.type == "Images") {
-        //Remove analysis type to avoid redoundancy information 
+        //Remove analysis type to avoid redundant information 
         const { result } = (analyseResult?.value as unknown as ImagesPreview);
         results.Images.push({ result });
       } else if (analyseResult.status == "rejected") {
@@ -135,40 +136,51 @@ const explorer = async function* (urls: string[], options: ExplorerOptions) {
       const toExploreIterator = toExploreURL[Symbol.iterator]();
       //Get the first item from the Set 'toExploreURL'
       const currentUrl = toExploreIterator.next().value;
-      //Puppeteer navigate to the given URL
-      await puppeteerPage.goto(currentUrl);
-      console.log("Exploring ", currentUrl);
 
-      //Retrive all links from the current page
-      const linksFound = (await puppeteerPage.$$('a'));
-      
-      const navigationElements: string[] = await Promise.all(
-        linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
-      )
-      //Add each link to toExplore Set, unicity is maintained by Set object
-      for (const link of navigationElements) {
-        addUrlToExplorationList(link, currentUrl, baseURL, exploredURL, toExploreURL);
-      }
-      state.total = exploredURL.size + toExploreURL.size
-    
-      if (options.clickToFind) {
-        // Do the same for elements found on click (may take a while)
-        const navigationTestTimeout = options.navigationTimeout >= 2000 && options.navigationTimeout <= 10000 ? options.navigationTimeout : 2000;
-        for await (let elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, navigationTestTimeout)) {
-          addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
-          state.total = exploredURL.size + toExploreURL.size
+      try { // If the target page is in error, don't broke the whole loop
+        //Puppeteer navigate to the given URL
+        await puppeteerPage.goto(currentUrl);
+        console.log("Exploring ", currentUrl);
+
+        //Retrive all links from the current page
+        const linksFound = (await puppeteerPage.$$('a'));
+        
+        const navigationElements: string[] = await Promise.all(
+          linksFound.map(async pptrElement => await pptrElement.getProperty('href').then(r => r._remoteObject.value))
+        )
+        //Add each link to toExplore Set, unicity is maintained by Set object
+        for (const link of navigationElements) {
+          addUrlToExplorationList(link, currentUrl, baseURL, exploredURL, toExploreURL);
         }
+        state.total = exploredURL.size + toExploreURL.size
+      
+        // If the option is enabled, do the same for elements found on click (may take a while)
+        if (options.clickToFind) {
+          try {
+            const navigationTestTimeout = options.navigationTimeout >= 2000 && options.navigationTimeout <= 10000 ? options.navigationTimeout : 2000;
+            for await (const elem of findHiddenNavigationElements(puppeteerPage, navigatedElements, navigationTestTimeout)) {
+              addUrlToExplorationList(elem.url, currentUrl, baseURL, exploredURL, toExploreURL);
+              state.total = exploredURL.size + toExploreURL.size
+            }
+          } catch(e) {
+            console.error(`Error while looking for hidden link on url ${currentUrl}`, e)
+          }
+        }
+      } catch(e) {
+        console.error(`Error while fetching url ${currentUrl}`, e)
+        state.errors.push(currentUrl)
+        continue;
+      } finally {
+        //Sync both list for next iteration
+        exploredURL.add(currentUrl);
+        toExploreURL.delete(currentUrl);
+  
+        state.total = exploredURL.size + toExploreURL.size
+        state.analyzed++
+  
+        console.log("Already explored URLs", exploredURL);
+        console.log('URLs to explore', toExploreURL);
       }
-
-      //Sync both list for next iteration
-      exploredURL.add(currentUrl);
-      toExploreURL.delete(currentUrl);
-
-      state.total = exploredURL.size + toExploreURL.size
-      state.analyzed++
-
-      console.log("Already explored URLs", exploredURL);
-      console.log('URLs to explore', toExploreURL);
 
       yield puppeteerPage; //Expose each navigable page only once for different analysis
     }
@@ -207,12 +219,12 @@ const addUrlToExplorationList = (link: string, currentUrl: string, baseURL: stri
       && !link.includes("#")) {//add only link on the same base URL, we dont want to crawl the whole (S)WEB
       toExploreURL.add(link);
     }
-    //calculate the depth
-    const parents = depth.filter(item => item.url === currentUrl);
-    if (parents && parents.length > 0) {
-      const parent = parents[0];
-      depth.push({ url: link, parentUrl: currentUrl, depth: parent.depth + 1 });
-    }
+  }
+  //calculate the depth
+  const parents = depth.filter(item => item.url === currentUrl);
+  if (parents && parents.length > 0) {
+    const parent = parents[0];
+    depth.push({ url: link, parentUrl: currentUrl, depth: parent.depth + 1 });
   }
 }
 
@@ -239,9 +251,8 @@ const terminator = async (payload: Payload, features: string[]): Promise<Compute
   
   try {
     console.log('Terminator: Sarah Connor ?');
-    console.log('Provided URLs => ', payload.urls);
-    console.log('Provided timeout => ', payload.navigationTimeout);
-    console.log("Active features ", features);
+    console.log('Provided payload =>', JSON.stringify(payload));
+    console.log("Active features", features);
     console.log("= = = = = = = = = = = = = = =")
 
     //Init
